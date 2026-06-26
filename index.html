@@ -157,6 +157,28 @@
   .txcat-bar::-webkit-scrollbar{display:none;}
   .txcat-chip{white-space:nowrap;padding:7px 12px;border-radius:99px;font-size:12px;font-weight:600;color:var(--dim);background:var(--card);border:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-shrink:0;}
   .txcat-chip.on{background:var(--grad);color:#fff;border-color:transparent;}
+  /* Ajustes */
+  #aj-panel .card{margin-bottom:var(--s4);}
+  .aj-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);}
+  .aj-row:first-child{padding-top:2px;} .aj-row:last-child{border-bottom:none;padding-bottom:2px;}
+  .aj-row .aj-l{font-size:14px;font-weight:600;color:var(--text);} .aj-row .aj-d{font-size:12px;color:var(--faint);margin-top:2px;line-height:1.4;}
+  .toggle{width:48px;height:28px;border-radius:99px;background:var(--card-2);border:1px solid var(--line);position:relative;flex-shrink:0;transition:background var(--t),border-color var(--t);}
+  .toggle::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform var(--t);box-shadow:0 1px 3px rgba(0,0,0,.4);}
+  .toggle.on{background:var(--grad);border-color:transparent;} .toggle.on::after{transform:translateX(20px);}
+  .swatches{display:flex;gap:11px;flex-wrap:wrap;}
+  .swatch{width:30px;height:30px;border-radius:50%;border:2px solid transparent;transition:transform var(--t);}
+  .swatch:active{transform:scale(.9);} .swatch.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25);}
+  .cat-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+  .cat-item{display:flex;align-items:center;gap:8px;}
+  .cat-item .cat-dot{width:11px;height:11px;}
+  .cat-item input{flex:1;min-width:0;min-height:44px;padding:10px 12px;font-size:15px;color:var(--text);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.13);border-radius:12px;outline:none;}
+  .cat-item input:focus{border-color:rgba(91,140,255,.6);}
+  .cat-x{width:38px;height:38px;flex-shrink:0;border-radius:11px;background:var(--card);border:1px solid var(--line);color:var(--danger);font-size:17px;display:flex;align-items:center;justify-content:center;}
+  .cat-add{display:flex;gap:8px;margin-top:10px;}
+  .cat-add input{flex:1;min-width:0;min-height:44px;padding:10px 12px;font-size:15px;color:var(--text);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;outline:none;}
+  .cat-add button{flex-shrink:0;padding:0 16px;border-radius:12px;background:var(--grad);color:#fff;font-weight:600;font-size:14px;}
+  body.no-anim .screen{animation:none!important;}
+  body.no-anim .donut-fg,body.no-anim .fin-bar-fill,body.no-anim .cal-dots i,body.no-anim .row,body.no-anim .card{animation:none!important;transition:none!important;}
 
   /* bottom nav frosted pill + orbe central vivo */
   .navwrap{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;justify-content:center;
@@ -425,28 +447,13 @@
   <!-- AJUSTES -->
   <section class="screen" id="s-ajustes">
     <div class="top"><div><div class="hello">Preferencias</div><div class="h1">Ajustes</div></div></div>
-    <div class="card">
-      <div class="card-t" style="margin-bottom:14px">Perfil</div>
-      <div class="field"><label>Tu nombre</label><input id="set-name" placeholder="¿Cómo te llamás?"></div>
-      <button class="btn primary block" data-act="save-name">Guardar nombre</button>
+    <div class="seg" id="aj-seg">
+      <button data-ajtab="general" class="on">General</button>
+      <button data-ajtab="pantalla">Pantalla y sonido</button>
+      <button data-ajtab="conectividad">Conectividad</button>
+      <button data-ajtab="personalizacion">Personalización</button>
     </div>
-    <div class="card">
-      <div class="card-t" style="margin-bottom:12px">Datos</div>
-      <div class="muted" style="margin-bottom:14px">Iris guarda todo en este dispositivo. Tus datos no salen del teléfono.</div>
-      <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button>
-    </div>
-    <div class="card">
-      <div class="card-t" style="margin-bottom:12px">Asistente IA</div>
-      <div class="field"><label>Endpoint del asistente (opcional)</label><input id="set-ai" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
-      <div class="muted" style="margin-bottom:14px">Pegá la URL de tu función para que Iris use una IA real. Vacío = motor local.</div>
-      <button class="btn primary block" data-act="save-ai">Guardar endpoint</button>
-    </div>
-    <div class="card">
-      <div class="card-t" style="margin-bottom:12px">Diagnóstico</div>
-      <div class="muted" style="margin-bottom:14px">Mostrá las medidas reales de tu pantalla (tamaño, safe-areas, posiciones). Sacale captura y pasámelas para ajustar la app a tu teléfono.</div>
-      <button class="btn primary block" data-act="measure">📐 Medidas de pantalla</button>
-    </div>
-    <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1</div></div>
+    <div id="aj-panel"></div>
   </section>
 </div>
 
@@ -495,9 +502,12 @@
 <script>
 "use strict";
 const KEY="iris.v1";
-const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], chat:[], ai:{endpoint:""} };
+const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], chat:[], ai:{endpoint:""},
+  catGasto:["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"],
+  catIngreso:["Sueldo","Venta","Otro"],
+  set:{anim:true,accent:"#5b8cff"} };
 let S=load();
-function load(){ try{ return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -549,7 +559,7 @@ function render(){
   const shop=S.shop.filter(s=>!s.done);
   $("#t-tasks").textContent=todayTasks.length; $("#t-events").textContent=todayEvents.length; $("#t-shop").textContent=shop.length;
 
-  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart();
+  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderAjustes(); applyAccent(); applyAnim();
   const sn=$("#set-name"); if(sn && document.activeElement!==sn) sn.value=S.name||"";
   const sa=$("#set-ai"); if(sa && document.activeElement!==sa) sa.value=(S.ai&&S.ai.endpoint)||"";
 }
@@ -880,9 +890,9 @@ function openForm(type){ _draft={};
   if(type==="mov"){ _draft.type="gasto"; _draft.cat="Comida"; _draft.method="efectivo"; syncCats(); }
   _formDate=null;
 }
-function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=_draft.type==="ingreso"?INGRESO_CATS:GASTO_CATS;
+function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
   let cur=w.value||_draft.cat; if(!cats.includes(cur))cur=cats[0]; _draft.cat=cur;
-  w.innerHTML=cats.map(c=>`<option value="${c}" ${c===cur?"selected":""}>${CAT_ICON[c]||""} ${c}</option>`).join(""); }
+  w.innerHTML=cats.map(c=>`<option value="${esc(c)}" ${c===cur?"selected":""}>${CAT_ICON[c]||"🏷️"} ${esc(c)}</option>`).join(""); }
 
 function doSave(type){
   const v=id=>{const e=$("#"+id);return e?e.value.trim():"";};
@@ -896,6 +906,78 @@ function doSave(type){
   else if(type==="loan"){ if(!v("i-who"))return; S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="prestamos"; }
   save(); closePop(); render();
 }
+
+/* ---- AJUSTES (pestañas) ---- */
+let _ajtab="general";
+const ACCENTS=["#5b8cff","#a78bfa","#22d3ee","#3ddc97","#ffc861","#ff6b6b","#ff8fab"];
+function applyAccent(){ document.documentElement.style.setProperty("--accent",(S.set&&S.set.accent)||"#5b8cff"); }
+function applyAnim(){ document.body.classList.toggle("no-anim", !(S.set&&S.set.anim)); }
+function catEditor(kind){
+  const list=(kind==="gasto"?S.catGasto:S.catIngreso)||[];
+  const items=list.map(c=>`<div class="cat-item"><span class="cat-dot" style="background:${catColor(c)}"></span><input class="cat-edit" data-kind="${kind}" data-old="${esc(c)}" value="${esc(c)}" maxlength="24"><button class="cat-x" data-act="del-cat" data-kind="${kind}" data-cat="${esc(c)}" aria-label="Eliminar ${esc(c)}">×</button></div>`).join("");
+  return `<div class="cat-list">${items||`<div class="muted">Sin categorías.</div>`}</div>
+    <div class="cat-add"><input id="new-cat-${kind}" placeholder="Nueva categoría…" maxlength="24"><button data-act="add-cat" data-kind="${kind}">Agregar</button></div>`;
+}
+function renderAjustes(){
+  const panel=$("#aj-panel"); if(!panel||screen!=="ajustes")return;
+  document.querySelectorAll("#aj-seg button").forEach(b=>b.classList.toggle("on",b.dataset.ajtab===_ajtab));
+  let h="";
+  if(_ajtab==="general"){
+    h=`<div class="card"><div class="card-t" style="margin-bottom:8px">Perfil</div>
+        <div class="field"><label>Tu nombre</label><input id="set-name" value="${esc(S.name||"")}" placeholder="¿Cómo te llamás?"></div>
+        <button class="btn primary block" data-act="save-name">Guardar nombre</button></div>
+      <div class="card"><div class="card-t" style="margin-bottom:8px">Datos</div>
+        <div class="muted" style="margin-bottom:14px">Iris guarda todo en este dispositivo. Tus datos no salen del teléfono.</div>
+        <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
+      <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1.3</div></div>`;
+  } else if(_ajtab==="pantalla"){
+    h=`<div class="card">
+        <div class="aj-row"><div><div class="aj-l">Animaciones</div><div class="aj-d">Transiciones y efectos al moverte por la app.</div></div>
+          <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
+        <div class="aj-row"><div style="flex:1"><div class="aj-l">Color de acento</div><div class="aj-d">El color principal de Iris.</div>
+          <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div></div>
+      <div class="card"><div class="card-t" style="margin-bottom:8px">Diagnóstico</div>
+        <div class="muted" style="margin-bottom:14px">Mostrá las medidas reales de tu pantalla para ajustar la app a tu teléfono.</div>
+        <button class="btn primary block" data-act="measure">📐 Medidas de pantalla</button></div>`;
+  } else if(_ajtab==="conectividad"){
+    h=`<div class="card"><div class="card-t" style="margin-bottom:8px">Asistente IA</div>
+        <div class="field"><label>Endpoint del asistente (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
+        <div class="muted" style="margin-bottom:14px">Pegá la URL de tu función para que Iris use una IA real. Vacío = motor local.</div>
+        <button class="btn primary block" data-act="save-ai">Guardar endpoint</button></div>
+      <div class="card"><div class="card-t" style="margin-bottom:8px">Datos locales</div>
+        <div class="muted">Todo se guarda en el almacenamiento de tu dispositivo. No se envía nada a ningún servidor, salvo que configures el endpoint del asistente.</div></div>`;
+  } else if(_ajtab==="personalizacion"){
+    h=`<div class="card"><div class="card-t" style="margin-bottom:4px">Categorías de gastos</div>
+        <div class="muted" style="margin-bottom:2px">Las que aparecen en el desplegable al cargar un gasto.</div>
+        ${catEditor("gasto")}</div>
+      <div class="card"><div class="card-t" style="margin-bottom:4px">Categorías de ingresos</div>
+        <div class="muted" style="margin-bottom:2px">Las que aparecen al cargar un ingreso.</div>
+        ${catEditor("ingreso")}</div>`;
+  }
+  panel.innerHTML=h;
+}
+function addCat(kind){
+  const inp=$("#new-cat-"+kind); if(!inp)return; const name=inp.value.trim(); if(!name)return;
+  const list=kind==="gasto"?S.catGasto:S.catIngreso;
+  if(!list.some(c=>c.toLowerCase()===name.toLowerCase())) list.push(name);
+  save(); renderAjustes();
+}
+function delCat(kind,name){
+  const list=kind==="gasto"?S.catGasto:S.catIngreso;
+  const i=list.indexOf(name); if(i>=0)list.splice(i,1);
+  if(!list.length)list.push("Otro");
+  save(); renderAjustes();
+}
+function renameCat(kind,oldName,newName){
+  newName=(newName||"").trim();
+  const list=kind==="gasto"?S.catGasto:S.catIngreso;
+  const i=list.indexOf(oldName); if(i<0){renderAjustes();return;}
+  if(!newName||newName===oldName){ renderAjustes(); return; }
+  if(list.some(c=>c.toLowerCase()===newName.toLowerCase()&&c!==oldName)){ list.splice(i,1); } else { list[i]=newName; }
+  S.moves.forEach(m=>{ if(m.cat===oldName && ((kind==="gasto"&&m.type==="gasto")||(kind==="ingreso"&&m.type==="ingreso"))) m.cat=newName; });
+  save(); render();
+}
+document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } });
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
 document.addEventListener("input",e=>{
@@ -918,6 +1000,7 @@ document.addEventListener("click",e=>{
   const saveB=e.target.closest("[data-save]"); if(saveB){ doSave(saveB.dataset.save); return; }
   const pickB=e.target.closest("[data-pick]"); if(pickB){ pickB.parentElement.querySelectorAll("[data-pick]").forEach(c=>c.classList.remove("on")); pickB.classList.add("on"); _draft[pickB.dataset.pick]=pickB.dataset.v; if(pickB.dataset.pick==="type")syncCats(); return; }
   const ftabB=e.target.closest("[data-ftab]"); if(ftabB){ _ftab=ftabB.dataset.ftab; renderFinance(); return; }
+  const ajB=e.target.closest("[data-ajtab]"); if(ajB){ _ajtab=ajB.dataset.ajtab; renderAjustes(); return; }
   const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendars(); return; }
   const dayB=e.target.closest("[data-day]"); if(dayB){ openDay(dayB.dataset.day); return; }
   const txcatB=e.target.closest("[data-txcat]"); if(txcatB){ _txcat=txcatB.dataset.txcat; renderTxList(); return; }
@@ -927,6 +1010,10 @@ document.addEventListener("click",e=>{
     "add":()=>openAdd(),
     "open-analysis":()=>openAnalysis(),
     "open-txlist":()=>openTxList(a.dataset.v||"all"),
+    "toggle-anim":()=>{ S.set.anim=!S.set.anim; save(); applyAnim(); renderAjustes(); },
+    "set-accent":()=>{ S.set.accent=a.dataset.c; save(); applyAccent(); renderAjustes(); },
+    "add-cat":()=>addCat(a.dataset.kind),
+    "del-cat":()=>delCat(a.dataset.kind,a.dataset.cat),
     "close":()=>closePop(),
     "close-bg":()=>{ if(e.target.id==="overlay") closePop(); },
     "add-task":()=>openForm("task"),"add-event":()=>openForm("event"),"add-shop":()=>openForm("shop"),
