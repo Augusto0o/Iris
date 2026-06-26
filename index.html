@@ -154,10 +154,21 @@
   .pop-x{width:32px;height:32px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);color:var(--dim);font-size:18px;display:flex;align-items:center;justify-content:center;}
   .field{margin-bottom:var(--s3);}
   .field label{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:6px;}
-  .field input,.field select{width:100%;padding:13px 14px;font-size:16px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);outline:none;transition:border-color var(--t),box-shadow var(--t);}
+  .field input,.field select{width:100%;min-width:0;max-width:100%;padding:13px 14px;font-size:16px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);outline:none;transition:border-color var(--t),box-shadow var(--t);}
   .field input::placeholder{color:var(--faint);}
   .field input:focus,.field select:focus{border-color:rgba(91,140,255,.6);box-shadow:0 0 0 3px rgba(91,140,255,.18);}
-  .field-row{display:flex;gap:var(--s3);} .field-row>*{flex:1;}
+  .field-row{display:flex;gap:var(--s3);} .field-row>*{flex:1 1 0;min-width:0;}
+  @media (max-width:380px){ .pop{padding:var(--s4);} .field-row{flex-direction:column;} }
+  /* mini chart */
+  .chart{margin-top:14px;width:100%;}
+  .chart svg{width:100%;height:54px;display:block;overflow:visible;}
+  .chart-empty{margin-top:12px;font-size:12px;color:var(--faint);}
+  /* recomendaciones */
+  .reco{display:flex;gap:11px;padding:11px 0;}
+  .reco + .reco{border-top:1px solid var(--line);}
+  .reco .ri{width:30px;height:30px;border-radius:9px;background:var(--card-2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .reco .rt{flex:1;font-size:13px;line-height:1.45;}
+  .reco .rt b{color:var(--accent);}
   .chips{display:flex;gap:var(--s2);flex-wrap:wrap;}
   .ch{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--line);color:var(--dim);transition:all var(--t);}
   .ch.on{background:var(--grad);border-color:transparent;color:#fff;}
@@ -305,11 +316,17 @@
       <div class="lbl">Balance del mes</div>
       <div class="amount" id="balance">$0</div>
       <div class="sub"><div>Ingresos<b class="up" id="m-income">$0</b></div><div>Gastos<b class="down" id="m-expense">$0</b></div><div>Ahorro<b id="m-rate">0%</b></div></div>
+      <div class="chart" id="home-chart"></div>
     </div>
     <div class="tiles">
       <button class="tile" data-pop="tareas"><div class="tn" id="t-tasks">0</div><div class="tk">Tareas hoy</div></button>
       <button class="tile" data-pop="eventos"><div class="tn" id="t-events">0</div><div class="tk">Eventos hoy</div></button>
       <button class="tile" data-pop="compras"><div class="tn" id="t-shop">0</div><div class="tk">Compras</div></button>
+    </div>
+    <div class="card">
+      <div class="cal-head"><div class="cal-title" id="home-cal-title">—</div>
+        <div class="cal-nav"><button data-cal="-1">‹</button><button data-cal="0">Hoy</button><button data-cal="1">›</button></div></div>
+      <div class="cal-grid" id="home-cal-grid"></div>
     </div>
   </section>
 
@@ -333,6 +350,7 @@
       <div class="amount" id="f-balance">$0</div>
       <div class="sub"><div>Ingresos<b class="up" id="f-income">$0</b></div><div>Gastos<b class="down" id="f-expense">$0</b></div><div>Tasa de ahorro<b id="f-rate">0%</b></div></div>
     </div>
+    <div class="card" id="reco-card"></div>
     <div class="seg" id="f-seg">
       <button data-ftab="mov" class="on">Movimientos</button>
       <button data-ftab="ahorros">Ahorros</button>
@@ -354,6 +372,12 @@
       <div class="card-t" style="margin-bottom:12px">Datos</div>
       <div class="muted" style="margin-bottom:14px">Iris guarda todo en este dispositivo. Tus datos no salen del teléfono.</div>
       <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button>
+    </div>
+    <div class="card">
+      <div class="card-t" style="margin-bottom:12px">Asistente IA</div>
+      <div class="field"><label>Endpoint del asistente (opcional)</label><input id="set-ai" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
+      <div class="muted" style="margin-bottom:14px">Pegá la URL de tu función para que Iris use una IA real. Vacío = motor local.</div>
+      <button class="btn primary block" data-act="save-ai">Guardar endpoint</button>
     </div>
     <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1</div></div>
   </section>
@@ -404,7 +428,7 @@
 <script>
 "use strict";
 const KEY="iris.v1";
-const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], chat:[] };
+const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], chat:[], ai:{endpoint:""} };
 let S=load();
 function load(){ try{ return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} }
@@ -457,8 +481,9 @@ function render(){
   const shop=S.shop.filter(s=>!s.done);
   $("#t-tasks").textContent=todayTasks.length; $("#t-events").textContent=todayEvents.length; $("#t-shop").textContent=shop.length;
 
-  renderCalendar(); renderAgenda(); renderFinance();
+  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart();
   const sn=$("#set-name"); if(sn && document.activeElement!==sn) sn.value=S.name||"";
+  const sa=$("#set-ai"); if(sa && document.activeElement!==sa) sa.value=(S.ai&&S.ai.endpoint)||"";
 }
 
 /* ---- INICIO popups ---- */
@@ -488,22 +513,61 @@ function taskRow(t){ return `<div class="row ${t.done?"done":""}"><button class=
 function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
 function shopRow(s){ return `<div class="row ${s.done?"done":""}"><button class="check ${s.done?"done":""}" data-act="toggle-shop" data-id="${s.id}">${s.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(s.name)}</div></div><button class="x-row" data-act="del-shop" data-id="${s.id}">×</button></div>`; }
 
+/* ---- ventana de un día (ver + crear) ---- */
+function openDay(ds){
+  _selDay=ds; renderCalendars();
+  const dd=new Date(ds+"T00:00");
+  const lbl=ds===todayISO()?"Hoy":cap1(dd.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"}));
+  const ev=S.events.filter(e=>e.date===ds).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+  const tk=S.tasks.filter(t=>t.date===ds);
+  const mv=S.moves.filter(x=>x.date===ds);
+  let body="";
+  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span></div>`).join(""); }
+  if(tk.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Tareas</div>`+tk.map(t=>`<div class="row ${t.done?"done":""}"><span class="dot" style="background:var(--violet)"></span><div class="row-main"><div class="row-title">${esc(t.title)}</div></div></div>`).join(""); }
+  if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row"><span class="mv-ico">${CAT_ICON[x.cat]||"✨"}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
+  if(!body) body=`<div class="empty">Nada este día. Creá algo abajo 👇</div>`;
+  showPop(`<div class="pop-h"><div class="pop-t">${lbl}</div><button class="pop-x" data-act="close">✕</button></div>${body}
+    <div class="pop-actions"><button class="btn block" data-add="event">+ Evento</button><button class="btn primary block" data-add="task">+ Tarea</button></div>`);
+}
+
 /* ---- AGENDA (calendario glass) ---- */
-function renderCalendar(){
-  const grid=$("#cal-grid"); if(!grid)return;
+function renderCalendars(){ renderCalInto("cal-grid","cal-title"); renderCalInto("home-cal-grid","home-cal-title"); }
+function renderCalInto(gridId,titleId){
+  const grid=document.getElementById(gridId); if(!grid)return;
   const y=_calRef.getFullYear(), m=_calRef.getMonth();
-  const tt=$("#cal-title"); if(tt) tt.textContent=_calRef.toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+  const tt=document.getElementById(titleId); if(tt) tt.textContent=_calRef.toLocaleDateString("es-AR",{month:"long",year:"numeric"});
   const startDow=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate();
   let html=["L","M","M","J","V","S","D"].map(d=>`<div class="cal-dow">${d}</div>`).join("");
   for(let i=0;i<startDow;i++) html+=`<div class="cal-day empty"></div>`;
   for(let d=1;d<=days;d++){
     const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    const ev=S.events.some(e=>e.date===ds), tk=S.tasks.some(t=>t.date===ds&&!t.done);
-    const dots=(ev?`<i style="background:var(--accent)"></i>`:"")+(tk?`<i style="background:var(--violet)"></i>`:"");
-    const cls=["cal-day"]; if(ev||tk)cls.push("has"); if(ds===todayISO())cls.push("today"); if(ds===_selDay)cls.push("sel");
+    const ev=S.events.some(e=>e.date===ds), tk=S.tasks.some(t=>t.date===ds&&!t.done), mv=S.moves.some(x=>x.date===ds);
+    const dots=(ev?`<i style="background:var(--accent)"></i>`:"")+(tk?`<i style="background:var(--violet)"></i>`:"")+(mv?`<i style="background:var(--cyan)"></i>`:"");
+    const cls=["cal-day"]; if(ev||tk||mv)cls.push("has"); if(ds===todayISO())cls.push("today"); if(ds===_selDay)cls.push("sel");
     html+=`<div class="${cls.join(" ")}" data-day="${ds}"><span>${d}</span><span class="cal-dots">${dots}</span></div>`;
   }
   grid.innerHTML=html;
+}
+
+/* ---- gráfico "cómo voy" (balance acumulado del mes) ---- */
+function renderHomeChart(){
+  const box=document.getElementById("home-chart"); if(!box)return;
+  const m=thisMonth(), today=new Date().getDate();
+  const daily=Array(today).fill(0);
+  S.moves.filter(x=>x.date&&x.date.slice(0,7)===m).forEach(x=>{ const d=+x.date.slice(8,10); if(d>=1&&d<=today) daily[d-1]+=(x.type==="ingreso"?1:-1)*(+x.amount||0); });
+  let cum=0; const vals=daily.map(v=>cum+=v);
+  if(vals.length<2 || vals.every(v=>v===0)){ box.innerHTML=`<div class="chart-empty">Cargá movimientos y acá vas a ver tu progreso del mes.</div>`; return; }
+  const W=100,H=40, min=Math.min(0,...vals), max=Math.max(0,...vals), rng=(max-min)||1;
+  const X=i=>vals.length>1?(i/(vals.length-1))*W:0, Y=v=>H-((v-min)/rng)*H;
+  const pts=vals.map((v,i)=>`${X(i).toFixed(2)},${Y(v).toFixed(2)}`).join(" ");
+  const area=`0,${H} `+pts+` ${W},${H}`;
+  const zeroY=Y(0).toFixed(2);
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8cff" stop-opacity="0.45"/><stop offset="1" stop-color="#5b8cff" stop-opacity="0"/></linearGradient></defs>
+    <line x1="0" y1="${zeroY}" x2="${W}" y2="${zeroY}" stroke="rgba(255,255,255,.18)" stroke-width="0.5" stroke-dasharray="2 2"/>
+    <polygon points="${area}" fill="url(#cg)"/>
+    <polyline points="${pts}" fill="none" stroke="#7b9fff" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
 }
 
 /* ---- AGENDA (lista por día) ---- */
@@ -537,7 +601,29 @@ function renderAgenda(){
 }
 
 /* ---- FINANZAS ---- */
+function catTotals(){ const f=monthFin(),o={}; f.mm.filter(x=>x.type==="gasto").forEach(x=>{o[x.cat]=(o[x.cat]||0)+(+x.amount||0);}); return o; }
+function recoTips(){
+  const f=monthFin(), tips=[];
+  if(f.income<=0 && f.expense<=0){ return [["💡","Cargá tus ingresos y gastos del mes y Iris te arma recomendaciones a tu medida."]]; }
+  if(f.income>0){
+    if(f.rate<0) tips.push(["⚠️","Estás gastando <b>más de lo que entra</b> este mes. Frená 1–2 gastos grandes para no endeudarte."]);
+    else if(f.rate<20) tips.push(["🎯",`Ahorrás <b>${f.rate}%</b>. Apuntá al 20% (regla 50/30/20): apartá ese monto apenas cobrás, antes de gastar.`]);
+    else tips.push(["✅",`Buen ritmo: ahorrás <b>${f.rate}%</b>. Armá un fondo de emergencia de 3–6 meses de gastos.`]);
+  }
+  const top=Object.entries(catTotals()).sort((a,b)=>b[1]-a[1])[0];
+  if(top) tips.push(["📊",`Tu mayor gasto es <b>${top[0]}</b> (${money(top[1])}). Recortar 15% ahí te libera ${money(top[1]*0.15)} al mes.`]);
+  const debt=S.debts.reduce((a,b)=>a+(+b.amount||0),0);
+  if(debt>0) tips.push(["💸",`Tenés <b>${money(debt)}</b> en deudas. Pagarlas suele rendir más que ahorrar: priorizá la de mayor interés.`]);
+  if(!S.savings.length) tips.push(["🏦","Creá una <b>meta de ahorro</b> en la pestaña Ahorros para darle un objetivo concreto a tu plata."]);
+  return tips.slice(0,4);
+}
+function renderReco(){
+  const box=document.getElementById("reco-card"); if(!box)return;
+  const tips=recoTips();
+  box.innerHTML=`<div class="card-t" style="margin-bottom:8px">Recomendaciones</div>`+tips.map(t=>`<div class="reco"><span class="ri">${t[0]}</span><span class="rt">${t[1]}</span></div>`).join("");
+}
 function renderFinance(){
+  renderReco();
   document.querySelectorAll("#f-seg button").forEach(b=>b.classList.toggle("on",b.dataset.ftab===_ftab));
   const body=$("#f-body");
   if(_ftab==="mov"){
@@ -646,8 +732,8 @@ document.addEventListener("click",e=>{
   const saveB=e.target.closest("[data-save]"); if(saveB){ doSave(saveB.dataset.save); return; }
   const pickB=e.target.closest("[data-pick]"); if(pickB){ pickB.parentElement.querySelectorAll(".ch").forEach(c=>c.classList.remove("on")); pickB.classList.add("on"); _draft[pickB.dataset.pick]=pickB.dataset.v; if(pickB.dataset.pick==="type")syncCats(); return; }
   const ftabB=e.target.closest("[data-ftab]"); if(ftabB){ _ftab=ftabB.dataset.ftab; renderFinance(); return; }
-  const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendar(); return; }
-  const dayB=e.target.closest("[data-day]"); if(dayB){ _selDay=dayB.dataset.day; const dd=new Date(_selDay+"T00:00"); if(dd.getMonth()!==_calRef.getMonth()){_calRef=new Date(dd);_calRef.setDate(1);} renderCalendar(); const tgt=document.getElementById("ag-"+_selDay); if(tgt&&tgt.scrollIntoView)tgt.scrollIntoView({behavior:"smooth",block:"center"}); return; }
+  const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendars(); return; }
+  const dayB=e.target.closest("[data-day]"); if(dayB){ openDay(dayB.dataset.day); return; }
 
   const a=e.target.closest("[data-act]"); if(!a) return; const act=a.dataset.act,id=a.dataset.id;
   const A={
@@ -667,7 +753,7 @@ document.addEventListener("click",e=>{
     "del-loan":()=>{S.loans=S.loans.filter(x=>x.id!==id);save();render();},
     "save-add":()=>contribute(id,1),"save-sub":()=>contribute(id,-1),
     "iris":()=>openIris(),"iris-close":()=>closeIris(),"iris-send":()=>irisSend(),
-    "save-name":()=>saveName(),"wipe":()=>wipe(),
+    "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
     "voice-on":()=>setVoice(true),"voice-off":()=>setVoice(false),"voice-mic":()=>toggleMic()
   };
   if(A[act]) A[act]();
@@ -684,6 +770,7 @@ function contribute(id,sign){
 /* ====================== AJUSTES (nombre) ====================== */
 function saveName(){ const e=$("#set-name"); if(e) S.name=e.value.trim(); save(); render(); irisRender(); }
 function wipe(){ if(confirm("¿Borrar todos los datos de Iris? Esto no se puede deshacer.")){ S=JSON.parse(JSON.stringify(DEFAULT)); save(); render(); irisRender(); } }
+function saveAI(){ const e=$("#set-ai"); if(e){ S.ai=S.ai||{}; S.ai.endpoint=e.value.trim(); } save(); }
 
 /* ====================== IRIS (asistente) ====================== */
 const QUICKS=["¿Qué tengo hoy?","¿Cuánto gasté este mes?","¿Estoy gastando mucho?","Dame un consejo financiero","¿Cuánto debo?"];
@@ -699,7 +786,37 @@ function irisRender(){
   else { c.innerHTML=S.chat.slice(-30).map(m=>`<div class="msg ${m.r}">${m.r==="ai"?m.t:esc(m.t)}</div>`).join(""); }
   c.scrollTop=c.scrollHeight;
 }
-function irisSend(){ const i=$("#iris-input"); const q=i.value.trim(); if(!q)return; i.value=""; pushMsg("me",q); const a=answer(q); pushMsg("ai",a); }
+function irisSend(){ const i=$("#iris-input"); const q=i.value.trim(); if(!q)return; i.value=""; pushMsg("me",q);
+  const c=$("#iris-chat"); let tip=null; if(c){ tip=document.createElement("div"); tip.className="msg ai"; tip.textContent="pensando…"; c.appendChild(tip); c.scrollTop=c.scrollHeight; }
+  askAI(q).then(a=>{ if(tip&&tip.remove)tip.remove(); pushMsg("ai",a); });
+}
+/* Contexto que se le manda a la IA (resumen de tus datos) */
+function buildContext(){
+  const f=monthFin(), ti=todayISO();
+  return {
+    fecha:ti, nombre:S.name||null,
+    hoy:{ tareas:S.tasks.filter(t=>!t.done&&t.date===ti).map(t=>t.title),
+          eventos:S.events.filter(e=>e.date===ti).map(e=>({titulo:e.title,hora:e.time||null})),
+          compras:S.shop.filter(s=>!s.done).map(s=>s.name) },
+    finanzas:{ ingresosMes:f.income, gastosMes:f.expense, balance:f.bal, tasaAhorroPct:f.rate, gastosPorCategoria:catTotals() },
+    deudas:S.debts.map(d=>({quien:d.who,monto:+d.amount||0})),
+    prestamos:S.loans.map(d=>({quien:d.who,monto:+d.amount||0})),
+    ahorros:S.savings.map(g=>({meta:g.name,objetivo:+g.target||0,guardado:+g.saved||0}))
+  };
+}
+/* Llama a la IA real si hay endpoint; si no, usa el motor local */
+async function askAI(q){
+  const ep=((S.ai&&S.ai.endpoint)||"").trim();
+  if(!ep) return answer(q);
+  try{
+    const res=await fetch(ep,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({question:q,context:buildContext(),history:S.chat.slice(0,-1).slice(-10)})});
+    if(!res.ok) throw new Error("http "+res.status);
+    const data=await res.json();
+    const reply=data&&(data.reply||data.text||data.message);
+    return reply?esc(reply).replace(/\n/g,"\n"):answer(q);
+  }catch(_){ return "⚠️ No pude conectar con la IA. Por ahora te respondo local:\n\n"+answer(q); }
+}
 function pushMsg(r,t){ S.chat.push({r,t}); save(); irisRender(); }
 
 function answer(qRaw){
