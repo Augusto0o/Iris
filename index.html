@@ -260,12 +260,12 @@
   .cal-day{aspect-ratio:1.2;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
     font-size:13px;color:var(--text);position:relative;background:transparent;border:1px solid transparent;transition:all var(--t);}
   .cal-day.empty{visibility:hidden;}
-  .cal-day.has{background:var(--card);border-color:var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+  .cal-day.has{background:transparent;border-color:transparent;}
   .cal-day.today{box-shadow:inset 0 0 0 1.5px var(--accent);}
   .cal-day.sel{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(91,140,255,.4);}
   .cal-day:active{transform:scale(.92);}
-  .cal-dots{position:absolute;bottom:5px;left:0;right:0;display:flex;justify-content:center;gap:3px;height:4px;pointer-events:none;}
-  .cal-dots i{width:4px;height:4px;border-radius:50%;display:block;animation:dotin .4s var(--ease) both;}
+  .cal-dots{position:absolute;bottom:5px;left:0;right:0;display:flex;justify-content:center;gap:3px;height:6px;pointer-events:none;}
+  .cal-dots i{width:6px;height:6px;border-radius:50%;display:block;background:currentColor;animation:dotin .4s var(--ease) both;box-shadow:0 0 5px currentColor;}
   @keyframes dotin{from{transform:scale(0);opacity:0;}to{transform:none;opacity:1;}}
 
   /* ===== agenda (lista de días) ===== */
@@ -531,12 +531,22 @@ function monthFin(){ const m=thisMonth(); const mm=S.moves.filter(x=>x.date&&x.d
 
 /* ====================== NAV ====================== */
 let screen="inicio";
-function go(s){ screen=s;
+function go(s,_pop){ screen=s;
   document.querySelectorAll(".screen").forEach(el=>el.classList.toggle("on",el.id==="s-"+s));
-  const cur=$("#s-"+s); if(cur){cur.style.animation="none";void cur.offsetWidth;cur.style.animation="";}
+  const cur=$("#s-"+s); if(cur){cur.style.animation="none";void cur.offsetWidth;cur.style.animation="";cur.scrollTop=0;}
   document.querySelectorAll(".nav .tab").forEach(b=>b.classList.toggle("on",b.dataset.go===s));
   window.scrollTo(0,0); render();
+  if(!_pop){ try{ history.pushState({s:s},""); }catch(_){} }
 }
+function navBack(){ if($("#overlay")&&$("#overlay").classList.contains("open")){ closePop(); return true; } if($("#iris")&&$("#iris").classList.contains("open")){ closeIris(); return true; } return false; }
+window.addEventListener("popstate",function(ev){ if(navBack()){ try{history.pushState({s:screen},"");}catch(_){ } return; } const s=(ev.state&&ev.state.s)||"inicio"; if(s!==screen) go(s,true); });
+try{ history.replaceState({s:screen},""); }catch(_){}
+(function(){ var standalone=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone;
+  if(!standalone) return; /* en navegador, el gesto nativo del borde ya dispara popstate */
+  var sx=0,sy=0,st=0,track=false;
+  document.addEventListener("touchstart",function(e){ if(e.touches.length!==1)return; var t=e.touches[0]; sx=t.clientX;sy=t.clientY;st=Date.now(); track=sx<=32; },{passive:true});
+  document.addEventListener("touchend",function(e){ if(!track)return; track=false; var t=e.changedTouches[0]; if(t.clientX-sx>70&&Math.abs(t.clientY-sy)<45&&Date.now()-st<600){ if(!navBack()) history.back(); } },{passive:true});
+})();
 
 /* ====================== RENDER ====================== */
 let _calRef=new Date(); _calRef.setDate(1);
@@ -622,7 +632,7 @@ function renderCalInto(gridId,titleId){
   for(let d=1;d<=days;d++){
     const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
     const ev=S.events.some(e=>e.date===ds), tk=S.tasks.some(t=>t.date===ds&&!t.done), mv=S.moves.some(x=>x.date===ds);
-    const dots=(ev?`<i style="background:var(--accent)"></i>`:"")+(tk?`<i style="background:var(--violet)"></i>`:"")+(mv?`<i style="background:var(--cyan)"></i>`:"");
+    const dots=(ev?`<i style="color:var(--accent)"></i>`:"")+(tk?`<i style="color:var(--violet)"></i>`:"")+(mv?`<i style="color:var(--cyan)"></i>`:"");
     const cls=["cal-day"]; if(ev||tk||mv)cls.push("has"); if(ds===todayISO())cls.push("today"); if(ds===_selDay)cls.push("sel");
     html+=`<div class="${cls.join(" ")}" data-day="${ds}"><span>${d}</span><span class="cal-dots">${dots}</span></div>`;
   }
@@ -1023,6 +1033,7 @@ document.addEventListener("click",e=>{
     "del-debt":()=>{S.debts=S.debts.filter(x=>x.id!==id);save();render();},
     "del-loan":()=>{S.loans=S.loans.filter(x=>x.id!==id);save();render();},
     "save-add":()=>contribute(id,1),"save-sub":()=>contribute(id,-1),
+    "do-contrib":()=>doContribute(),
     "iris":()=>openIris(),"iris-close":()=>closeIris(),"iris-send":()=>irisSend(),
     "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
     "voice-on":()=>setVoice(true),"voice-off":()=>setVoice(false),"voice-mic":()=>toggleMic(),
@@ -1033,10 +1044,20 @@ document.addEventListener("click",e=>{
 $("#iris-input")?.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();irisSend();} });
 
 function reopenAfter(type){ render(); if($("#overlay").classList.contains("open")) openPop(type); }
+let _contribId=null,_contribSign=1;
 function contribute(id,sign){
   const g=S.savings.find(x=>x.id===id); if(!g)return;
-  const v=prompt(sign>0?"¿Cuánto querés ingresar?":"¿Cuánto querés retirar?"); const n=parseFloat(v); if(!n||n<=0)return;
-  g.saved=Math.max(0,(+g.saved||0)+sign*n); save(); render();
+  _contribId=id; _contribSign=sign;
+  const title=sign>0?("Ingresar a "+(g.name||"meta")):("Retirar de "+(g.name||"meta"));
+  showPop(`<div class="pop-h"><div class="pop-t">${esc(title)}</div><button class="pop-x" data-act="close">✕</button></div>
+    <div class="muted" style="margin-bottom:12px">Guardado actual: <b style="color:var(--text)">${money(g.saved||0)}</b></div>
+    <div class="field"><label>Monto a ${sign>0?"ingresar":"retirar"}</label><input id="i-contrib" class="num" type="text" inputmode="numeric" placeholder="0" autofocus></div>
+    <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-act="do-contrib">${sign>0?"Ingresar":"Retirar"}</button></div>`);
+}
+function doContribute(){
+  const g=S.savings.find(x=>x.id===_contribId); if(!g)return;
+  const n=parseInt((($("#i-contrib")&&$("#i-contrib").value)||"").replace(/[^\d]/g,""),10)||0; if(n<=0)return;
+  g.saved=Math.max(0,(+g.saved||0)+_contribSign*n); save(); closePop(); render();
 }
 
 /* ====================== AJUSTES (nombre) ====================== */
