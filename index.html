@@ -201,7 +201,10 @@
   .pop-x{width:32px;height:32px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);color:var(--dim);font-size:18px;display:flex;align-items:center;justify-content:center;}
   .field{margin-bottom:var(--s3);}
   .field label{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:6px;}
-  .field input,.field select{width:100%;min-width:0;max-width:100%;min-height:50px;padding:13px 14px;font-size:16px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);outline:none;transition:border-color var(--t),box-shadow var(--t);}
+  .field input,.field select{width:100%;min-width:0;max-width:100%;min-height:50px;padding:13px 14px;font-size:16px;color:var(--text);
+    background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.028));border:1px solid rgba(255,255,255,.14);border-radius:var(--r-sm);outline:none;
+    backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);
+    transition:border-color var(--t),box-shadow var(--t),background var(--t);}
   .field input::placeholder{color:var(--faint);}
   .field input:focus,.field select:focus{border-color:rgba(91,140,255,.6);box-shadow:0 0 0 3px rgba(91,140,255,.18);}
   .field input[type="date"],.field input[type="time"]{-webkit-appearance:none;appearance:none;text-align:left;}
@@ -228,17 +231,18 @@
   .cal-title{font-size:16px;font-weight:700;text-transform:capitalize;}
   .cal-nav{display:flex;gap:6px;}
   .cal-nav button{width:32px;height:32px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);color:var(--dim);display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .cal-nav button[data-cal="0"]{width:auto;min-width:46px;padding:0 13px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.2px;}
   .cal-nav button:active{transform:scale(.9);}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
   .cal-dow{font-size:10px;color:var(--faint);text-align:center;text-transform:uppercase;font-weight:600;padding-bottom:4px;}
-  .cal-day{aspect-ratio:1.2;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  .cal-day{aspect-ratio:1.2;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
     font-size:13px;color:var(--text);position:relative;background:transparent;border:1px solid transparent;transition:all var(--t);}
   .cal-day.empty{visibility:hidden;}
   .cal-day.has{background:var(--card);border-color:var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
   .cal-day.today{box-shadow:inset 0 0 0 1.5px var(--accent);}
   .cal-day.sel{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(91,140,255,.4);}
   .cal-day:active{transform:scale(.92);}
-  .cal-dots{display:flex;gap:3px;height:5px;}
+  .cal-dots{position:absolute;bottom:5px;left:0;right:0;display:flex;justify-content:center;gap:3px;height:4px;pointer-events:none;}
   .cal-dots i{width:4px;height:4px;border-radius:50%;display:block;animation:dotin .4s var(--ease) both;}
   @keyframes dotin{from{transform:scale(0);opacity:0;}to{transform:none;opacity:1;}}
 
@@ -850,25 +854,25 @@ function openForm(type){ _draft={};
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="shop">Guardar</button></div>`,
     mov:`<div class="pop-h"><div class="pop-t">Nuevo movimiento</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Tipo</label><div class="seg-modal" id="mov-type"><button type="button" class="on" data-pick="type" data-v="gasto">Gasto</button><button type="button" data-pick="type" data-v="ingreso">Ingreso</button></div></div>
-      <div class="field"><label>Monto</label><input id="i-amount" type="text" inputmode="numeric" placeholder="0" autofocus></div>
+      <div class="field"><label>Monto</label><input id="i-amount" class="num" type="text" inputmode="numeric" placeholder="0" autofocus></div>
       <div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_formDate||todayISO()}"></div>
-      <div class="field"><label>Categoría</label><div class="chips" id="cat-pick"></div></div>
+      <div class="field"><label>Categoría</label><select id="i-cat"></select></div>
       <div class="field"><label>Método de pago</label><div class="seg-modal" id="mov-method"><button type="button" class="on" data-pick="method" data-v="efectivo">Efectivo</button><button type="button" data-pick="method" data-v="transferencia">Transferencia</button><button type="button" data-pick="method" data-v="tarjeta">Tarjeta</button></div></div>
       <div class="field"><label>Descripción (opcional)</label><input id="i-title" placeholder="Ej: nafta, súper…"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="mov">Guardar</button></div>`,
     saving:`<div class="pop-h"><div class="pop-t">Nueva meta de ahorro</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Nombre</label><input id="i-title" placeholder="Ej: Vacaciones" autofocus></div>
-      <div class="field"><label>Objetivo</label><input id="i-target" type="number" inputmode="decimal" placeholder="0"></div>
-      <div class="field"><label>Ya guardado</label><input id="i-saved" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label>Objetivo</label><input id="i-target" class="num" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label>Ya guardado</label><input id="i-saved" class="num" type="text" inputmode="numeric" placeholder="0"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="saving">Guardar</button></div>`,
     debt:`<div class="pop-h"><div class="pop-t">Nueva deuda</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>¿A quién le debés?</label><input id="i-who" placeholder="Ej: Banco / Juan" autofocus></div>
-      <div class="field"><label>Monto</label><input id="i-amount" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label>Monto</label><input id="i-amount" class="num" type="text" inputmode="numeric" placeholder="0"></div>
       <div class="field"><label>Nota</label><input id="i-note" placeholder="Opcional"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="debt">Guardar</button></div>`,
     loan:`<div class="pop-h"><div class="pop-t">Nuevo préstamo</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>¿A quién le prestaste?</label><input id="i-who" placeholder="Ej: Ana" autofocus></div>
-      <div class="field"><label>Monto</label><input id="i-amount" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label>Monto</label><input id="i-amount" class="num" type="text" inputmode="numeric" placeholder="0"></div>
       <div class="field"><label>Nota</label><input id="i-note" placeholder="Opcional"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="loan">Guardar</button></div>`
   };
@@ -876,22 +880,35 @@ function openForm(type){ _draft={};
   if(type==="mov"){ _draft.type="gasto"; _draft.cat="Comida"; _draft.method="efectivo"; syncCats(); }
   _formDate=null;
 }
-function syncCats(){ const w=$("#cat-pick"); if(!w)return; const cats=_draft.type==="ingreso"?INGRESO_CATS:GASTO_CATS;
-  if(!cats.includes(_draft.cat))_draft.cat=cats[0];
-  w.innerHTML=cats.map(c=>`<button class="ch ${c===_draft.cat?"on":""}" data-pick="cat" data-v="${c}">${CAT_ICON[c]||""} ${c}</button>`).join(""); }
+function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=_draft.type==="ingreso"?INGRESO_CATS:GASTO_CATS;
+  let cur=w.value||_draft.cat; if(!cats.includes(cur))cur=cats[0]; _draft.cat=cur;
+  w.innerHTML=cats.map(c=>`<option value="${c}" ${c===cur?"selected":""}>${CAT_ICON[c]||""} ${c}</option>`).join(""); }
 
 function doSave(type){
   const v=id=>{const e=$("#"+id);return e?e.value.trim():"";};
-  const num=id=>{const e=$("#"+id);return e?parseFloat(e.value)||0:0;};
+  const num=id=>{const e=$("#"+id);return e?parseInt((e.value||"").replace(/[^\d]/g,""),10)||0:0;};
   if(type==="task"){ if(!v("i-title"))return; S.tasks.push({id:uid(),title:v("i-title"),date:$("#i-date").value||"",done:false}); }
   else if(type==="event"){ if(!v("i-title"))return; S.events.push({id:uid(),title:v("i-title"),date:$("#i-date").value||todayISO(),time:$("#i-time").value||"",note:v("i-note")}); }
   else if(type==="shop"){ if(!v("i-title"))return; S.shop.push({id:uid(),name:v("i-title"),done:false}); }
-  else if(type==="mov"){ const a=parseInt(($("#i-amount").value||"").replace(/[^\d]/g,""),10)||0; if(a<=0)return; S.moves.push({id:uid(),type:_draft.type||"gasto",amount:a,cat:_draft.cat||"Otro",method:_draft.method||"efectivo",title:v("i-title"),date:$("#i-date").value||todayISO()}); }
+  else if(type==="mov"){ const a=num("i-amount"); if(a<=0)return; const c=($("#i-cat")&&$("#i-cat").value)||_draft.cat||"Otro"; S.moves.push({id:uid(),type:_draft.type||"gasto",amount:a,cat:c,method:_draft.method||"efectivo",title:v("i-title"),date:$("#i-date").value||todayISO()}); }
   else if(type==="saving"){ if(!v("i-title"))return; S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); _ftab="ahorros"; }
   else if(type==="debt"){ if(!v("i-who"))return; S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="deudas"; }
   else if(type==="loan"){ if(!v("i-who"))return; S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="prestamos"; }
   save(); closePop(); render();
 }
+
+/* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
+document.addEventListener("input",e=>{
+  const t=e.target; if(!t||!t.classList||!t.classList.contains("num"))return;
+  const sel=t.selectionStart||0;
+  const digitsBefore=t.value.slice(0,sel).replace(/[^\d]/g,"").length;
+  const raw=t.value.replace(/[^\d]/g,"").replace(/^0+(?=\d)/,"");
+  const formatted=raw?raw.replace(/\B(?=(\d{3})+(?!\d))/g,"."):"";
+  if(formatted===t.value)return;
+  t.value=formatted;
+  let pos=0,seen=0; while(pos<formatted.length&&seen<digitsBefore){ const c=formatted.charCodeAt(pos); if(c>=48&&c<=57)seen++; pos++; }
+  try{t.setSelectionRange(pos,pos);}catch(_){}
+});
 
 /* ====================== EVENT DELEGATION ====================== */
 document.addEventListener("click",e=>{
