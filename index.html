@@ -381,6 +381,11 @@
       <div class="muted" style="margin-bottom:14px">Pegá la URL de tu función para que Iris use una IA real. Vacío = motor local.</div>
       <button class="btn primary block" data-act="save-ai">Guardar endpoint</button>
     </div>
+    <div class="card">
+      <div class="card-t" style="margin-bottom:12px">Diagnóstico</div>
+      <div class="muted" style="margin-bottom:14px">Mostrá las medidas reales de tu pantalla (tamaño, safe-areas, posiciones). Sacale captura y pasámelas para ajustar la app a tu teléfono.</div>
+      <button class="btn primary block" data-act="measure">📐 Medidas de pantalla</button>
+    </div>
     <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1</div></div>
   </section>
 </div>
@@ -757,7 +762,8 @@ document.addEventListener("click",e=>{
     "save-add":()=>contribute(id,1),"save-sub":()=>contribute(id,-1),
     "iris":()=>openIris(),"iris-close":()=>closeIris(),"iris-send":()=>irisSend(),
     "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
-    "voice-on":()=>setVoice(true),"voice-off":()=>setVoice(false),"voice-mic":()=>toggleMic()
+    "voice-on":()=>setVoice(true),"voice-off":()=>setVoice(false),"voice-mic":()=>toggleMic(),
+    "measure":()=>openMeasure()
   };
   if(A[act]) A[act]();
 });
@@ -773,6 +779,54 @@ function contribute(id,sign){
 /* ====================== AJUSTES (nombre) ====================== */
 function saveName(){ const e=$("#set-name"); if(e) S.name=e.value.trim(); save(); render(); irisRender(); }
 function wipe(){ if(confirm("¿Borrar todos los datos de Iris? Esto no se puede deshacer.")){ S=JSON.parse(JSON.stringify(DEFAULT)); save(); render(); irisRender(); } }
+
+/* ====================== VISOR DE MEDIDAS ====================== */
+function __mrect(sel){ var e=document.querySelector(sel); if(!e) return "—"; var b=e.getBoundingClientRect(); return Math.round(b.left)+","+Math.round(b.top)+"  "+Math.round(b.width)+"\u00d7"+Math.round(b.height); }
+function __mcopyText(txt,btn){
+  var done=function(){ if(btn) btn.textContent="\u00a1Copiado!"; };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(function(){__mfallback(txt,done);}); }
+  else __mfallback(txt,done);
+}
+function __mfallback(txt,done){ try{ var t=document.createElement("textarea"); t.value=txt; t.style.cssText="position:fixed;opacity:0"; document.body.appendChild(t); t.focus(); t.select(); document.execCommand("copy"); t.remove(); done&&done(); }catch(_){ } }
+function openMeasure(){
+  if(window.go) go("inicio");
+  var old=document.getElementById("__measure"); if(old) old.remove();
+  var vv=window.visualViewport||{width:innerWidth,height:innerHeight,scale:1};
+  var p=document.createElement("div");
+  p.style.cssText="position:fixed;top:0;left:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+  document.body.appendChild(p); var cs=getComputedStyle(p);
+  var safe=cs.paddingTop+" / "+cs.paddingRight+" / "+cs.paddingBottom+" / "+cs.paddingLeft; p.remove();
+  var standalone=(navigator.standalone===true)||(typeof matchMedia==="function"&&matchMedia("(display-mode: standalone)").matches);
+  var grid=document.getElementById("home-cal-grid"); var calCard=grid?grid.closest(".card"):null; var tiles=document.querySelector(".tiles");
+  var navEl=document.querySelector(".navwrap")||document.querySelector(".nav");
+  var gap1=(tiles&&calCard)?Math.round(calCard.getBoundingClientRect().top-tiles.getBoundingClientRect().bottom)+"px":"\u2014";
+  var overlap=(calCard&&navEl)?Math.round(calCard.getBoundingClientRect().bottom-navEl.getBoundingClientRect().top)+"px":"\u2014";
+  var data={
+    "screen": screen.width+"\u00d7"+screen.height,
+    "window.inner": innerWidth+"\u00d7"+innerHeight,
+    "visualViewport": Math.round(vv.width)+"\u00d7"+Math.round(vv.height)+" (x"+(Math.round((vv.scale||1)*100)/100)+")",
+    "devicePixelRatio": devicePixelRatio,
+    "orientación": (screen.orientation&&screen.orientation.type)||"\u2014",
+    "modo": standalone?"PWA (standalone)":"navegador",
+    "safe-area T/R/B/L": safe,
+    "balance card": __mrect(".screen.on .card"),
+    "tiles": __mrect(".tiles"),
+    "calendario": calCard?(Math.round(calCard.getBoundingClientRect().left)+","+Math.round(calCard.getBoundingClientRect().top)+"  "+Math.round(calCard.getBoundingClientRect().width)+"\u00d7"+Math.round(calCard.getBoundingClientRect().height)):"\u2014",
+    "nav": __mrect(".navwrap"),
+    "orbe": __mrect(".orb-btn"),
+    "gap tiles\u2192calendario": gap1,
+    "calendario bajo nav": overlap
+  };
+  var rows=Object.keys(data).map(function(k){ return '<div style="display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span style="color:#7fb0ff;white-space:nowrap">'+k+'</span><span style="text-align:right;color:#fff">'+data[k]+'</span></div>'; }).join("");
+  var txt="Iris \u2014 medidas\n"+Object.keys(data).map(function(k){return k+": "+data[k];}).join("\n");
+  var ov=document.createElement("div"); ov.id="__measure";
+  ov.style.cssText="position:fixed;inset:0;z-index:2147483647;background:rgba(6,10,22,.975);overflow:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 18px);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;color:#fff";
+  ov.innerHTML='<div style="font:600 19px system-ui;margin-bottom:4px">\ud83d\udcd0 Medidas de tu pantalla</div><div style="color:#9fb0c8;font:12px/1.4 system-ui;margin-bottom:16px">Sac\u00e1 captura de esto o tocá Copiar y peg\u00e1melo en el chat.</div>'+rows
+    +'<div style="display:flex;gap:10px;margin-top:20px"><button id="__mcopy" style="flex:1;padding:14px;border-radius:14px;border:0;background:linear-gradient(135deg,#5b8cff,#22d3ee);color:#00121f;font:600 15px system-ui">Copiar</button><button id="__mclose" style="flex:1;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.22);background:transparent;color:#fff;font:600 15px system-ui">Cerrar</button></div>';
+  document.body.appendChild(ov);
+  document.getElementById("__mclose").onclick=function(){ ov.remove(); };
+  document.getElementById("__mcopy").onclick=function(){ __mcopyText(txt,this); };
+}
 function saveAI(){ const e=$("#set-ai"); if(e){ S.ai=S.ai||{}; S.ai.endpoint=e.value.trim(); } save(); }
 
 /* ====================== IRIS (asistente) ====================== */
@@ -878,6 +932,7 @@ function __buildGuides(){
   document.body.appendChild(o);
 }
 addEventListener("resize",__buildGuides); addEventListener("hashchange",__buildGuides); __buildGuides();
+if(/debug/.test(location.search)||/debug/.test(location.hash)){ setTimeout(function(){ try{ openMeasure(); }catch(_){} }, 250); }
 </script>
 </body>
 </html>
