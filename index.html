@@ -1178,7 +1178,7 @@ function buildContext(){
 /* IA real (Google Gemini, gratis) con acciones; si no hay clave usa endpoint o motor local */
 async function askGemini(q){
   const key=((S.ai&&S.ai.key)||"").trim();
-  const model=(S.ai&&S.ai.model)||"gemini-2.0-flash";
+  const model=(S.ai&&S.ai.model)||"gemini-2.5-flash";
   const sys="Sos Iris, una asistente financiera personal en español rioplatense (Argentina, moneda ARS, miles con punto, sin centavos). "+
     "Tenés el estado financiero del usuario en JSON (gastos, ingresos, deudas, préstamos, ahorros, movimientos recientes). "+
     "Respondé breve, concreto y amable. Podés analizar gastos, deudas, préstamos, ahorros, suscripciones (gastos que se repiten o categoría Servicios), qué le falta pagar (deudas pendientes), y dar consejos para mejorar el manejo del dinero. "+
@@ -1189,8 +1189,8 @@ async function askGemini(q){
   const hist=S.chat.slice(0,-1).slice(-8).map(m=>({role:m.r==="me"?"user":"model",parts:[{text:String(m.t).replace(/<[^>]+>/g,"")}]}));
   const contents=hist.concat([{role:"user",parts:[{text:"DATOS:\n"+JSON.stringify(buildContext())+"\n\nPREGUNTA:\n"+q}]}]);
   const body={system_instruction:{parts:[{text:sys}]},contents,generationConfig:{temperature:0.4,responseMimeType:"application/json"}};
-  const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(key);
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)});
   if(!res.ok){ const t=await res.text().catch(()=>""); throw new Error("HTTP "+res.status+(/API_KEY|API key|invalid/i.test(t)?" (clave inválida)":"")); }
   const data=await res.json();
   let txt=""; try{ txt=data.candidates[0].content.parts.map(p=>p.text||"").join(""); }catch(_){}
