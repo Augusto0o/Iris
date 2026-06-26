@@ -597,10 +597,32 @@ function openPop(type){
   showPop(html);
 }
 function taskRow(t){ return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}</div></div><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
-function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
+function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
 function shopRow(s){ return `<div class="row ${s.done?"done":""}"><button class="check ${s.done?"done":""}" data-act="toggle-shop" data-id="${s.id}">${s.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(s.name)}</div></div><button class="x-row" data-act="del-shop" data-id="${s.id}">×</button></div>`; }
 
 /* ---- ventana de un día (ver + crear) ---- */
+/* ---- recordatorios -> calendario nativo (.ics, Apple/Google) ---- */
+function icsEsc(s){ return String(s||"").replace(/([\\;,])/g,"\\$1").replace(/\n/g,"\\n"); }
+function eventICS(ev){
+  const d=(ev.date||todayISO()).replace(/-/g,"");
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  let dt,trig;
+  if(ev.time){ const t=ev.time.replace(":","")+"00"; dt="DTSTART:"+d+"T"+t+"\r\nDTEND:"+d+"T"+t; trig="-PT10M"; }
+  else { dt="DTSTART;VALUE=DATE:"+d; trig="PT9H"; }
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Iris//Agenda//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VEVENT","UID:"+ev.id+"@iris.app","DTSTAMP:"+stamp,dt,"SUMMARY:"+icsEsc(ev.title),
+    ev.note?("DESCRIPTION:"+icsEsc(ev.note)):null,
+    "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(ev.title),"TRIGGER:"+trig,"END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n");
+}
+function addToCalendar(id){
+  const ev=S.events.find(e=>e.id===id); if(!ev)return;
+  const blob=new Blob([eventICS(ev)],{type:"text/calendar;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=((ev.title||"evento").replace(/[^\w\-]+/g,"_")||"evento")+".ics";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
 function openDay(ds){
   _selDay=ds; renderCalendars();
   const dd=new Date(ds+"T00:00");
@@ -609,7 +631,7 @@ function openDay(ds){
   const tk=S.tasks.filter(t=>t.date===ds);
   const mv=S.moves.filter(x=>x.date===ds);
   let body="";
-  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span></div>`).join(""); }
+  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button></div>`).join(""); }
   if(tk.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Tareas</div>`+tk.map(t=>`<div class="row ${t.done?"done":""}"><span class="dot" style="background:var(--violet)"></span><div class="row-main"><div class="row-title">${esc(t.title)}</div></div></div>`).join(""); }
   if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row"><span class="mv-ico">${CAT_ICON[x.cat]||"✨"}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
   if(!body) body=`<div class="empty">Nada este día. Agregá abajo 👇</div>`;
@@ -679,7 +701,7 @@ function renderAgenda(){
     const ev=((map[d]&&map[d].events)||[]).slice().sort((a,b)=>(a.time||"").localeCompare(b.time||""));
     let tk=((map[d]&&map[d].tasks)||[]); if(isPast) tk=tk.filter(t=>!t.done);
     let items="";
-    ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
+    ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario">📅</button><button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
     tk.forEach(t=>{ items+=`<div class="ag-task ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><span class="ag-t">${esc(t.title)}</span><button class="ag-x" data-act="del-task" data-id="${t.id}">×</button></div>`; });
     if(!items){ if(isToday) items=`<div class="ag-none">Nada agendado hoy.</div>`; else return; }
     const dow=cap1(dd.toLocaleDateString("es-AR",{weekday:"short"}).replace(".","")).slice(0,3);
@@ -945,12 +967,15 @@ function renderAjustes(){
         <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
       <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1.4</div></div>`;
   } else if(_ajtab==="conectividad"){
-    h=`<div class="card"><div class="card-t" style="margin-bottom:8px">Asistente IA</div>
-        <div class="field"><label>Endpoint del asistente (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
-        <div class="muted" style="margin-bottom:14px">Pegá la URL de tu función para que Iris use una IA real. Vacío = motor local.</div>
-        <button class="btn primary block" data-act="save-ai">Guardar endpoint</button></div>
-      <div class="card"><div class="card-t" style="margin-bottom:8px">Datos locales</div>
-        <div class="muted">Todo se guarda en el almacenamiento de tu dispositivo. No se envía nada a ningún servidor, salvo que configures el endpoint del asistente.</div></div>`;
+    h=`<div class="card"><div class="card-t" style="margin-bottom:6px">Iris IA · Google Gemini (gratis)</div>
+        <div class="muted" style="margin-bottom:10px">Con tu clave gratuita de Gemini, Iris piensa con tus datos: gastos, deudas, suscripciones, qué te falta pagar, consejos — y puede <b>cargar gastos/ingresos</b> cuando se lo pedís. Creá la clave gratis (sin tarjeta) en <b>aistudio.google.com/apikey</b>.</div>
+        <div class="field"><label>Clave de Gemini</label><input id="set-ai-key" type="password" value="${esc((S.ai&&S.ai.key)||"")}" placeholder="AIza…" autocomplete="off"></div>
+        <button class="btn primary block" data-act="save-ai">Guardar clave</button>
+        <div class="muted" style="margin-top:10px;font-size:11px">Se guarda solo en este dispositivo. Sin clave, Iris usa su motor local básico.</div></div>
+      <div class="card"><div class="card-t" style="margin-bottom:8px">Avanzado · endpoint propio</div>
+        <div class="field"><label>Endpoint (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
+        <div class="muted" style="margin:10px 0;font-size:11px">Si tenés tu propia función backend, pegá la URL. La clave de Gemini tiene prioridad.</div>
+        <button class="btn block" data-act="save-ai">Guardar endpoint</button></div>`;
   } else if(_ajtab==="personalizacion"){
     h=`<div class="card"><div class="card-t" style="margin-bottom:4px">Categorías de gastos</div>
         <div class="muted" style="margin-bottom:2px">Las que aparecen en el desplegable al cargar un gasto.</div>
@@ -1028,6 +1053,7 @@ document.addEventListener("click",e=>{
     "toggle-shop":()=>{const t=S.shop.find(x=>x.id===id);if(t){t.done=!t.done;save();reopenAfter("compras");}},
     "del-shop":()=>{S.shop=S.shop.filter(x=>x.id!==id);save();reopenAfter("compras");},
     "del-event":()=>{S.events=S.events.filter(x=>x.id!==id);save();reopenAfter("eventos");},
+    "cal-ev":()=>addToCalendar(id),
     "del-mov":()=>{S.moves=S.moves.filter(x=>x.id!==id);save();render();},
     "del-saving":()=>{S.savings=S.savings.filter(x=>x.id!==id);save();render();},
     "del-debt":()=>{S.debts=S.debts.filter(x=>x.id!==id);save();render();},
@@ -1111,7 +1137,7 @@ function openMeasure(){
   document.getElementById("__mclose").onclick=function(){ ov.remove(); document.body.classList.remove("modal-open"); };
   document.getElementById("__mcopy").onclick=function(){ __mcopyText(txt,this); };
 }
-function saveAI(){ const e=$("#set-ai"); if(e){ S.ai=S.ai||{}; S.ai.endpoint=e.value.trim(); } save(); }
+function saveAI(){ S.ai=S.ai||{}; const k=$("#set-ai-key"); if(k) S.ai.key=k.value.trim(); const e=$("#set-ai"); if(e) S.ai.endpoint=e.value.trim(); save(); if(screen==="ajustes")renderAjustes(); }
 
 /* ====================== IRIS (asistente) ====================== */
 const QUICKS=["¿Qué tengo hoy?","¿Cuánto gasté este mes?","¿Estoy gastando mucho?","Dame un consejo financiero","¿Cuánto debo?"];
@@ -1134,19 +1160,60 @@ function irisSend(){ const i=$("#iris-input"); const q=i.value.trim(); if(!q)ret
 /* Contexto que se le manda a la IA (resumen de tus datos) */
 function buildContext(){
   const f=monthFin(), ti=todayISO();
+  const recientes=S.moves.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,25)
+    .map(x=>({fecha:x.date,tipo:x.type,monto:+x.amount||0,categoria:x.cat,metodo:x.method||null,desc:x.title||null}));
   return {
     fecha:ti, nombre:S.name||null,
     hoy:{ tareas:S.tasks.filter(t=>!t.done&&t.date===ti).map(t=>t.title),
           eventos:S.events.filter(e=>e.date===ti).map(e=>({titulo:e.title,hora:e.time||null})),
           compras:S.shop.filter(s=>!s.done).map(s=>s.name) },
     finanzas:{ ingresosMes:f.income, gastosMes:f.expense, balance:f.bal, tasaAhorroPct:f.rate, gastosPorCategoria:catTotals() },
-    deudas:S.debts.map(d=>({quien:d.who,monto:+d.amount||0})),
+    movimientosRecientes:recientes,
+    deudas:S.debts.map(d=>({quien:d.who,monto:+d.amount||0,nota:d.note||null})),
     prestamos:S.loans.map(d=>({quien:d.who,monto:+d.amount||0})),
-    ahorros:S.savings.map(g=>({meta:g.name,objetivo:+g.target||0,guardado:+g.saved||0}))
+    ahorros:S.savings.map(g=>({meta:g.name,objetivo:+g.target||0,guardado:+g.saved||0})),
+    categoriasGasto:S.catGasto, categoriasIngreso:S.catIngreso
   };
 }
-/* Llama a la IA real si hay endpoint; si no, usa el motor local */
+/* IA real (Google Gemini, gratis) con acciones; si no hay clave usa endpoint o motor local */
+async function askGemini(q){
+  const key=((S.ai&&S.ai.key)||"").trim();
+  const model=(S.ai&&S.ai.model)||"gemini-2.0-flash";
+  const sys="Sos Iris, una asistente financiera personal en español rioplatense (Argentina, moneda ARS, miles con punto, sin centavos). "+
+    "Tenés el estado financiero del usuario en JSON (gastos, ingresos, deudas, préstamos, ahorros, movimientos recientes). "+
+    "Respondé breve, concreto y amable. Podés analizar gastos, deudas, préstamos, ahorros, suscripciones (gastos que se repiten o categoría Servicios), qué le falta pagar (deudas pendientes), y dar consejos para mejorar el manejo del dinero. "+
+    "Si el usuario pide AGREGAR un gasto o ingreso, devolvelo en \"actions\". "+
+    "RESPONDÉ SIEMPRE Y SOLO con JSON válido, sin texto fuera del JSON, con esta forma: "+
+    "{\"reply\":\"texto a mostrar\",\"actions\":[{\"type\":\"add_mov\",\"movType\":\"gasto|ingreso\",\"amount\":entero,\"cat\":\"categoria\",\"title\":\"desc corta\",\"date\":\"YYYY-MM-DD\"}]}. "+
+    "Si no hay acción, \"actions\":[]. Categorías de gasto: "+JSON.stringify(S.catGasto)+". De ingreso: "+JSON.stringify(S.catIngreso)+". Si no calza, usá \"Otro\". Fecha por defecto hoy ("+todayISO()+").";
+  const hist=S.chat.slice(0,-1).slice(-8).map(m=>({role:m.r==="me"?"user":"model",parts:[{text:String(m.t).replace(/<[^>]+>/g,"")}]}));
+  const contents=hist.concat([{role:"user",parts:[{text:"DATOS:\n"+JSON.stringify(buildContext())+"\n\nPREGUNTA:\n"+q}]}]);
+  const body={system_instruction:{parts:[{text:sys}]},contents,generationConfig:{temperature:0.4,responseMimeType:"application/json"}};
+  const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(key);
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!res.ok){ const t=await res.text().catch(()=>""); throw new Error("HTTP "+res.status+(/API_KEY|API key|invalid/i.test(t)?" (clave inválida)":"")); }
+  const data=await res.json();
+  let txt=""; try{ txt=data.candidates[0].content.parts.map(p=>p.text||"").join(""); }catch(_){}
+  let parsed=null; try{ parsed=JSON.parse(txt); }catch(_){ try{ parsed=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch(__){} }
+  if(!parsed) return esc(txt||"No pude interpretar la respuesta.").replace(/\n/g,"<br>");
+  let extra="";
+  if(Array.isArray(parsed.actions)) parsed.actions.forEach(ac=>{
+    if(ac&&ac.type==="add_mov"){
+      const amt=parseInt(String(ac.amount).replace(/[^\d]/g,""),10)||0; if(amt<=0)return;
+      const mt=ac.movType==="ingreso"?"ingreso":"gasto"; const cats=mt==="ingreso"?S.catIngreso:S.catGasto;
+      let cat=ac.cat||"Otro"; if(!cats.includes(cat))cat="Otro";
+      const date=(ac.date&&/^\d{4}-\d{2}-\d{2}$/.test(ac.date))?ac.date:todayISO();
+      S.moves.push({id:uid(),type:mt,amount:amt,cat:cat,method:"efectivo",title:ac.title||"",date:date});
+      extra+=`<br><span style="color:var(--ok)">✅ Agregué ${mt} de ${money(amt)} en ${esc(cat)}.</span>`;
+    }
+  });
+  if(extra){ save(); render(); }
+  return esc(parsed.reply||"Listo.").replace(/\n/g,"<br>")+extra;
+}
 async function askAI(q){
+  if(S.ai&&S.ai.key&&S.ai.key.trim()){
+    try{ return await askGemini(q); }catch(e){ return "⚠️ No pude usar la IA ("+esc(String(e.message||e)).slice(0,90)+"). Te respondo local:<br><br>"+answer(q); }
+  }
   const ep=((S.ai&&S.ai.endpoint)||"").trim();
   if(!ep) return answer(q);
   try{
@@ -1155,8 +1222,8 @@ async function askAI(q){
     if(!res.ok) throw new Error("http "+res.status);
     const data=await res.json();
     const reply=data&&(data.reply||data.text||data.message);
-    return reply?esc(reply).replace(/\n/g,"\n"):answer(q);
-  }catch(_){ return "⚠️ No pude conectar con la IA. Por ahora te respondo local:\n\n"+answer(q); }
+    return reply?esc(reply).replace(/\n/g,"<br>"):answer(q);
+  }catch(_){ return "⚠️ No pude conectar con la IA. Por ahora te respondo local:<br><br>"+answer(q); }
 }
 function pushMsg(r,t){ S.chat.push({r,t}); save(); irisRender(); }
 
