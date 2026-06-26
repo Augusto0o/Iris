@@ -449,7 +449,6 @@
     <div class="top"><div><div class="hello">Preferencias</div><div class="h1">Ajustes</div></div></div>
     <div class="seg" id="aj-seg">
       <button data-ajtab="general" class="on">General</button>
-      <button data-ajtab="pantalla">Pantalla y sonido</button>
       <button data-ajtab="conectividad">Conectividad</button>
       <button data-ajtab="personalizacion">Personalización</button>
     </div>
@@ -926,19 +925,15 @@ function renderAjustes(){
     h=`<div class="card"><div class="card-t" style="margin-bottom:8px">Perfil</div>
         <div class="field"><label>Tu nombre</label><input id="set-name" value="${esc(S.name||"")}" placeholder="¿Cómo te llamás?"></div>
         <button class="btn primary block" data-act="save-name">Guardar nombre</button></div>
-      <div class="card"><div class="card-t" style="margin-bottom:8px">Datos</div>
-        <div class="muted" style="margin-bottom:14px">Iris guarda todo en este dispositivo. Tus datos no salen del teléfono.</div>
-        <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
-      <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1.3</div></div>`;
-  } else if(_ajtab==="pantalla"){
-    h=`<div class="card">
+      <div class="card">
         <div class="aj-row"><div><div class="aj-l">Animaciones</div><div class="aj-d">Transiciones y efectos al moverte por la app.</div></div>
           <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
         <div class="aj-row"><div style="flex:1"><div class="aj-l">Color de acento</div><div class="aj-d">El color principal de Iris.</div>
           <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div></div>
-      <div class="card"><div class="card-t" style="margin-bottom:8px">Diagnóstico</div>
-        <div class="muted" style="margin-bottom:14px">Mostrá las medidas reales de tu pantalla para ajustar la app a tu teléfono.</div>
-        <button class="btn primary block" data-act="measure">📐 Medidas de pantalla</button></div>`;
+      <div class="card"><div class="card-t" style="margin-bottom:8px">Datos</div>
+        <div class="muted" style="margin-bottom:14px">Iris guarda todo en este dispositivo. Tus datos no salen del teléfono.</div>
+        <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
+      <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1.4</div></div>`;
   } else if(_ajtab==="conectividad"){
     h=`<div class="card"><div class="card-t" style="margin-bottom:8px">Asistente IA</div>
         <div class="field"><label>Endpoint del asistente (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
