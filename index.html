@@ -130,10 +130,10 @@
     transition:transform var(--t);}
   .orb-btn:active{transform:scale(.92);}
   /* orbe Iris = ícono fluido (referencia) */
-  .orb{width:100%;height:100%;border-radius:50%;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,#1b2a4d,#05070f 82%);}
-  .orb-img{width:130%;height:130%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);object-fit:cover;filter:brightness(1.6) contrast(1.12) saturate(1.15);}
+  .orb{width:100%;height:100%;border-radius:50%;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 42%,#2f4680 0%,#14213f 60%,#0a1326 100%);}
+  .orb-img{width:150%;height:150%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);object-fit:cover;mix-blend-mode:screen;filter:brightness(1.5) contrast(1.1) saturate(1.25);}
   .orb::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
-    background:radial-gradient(circle at 50% 40%,rgba(123,159,255,.4),rgba(167,139,250,.18) 72%);mix-blend-mode:screen;}
+    background:radial-gradient(circle at 50% 38%,rgba(123,159,255,.45),rgba(167,139,250,.16) 72%);mix-blend-mode:screen;}
   @keyframes spin{to{transform:rotate(360deg);}}
   @keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
 
@@ -142,7 +142,7 @@
     background:rgba(3,6,14,0.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
     opacity:0;pointer-events:none;transition:opacity .24s var(--ease);}
   .overlay.open{opacity:1;pointer-events:auto;}
-  .pop{width:100%;max-width:460px;max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  .pop{width:100%;max-width:460px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
     background:rgba(16,22,38,0.82);border:1px solid var(--line);border-radius:26px;padding:var(--s5);
     backdrop-filter:blur(30px) saturate(1.3);-webkit-backdrop-filter:blur(30px) saturate(1.3);
     box-shadow:0 24px 70px rgba(0,0,0,.55),var(--glow);
@@ -157,6 +157,8 @@
   .field input,.field select{width:100%;min-width:0;max-width:100%;padding:13px 14px;font-size:16px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);outline:none;transition:border-color var(--t),box-shadow var(--t);}
   .field input::placeholder{color:var(--faint);}
   .field input:focus,.field select:focus{border-color:rgba(91,140,255,.6);box-shadow:0 0 0 3px rgba(91,140,255,.18);}
+  .field input[type="date"],.field input[type="time"]{-webkit-appearance:none;appearance:none;text-align:left;}
+  .field input[type="date"]::-webkit-date-and-time-value{text-align:left;}
   .field-row{display:flex;gap:var(--s3);} .field-row>*{flex:1 1 0;min-width:0;}
   @media (max-width:380px){ .pop{padding:var(--s4);} .field-row{flex-direction:column;} }
   /* mini chart */
@@ -172,7 +174,7 @@
   .chips{display:flex;gap:var(--s2);flex-wrap:wrap;}
   .ch{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--line);color:var(--dim);transition:all var(--t);}
   .ch.on{background:var(--grad);border-color:transparent;color:#fff;}
-  .pop-actions{display:flex;gap:var(--s3);margin-top:var(--s5);}
+  .pop-actions{display:flex;gap:var(--s3);margin-top:var(--s4);}
 
   /* ===== calendario (glass) ===== */
   .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s4);}
@@ -675,7 +677,8 @@ function openForm(type){ _draft={};
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="task">Guardar</button></div>`,
     event:`<div class="pop-h"><div class="pop-t">Nuevo evento</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Evento</label><input id="i-title" placeholder="Ej: Reunión" autofocus></div>
-      <div class="field-row"><div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_selDay}"></div><div class="field"><label>Hora</label><input id="i-time" type="time"></div></div>
+      <div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_selDay}"></div>
+      <div class="field"><label>Hora</label><input id="i-time" type="time"></div>
       <div class="field"><label>Nota</label><input id="i-note" placeholder="Opcional"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="event">Guardar</button></div>`,
     shop:`<div class="pop-h"><div class="pop-t">Agregar a la compra</div><button class="pop-x" data-act="close">✕</button></div>
@@ -857,6 +860,24 @@ function stopMic(){ if(_rec){ try{_rec.stop();}catch(_){} } _listening=false; $(
 /* ====================== INIT ====================== */
 function init(){ render(); /* single-file: sin SW */ }
 init();
+
+/* ---- guías de medición: abrí la app con ?guides (o #guides) ---- */
+function __buildGuides(){
+  var on=/guides/.test(location.search)||/guides/.test(location.hash);
+  var old=document.getElementById("__guides"); if(old) old.remove();
+  if(!on) return;
+  var W=innerWidth,H=innerHeight,step=10,big=50;
+  var s='<svg width="'+W+'" height="'+H+'" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">';
+  for(var x=0;x<=W;x+=step){var c=x%big===0;s+='<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+H+'" stroke="'+(c?"rgba(255,70,110,.5)":"rgba(120,200,255,.12)")+'"/>';}
+  for(var y=0;y<=H;y+=step){var c=y%big===0;s+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="'+(c?"rgba(255,70,110,.5)":"rgba(120,200,255,.12)")+'"/>';}
+  for(var x=0;x<=W;x+=big)s+='<text x="'+(x+1)+'" y="9" fill="#ff5a78" font-size="8" font-family="monospace">'+x+'</text>';
+  for(var y=50;y<=H;y+=big)s+='<text x="1" y="'+(y-1)+'" fill="#ff5a78" font-size="8" font-family="monospace">'+y+'</text>';
+  s+='</svg>';
+  var o=document.createElement("div"); o.id="__guides";
+  o.style.cssText="position:fixed;inset:0;z-index:2147483647;pointer-events:none"; o.innerHTML=s;
+  document.body.appendChild(o);
+}
+addEventListener("resize",__buildGuides); addEventListener("hashchange",__buildGuides); __buildGuides();
 </script>
 </body>
 </html>
