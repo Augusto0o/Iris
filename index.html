@@ -177,6 +177,14 @@
   .cat-add{display:flex;gap:8px;margin-top:10px;}
   .cat-add input{flex:1;min-width:0;min-height:44px;padding:10px 12px;font-size:15px;color:var(--text);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;outline:none;}
   .cat-add button{flex-shrink:0;padding:0 16px;border-radius:12px;background:var(--grad);color:#fff;font-weight:600;font-size:14px;}
+  .cat-move{width:38px;height:38px;flex-shrink:0;border-radius:11px;background:var(--card);border:1px solid var(--line);color:var(--text-dim);font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .cat-move:disabled{opacity:.3;}
+  details.collap{padding:0;overflow:hidden;}
+  details.collap>summary{list-style:none;cursor:pointer;padding:15px 16px;font-weight:600;font-size:14px;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  details.collap>summary::-webkit-details-marker{display:none;}
+  details.collap>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--text-faint);border-bottom:2px solid var(--text-faint);border-radius:0 0 2px 0;transform:rotate(45deg) translateY(-2px);transition:transform .25s ease;margin-right:4px;flex-shrink:0;}
+  details.collap[open]>summary::after{transform:rotate(225deg) translateY(-1px);}
+  details.collap>.collap-b{padding:0 16px 16px;}
   body.no-anim .screen{animation:none!important;}
   body.no-anim .donut-fg,body.no-anim .fin-bar-fill,body.no-anim .cal-dots i,body.no-anim .row,body.no-anim .card{animation:none!important;transition:none!important;}
 
@@ -400,7 +408,7 @@
       <div class="chart" id="home-chart"></div>
     </div>
     <div class="tiles">
-      <button class="tile" data-pop="tareas"><div class="tn" id="t-tasks">0</div><div class="tk">Tareas hoy</div></button>
+      <button class="tile" data-act="go-tasks"><div class="tn" id="t-tasks">0</div><div class="tk">Tareas hoy</div></button>
       <button class="tile" data-pop="eventos"><div class="tn" id="t-events">0</div><div class="tk">Eventos hoy</div></button>
       <button class="tile" data-pop="compras"><div class="tn" id="t-shop">0</div><div class="tk">Compras</div></button>
     </div>
@@ -410,19 +418,24 @@
         <div class="cal-nav"><button data-cal="-1">‹</button><button data-cal="0">Hoy</button><button data-cal="1">›</button></div></div>
       <div class="cal-grid" id="home-cal-grid"></div>
     </div>
-    <div id="home-notes"></div>
   </section>
 
   <!-- AGENDA (calendario glass + lista) -->
   <section class="screen" id="s-agenda">
     <div class="top"><div><div class="hello">Tu tiempo</div><div class="h1">Agenda</div></div>
       <button class="ag-add" data-act="add" aria-label="Agregar">+</button></div>
-    <div class="card">
-      <div class="cal-head"><div class="cal-title" id="cal-title">—</div>
-        <div class="cal-nav"><button data-cal="-1">‹</button><button data-cal="0">Hoy</button><button data-cal="1">›</button></div></div>
-      <div class="cal-grid" id="cal-grid"></div>
+    <div class="seg" id="ag-seg"><button data-agtab="agenda" class="on">Agenda</button><button data-agtab="tareas">Tareas</button></div>
+    <div id="ag-view-agenda">
+      <div class="card">
+        <div class="cal-head"><div class="cal-title" id="cal-title">—</div>
+          <div class="cal-nav"><button data-cal="-1">‹</button><button data-cal="0">Hoy</button><button data-cal="1">›</button></div></div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card"><div id="ag-list"></div></div>
     </div>
-    <div class="card"><div id="ag-list"></div></div>
+    <div id="ag-view-tareas" style="display:none">
+      <div class="card"><div id="ag-tasks"></div></div>
+    </div>
   </section>
 
   <!-- FINANZAS -->
@@ -443,10 +456,10 @@
       <div class="gauge-wrap"><div id="gauge"></div><div class="gauge-cap" id="gauge-cap"></div></div>
       <div class="tip" id="tip"></div>
     </div>
+    <div class="card"><div class="cal-head" style="margin-bottom:8px"><div class="card-t" style="margin:0">Ahorros</div></div><div id="fin-ahorros"></div></div>
     <div class="seg" id="f-seg">
       <button data-ftab="mov" class="on">Movimientos</button>
       <button data-ftab="servicios">Servicios</button>
-      <button data-ftab="ahorros">Ahorros</button>
       <button data-ftab="deudas">Deudas</button>
       <button data-ftab="prestamos">Préstamos</button>
     </div>
@@ -566,6 +579,7 @@ let _calRef=new Date(); _calRef.setDate(1);
 let _selDay=todayISO();
 let _formDate=null;
 let _ftab="mov";
+let _agtab="agenda";
 
 function render(){
   const ti=todayISO();
@@ -579,9 +593,9 @@ function render(){
   const todayTasks=S.tasks.filter(t=>!t.done&&t.date===ti);
   const todayEvents=S.events.filter(e=>e.date===ti);
   const shop=S.shop.filter(s=>!s.done);
-  $("#t-tasks").textContent=todayTasks.length; $("#t-events").textContent=todayEvents.length; $("#t-shop").textContent=shop.length;
+  const _tt=$("#t-tasks"); if(_tt)_tt.textContent=todayTasks.length; $("#t-events").textContent=todayEvents.length; $("#t-shop").textContent=shop.length;
 
-  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderHomeServices(); renderHomeNotes(); renderAjustes(); applyAccent(); applyAnim();
+  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderHomeServices(); renderAjustes(); applyAccent(); applyAnim();
   const sn=$("#set-name"); if(sn && document.activeElement!==sn) sn.value=S.name||"";
   const sa=$("#set-ai"); if(sa && document.activeElement!==sa) sa.value=(S.ai&&S.ai.endpoint)||"";
 }
@@ -666,12 +680,12 @@ function openDay(ds){
   const tk=S.tasks.filter(t=>t.date===ds);
   const mv=S.moves.filter(x=>x.date===ds);
   let body="";
-  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button></div>`).join(""); }
+  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button></div>`).join(""); }
   if(tk.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Tareas</div>`+tk.map(t=>`<div class="row ${t.done?"done":""}"><span class="dot" style="background:var(--violet)"></span><div class="row-main"><div class="row-title">${esc(t.title)}</div></div></div>`).join(""); }
-  if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row"><span class="mv-ico">${CAT_ICON[x.cat]||"✨"}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
+  if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><span class="mv-ico">${CAT_ICON[x.cat]||"✨"}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
   if(!body) body=`<div class="empty">Nada este día. Agregá abajo 👇</div>`;
   const sm=daySummary(ds);
-  const dsum=`<div class="day-summary"><div class="day-sum"><div class="lbl">Ingresos</div><div class="v" style="color:var(--ok)">${money(sm.inc)}</div></div><div class="day-sum"><div class="lbl">Gastos</div><div class="v">${money(sm.exp)}</div></div><div class="day-sum"><div class="lbl">Balance</div><div class="v" style="${sm.bal<0?"color:var(--danger)":""}">${(sm.bal<0?"−":"")+money(sm.bal)}</div></div></div>`;
+  const dsum=`<div class="day-summary"><div class="day-sum"><div class="lbl">Ingresos</div><div class="v" style="color:var(--ok)">${money(sm.inc)}</div></div><div class="day-sum"><div class="lbl">Gastos</div><div class="v">${money(sm.exp)}</div></div><div class="day-sum"><div class="lbl">Balance</div><div class="v" style="${sm.bal<0?"color:var(--danger)":""}">${money(sm.bal)}</div></div></div>`;
   showPop(`<div class="pop-h"><div class="pop-t">${lbl}</div><button class="pop-x" data-act="close">✕</button></div>${dsum}${body}
     <div class="pop-actions"><button class="btn block" data-add="mov" data-date="${ds}">+ Movimiento</button><button class="btn primary block" data-add="event" data-date="${ds}">+ Evento</button></div>
     <button class="btn ghost block" data-add="task" data-date="${ds}" style="margin-top:8px">+ Tarea</button>`);
@@ -745,6 +759,16 @@ function renderAgenda(){
   });
   if(!printed) html+=`<div class="empty">Nada agendado. Tocá + para crear un evento o tarea.</div>`;
   $("#ag-list").innerHTML=html;
+  renderAgendaTasks(); applyAgTab();
+}
+function applyAgTab(){ const a=$("#ag-view-agenda"),t=$("#ag-view-tareas"); if(a)a.style.display=_agtab==="tareas"?"none":""; if(t)t.style.display=_agtab==="tareas"?"":"none"; document.querySelectorAll("#ag-seg button").forEach(b=>b.classList.toggle("on",b.dataset.agtab===_agtab)); }
+function renderAgendaTasks(){ const host=$("#ag-tasks"); if(!host)return; const pr={alta:0,media:1,baja:2};
+  const pend=S.tasks.filter(t=>!t.done).slice().sort((a,b)=>(pr[a.priority||"media"]-pr[b.priority||"media"])||((a.date||"9999").localeCompare(b.date||"9999")));
+  const done=S.tasks.filter(t=>t.done);
+  let h=`<div class="card-t" style="margin-bottom:8px">Pendientes</div>`+(pend.length?pend.map(taskRow).join(""):`<div class="empty" style="padding:8px 0">Sin tareas pendientes 🎉</div>`);
+  if(done.length){ h+=`<div class="card-t" style="margin:16px 0 8px">Hechas</div>`+done.map(taskRow).join(""); }
+  h+=`<button class="btn primary block" style="margin-top:16px" data-act="add-task">+ Nueva tarea</button>`;
+  host.innerHTML=h;
 }
 
 /* ---- FINANZAS ---- */
@@ -804,7 +828,7 @@ function healthTip(){
 function renderHealth(){
   const f=monthFin();
   const mi=$("#mc-income"), me=$("#mc-expense"), mb=$("#mc-balance");
-  if(mi) mi.textContent=money(f.income); if(me) me.textContent=money(f.expense); if(mb) mb.textContent=(f.bal<0?"−":"")+money(f.bal);
+  if(mi) mi.textContent=money(f.income); if(me) me.textContent=money(f.expense); if(mb) mb.textContent=money(f.bal);
   const s=finSeries();
   const si=$("#spark-income"); if(si) si.innerHTML=spark([0].concat(s.cinc),"#3ddc97");
   const se=$("#spark-expense"); if(se) se.innerHTML=spark([0].concat(s.cexp),"#ff6b6b");
@@ -842,7 +866,7 @@ function renderTxList(){
   const net=txs.reduce((s,t)=>s+(t.type==="ingreso"?1:-1)*(+t.amount||0),0);
   const title=_txkind==="income"?"Ingresos":_txkind==="expense"?"Gastos":"Todos los movimientos";
   const chips=`<button class="txcat-chip ${_txcat==="todas"?"on":""}" data-txcat="todas">Todas</button>`+catset.map(c=>`<button class="txcat-chip ${_txcat===c?"on":""}" data-txcat="${esc(c)}"><span class="cat-dot" style="background:${catColor(c)}"></span>${esc(c)}</button>`).join("");
-  const summary=`<div class="day-summary"><div class="day-sum"><div class="lbl">Movimientos</div><div class="v">${txs.length}</div></div><div class="day-sum"><div class="lbl">${_txkind==="all"?"Balance":"Total"}</div><div class="v" style="${_txkind==="income"?"color:var(--ok)":""}">${(_txkind==="all"&&net<0?"−":"")}${money(_txkind==="all"?net:sum)}</div></div></div>`;
+  const summary=`<div class="day-summary"><div class="day-sum"><div class="lbl">Movimientos</div><div class="v">${txs.length}</div></div><div class="day-sum"><div class="lbl">${_txkind==="all"?"Balance":"Total"}</div><div class="v" style="${_txkind==="income"?"color:var(--ok)":""}">${money(_txkind==="all"?net:sum)}</div></div></div>`;
   showPop(`<div class="pop-h"><div class="pop-t">${title}</div><button class="pop-x" data-act="close">✕</button></div>
     ${summary}${catset.length>1?`<div class="txcat-bar">${chips}</div>`:""}
     <div>${txs.length?txs.map(movRow).join(""):`<div class="empty">Sin movimientos.</div>`}</div>`);
@@ -853,7 +877,7 @@ function openAnalysis(){
   const avgDay=f.expense/Math.max(1,dayN); const projection=avgDay*dim;
   const expTx=(f.mm||[]).filter(x=>x.type==="gasto"); const avgTx=expTx.length?f.expense/expTx.length:0;
   const stat=(l,v,sub,col)=>`<div class="fin-stat"><div class="lbl">${l}</div><div class="fin-val" style="${col?"color:"+col:""}">${v}</div>${sub?`<div class="fin-sub">${sub}</div>`:""}</div>`;
-  const grid=`<div class="fin-grid">${stat("Ingresos",money(f.income),"","var(--ok)")}${stat("Gastos",money(f.expense),"")}${stat("Balance",(f.bal<0?"−":"")+money(f.bal),"",f.bal<0?"var(--danger)":"var(--ok)")}${stat("Tasa de ahorro",f.rate+"%",f.rate>=20?"Saludable":f.rate>=0?"Mejorable":"En rojo",f.rate<0?"var(--danger)":"var(--ok)")}</div>`;
+  const grid=`<div class="fin-grid">${stat("Ingresos",money(f.income),"","var(--ok)")}${stat("Gastos",money(f.expense),"")}${stat("Balance",money(f.bal),"",f.bal<0?"var(--danger)":"var(--ok)")}${stat("Tasa de ahorro",f.rate+"%",f.rate>=20?"Saludable":f.rate>=0?"Mejorable":"En rojo",f.rate<0?"var(--danger)":"var(--ok)")}</div>`;
   const grid2=`<div class="fin-grid">${stat("Gasto diario prom.",money(avgDay),"este mes")}${stat("Proyección fin de mes",money(projection),"si seguís así",(projection>f.income&&f.income>0)?"var(--danger)":"")}${stat("Gasto prom. / mov.",money(avgTx),expTx.length+" movimientos")}${stat("Categoría top",top?top.name:"—",top?money(top.amount)+" · "+top.pct+"%":"")}</div>`;
   const bars=cats.length?cats.slice(0,6).map(c=>`<div class="fin-bar-row"><div class="fin-bar-head"><span class="fin-bar-cat"><span class="cat-dot" style="background:${catColor(c.name)}"></span>${esc(c.name)}</span><span class="fin-bar-amt">${money(c.amount)} · ${c.pct}%</span></div><div class="fin-bar-track"><div class="fin-bar-fill" style="width:${c.pct}%;background:${catColor(c.name)}"></div></div></div>`).join(""):`<div class="empty">Sin gastos este mes.</div>`;
   const s=finSeries(); const balVals=[0].concat(s.cbal); const finalBal=s.cbal.length?s.cbal[s.cbal.length-1]:0;
@@ -870,6 +894,7 @@ function openAnalysis(){
 }
 function renderFinance(){
   renderHealth();
+  renderFinAhorros();
   document.querySelectorAll("#f-seg button").forEach(b=>b.classList.toggle("on",b.dataset.ftab===_ftab));
   const body=$("#f-body");
   if(_ftab==="mov"){
@@ -881,9 +906,6 @@ function renderFinance(){
     body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total fijo mensual: <b>${money(tot)}</b></div>`
       +(S.services.length?S.services.slice().sort((a,b)=>(+a.day||0)-(+b.day||0)).map(serviceRow).join(""):`<div class="empty">Sin servicios. Cargá tus pagos fijos (luz, internet, alquiler…) y Iris te avisa cuándo vencen.</div>`)
       +`<button class="btn primary block" style="margin-top:16px" data-act="add-service">+ Nuevo servicio</button>`;
-  } else if(_ftab==="ahorros"){
-    body.innerHTML=(S.savings.length?S.savings.map(svCard).join(""):`<div class="empty">Sin metas de ahorro.</div>`)
-      +`<button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`;
   } else if(_ftab==="deudas"){
     const tot=S.debts.reduce((a,b)=>a+(+b.amount||0),0);
     body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total que debés: <b style="color:var(--danger)">${money(tot)}</b></div>`
@@ -900,6 +922,7 @@ function renderFinance(){
     body.innerHTML=h2;
   }
 }
+function renderFinAhorros(){ const host=$("#fin-ahorros"); if(!host)return; host.innerHTML=(S.savings.length?S.savings.map(svCard).join(""):`<div class="empty" style="padding:10px 0">Sin metas de ahorro.</div>`)+`<button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`; }
 function movRow(x){ const ico=CAT_ICON[x.cat]||(x.type==="ingreso"?"💼":"✨");
   return `<div class="row"><span class="mv-ico">${ico}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div><div class="row-sub">${x.cat||""} · ${x.date||""}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span><button class="x-row" data-act="del-mov" data-id="${x.id}">×</button></div>`; }
 function svCard(g){ const saved=+g.saved||0,target=+g.target||0,pct=target>0?Math.min(100,Math.round(saved/target*100)):0,rem=Math.max(0,target-saved);
@@ -912,6 +935,7 @@ function debtRow(d,kind){ return `<div class="debt"><span class="debt-ico">${kin
 
 /* ====================== POPUP / FORMS ====================== */
 let _draft={};
+let _editId=null;
 function showPop(html){ $("#pop").innerHTML=html; $("#overlay").classList.remove("closing"); $("#overlay").classList.add("open"); document.body.classList.add("modal-open"); }
 function closePop(){ const o=$("#overlay"); o.classList.add("closing"); document.body.classList.remove("modal-open"); setTimeout(()=>{o.classList.remove("open","closing");},220); }
 
@@ -922,7 +946,7 @@ function openAdd(){
   showPop(`<div class="pop-h"><div class="pop-t">Agregar</div><button class="pop-x" data-act="close">✕</button></div>
     <div class="chips">${map.map(o=>`<button class="ch" data-add="${o[0]}">${o[2]} ${o[1]}</button>`).join("")}</div>`);
 }
-function openForm(type){ _draft={};
+function openForm(type,ex){ _draft={}; _editId=(ex&&ex.id)||null;
   const F={
     task:`<div class="pop-h"><div class="pop-t">Nueva tarea</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Tarea</label><input id="i-title" placeholder="Ej: Pagar la luz" autofocus></div>
@@ -972,9 +996,19 @@ function openForm(type){ _draft={};
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="service">Guardar</button></div>`
   };
   showPop(F[type]);
-  if(type==="mov"){ _draft.type="gasto"; _draft.cat="Comida"; _draft.method="efectivo"; syncCats(); updateMovExtras(); }
+  if(type==="mov"){ _draft.type=(ex&&ex.type)||"gasto"; _draft.cat=(ex&&ex.cat)||"Comida"; _draft.method=(ex&&ex.method)||"efectivo"; syncCats(); updateMovExtras(); }
   if(type==="service"){ _draft.smethod="transferencia"; }
+  if(ex)prefillForm(type,ex);
   _formDate=null;
+}
+function prefillForm(type,ex){
+  if(type==="mov"){ if($("#i-amount"))$("#i-amount").value=ex.amount||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-title"))$("#i-title").value=ex.title||"";
+    if($("#i-cat")){ $("#i-cat").value=ex.cat||_draft.cat; _draft.cat=$("#i-cat").value; }
+    document.querySelectorAll('#mov-type [data-pick="type"]').forEach(b=>b.classList.toggle("on",b.dataset.v===(ex.type||"gasto")));
+    document.querySelectorAll('#mov-method [data-pick="method"]').forEach(b=>b.classList.toggle("on",b.dataset.v===(ex.method||"efectivo")));
+    updateMovExtras(); if($("#i-who")&&ex.who)$("#i-who").value=ex.who; if($("#i-cuotas")&&ex.cuotas)$("#i-cuotas").value=ex.cuotas;
+  } else if(type==="event"){ if($("#i-title"))$("#i-title").value=ex.title||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-time"))$("#i-time").value=ex.time||""; if($("#i-note"))$("#i-note").value=ex.note||""; }
+  const pt=document.querySelector("#pop .pop-t"); if(pt)pt.textContent=type==="mov"?"Editar movimiento":"Editar evento";
 }
 function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
   let cur=w.value||_draft.cat; if(!cats.includes(cur))cur=cats[0]; _draft.cat=cur;
@@ -985,17 +1019,19 @@ function doSave(type){
   const v=id=>{const e=$("#"+id);return e?e.value.trim():"";};
   const num=id=>{const e=$("#"+id);return e?parseInt((e.value||"").replace(/[^\d]/g,""),10)||0:0;};
   if(type==="task"){ if(!v("i-title"))return; S.tasks.push({id:uid(),title:v("i-title"),date:$("#i-date").value||"",done:false,priority:($("#i-priority")&&$("#i-priority").value)||"media"}); }
-  else if(type==="event"){ if(!v("i-title"))return; S.events.push({id:uid(),title:v("i-title"),date:$("#i-date").value||todayISO(),time:$("#i-time").value||"",note:v("i-note")}); }
+  else if(type==="event"){ if(!v("i-title"))return; if(_editId){ const ev=S.events.find(x=>x.id===_editId); if(ev){ ev.title=v("i-title"); ev.date=$("#i-date").value||todayISO(); ev.time=$("#i-time").value||""; ev.note=v("i-note"); } } else { S.events.push({id:uid(),title:v("i-title"),date:$("#i-date").value||todayISO(),time:$("#i-time").value||"",note:v("i-note")}); } }
   else if(type==="shop"){ if(!v("i-title"))return; S.shop.push({id:uid(),name:v("i-title"),qty:Math.max(1,parseInt(($("#i-qty")&&$("#i-qty").value)||"1",10)||1),done:false}); }
-  else if(type==="mov"){ const a=num("i-amount"); if(a<=0)return; const c=($("#i-cat")&&$("#i-cat").value)||_draft.cat||"Otros"; const tp=_draft.type||"gasto"; const mth=_draft.method||"efectivo"; const dt=$("#i-date").value||todayISO(); let ttl=v("i-title"); const who=(c==="Prestado"&&$("#i-who"))?$("#i-who").value.trim():""; if(who){ ttl=(ttl?ttl+" · ":"")+(tp==="ingreso"?"Devuelto por "+who:"Prestado a "+who); }
-    let ncu=1; if(tp==="gasto"&&mth==="tarjeta"&&$("#i-cuotas")){ ncu=Math.max(1,Math.min(60,parseInt($("#i-cuotas").value,10)||1)); }
-    if(tp==="gasto"&&mth==="tarjeta"&&ncu>1){ const per=Math.round(a/ncu); const first=a-per*(ncu-1); const gid=uid(); for(let k=0;k<ncu;k++){ S.moves.push({id:uid(),type:"gasto",amount:k===0?first:per,cat:c,method:"tarjeta",title:(ttl?ttl+" · ":"")+"Cuota "+(k+1)+"/"+ncu,date:addMonthsISO(dt,k),cuotas:ncu,cuotaIndex:k+1,grp:gid,who:who}); } }
-    else { S.moves.push({id:uid(),type:tp,amount:a,cat:c,method:mth,title:ttl,date:dt,who:who}); } }
-  else if(type==="saving"){ if(!v("i-title"))return; S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); _ftab="ahorros"; }
+  else if(type==="mov"){ const a=num("i-amount"); if(a<=0)return; const c=($("#i-cat")&&$("#i-cat").value)||_draft.cat||"Otros"; const tp=_draft.type||"gasto"; const mth=_draft.method||"efectivo"; const dt=$("#i-date").value||todayISO(); let ttl=v("i-title"); const who=(c==="Prestado"&&$("#i-who"))?$("#i-who").value.trim():"";
+    if(_editId){ const m=S.moves.find(x=>x.id===_editId); if(m){ m.type=tp; m.amount=a; m.cat=c; m.method=mth; m.date=dt; m.title=ttl; m.who=who; } }
+    else { if(who){ ttl=(ttl?ttl+" · ":"")+(tp==="ingreso"?"Devuelto por "+who:"Prestado a "+who); }
+      let ncu=1; if(tp==="gasto"&&mth==="tarjeta"&&$("#i-cuotas")){ ncu=Math.max(1,Math.min(60,parseInt($("#i-cuotas").value,10)||1)); }
+      if(tp==="gasto"&&mth==="tarjeta"&&ncu>1){ const per=Math.round(a/ncu); const first=a-per*(ncu-1); const gid=uid(); for(let k=0;k<ncu;k++){ S.moves.push({id:uid(),type:"gasto",amount:k===0?first:per,cat:c,method:"tarjeta",title:(ttl?ttl+" · ":"")+"Cuota "+(k+1)+"/"+ncu,date:addMonthsISO(dt,k),cuotas:ncu,cuotaIndex:k+1,grp:gid,who:who}); } }
+      else { S.moves.push({id:uid(),type:tp,amount:a,cat:c,method:mth,title:ttl,date:dt,who:who}); } } }
+  else if(type==="saving"){ if(!v("i-title"))return; S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); }
   else if(type==="debt"){ if(!v("i-who"))return; S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="deudas"; }
   else if(type==="loan"){ if(!v("i-who"))return; S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="prestamos"; }
   else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:_draft.smethod||"transferencia",lastPaid:""}); _ftab="servicios"; }
-  save(); closePop(); render();
+  save(); closePop(); render(); _editId=null;
 }
 
 /* ---- AJUSTES (pestañas) ---- */
@@ -1003,9 +1039,11 @@ let _ajtab="general";
 const ACCENTS=["#5b8cff","#a78bfa","#22d3ee","#3ddc97","#ffc861","#ff6b6b","#ff8fab"];
 function applyAccent(){ document.documentElement.style.setProperty("--accent",(S.set&&S.set.accent)||"#5b8cff"); }
 function applyAnim(){ document.body.classList.toggle("no-anim", !(S.set&&S.set.anim)); }
+function collap(title,inner,open){ return `<details class="card collap"${open?" open":""}><summary>${title}</summary><div class="collap-b">${inner}</div></details>`; }
+function moveCat(kind,name,dir){ const list=kind==="gasto"?S.catGasto:S.catIngreso; const i=list.indexOf(name); const j=i+dir; if(i<0||j<0||j>=list.length)return; const t=list[i]; list[i]=list[j]; list[j]=t; save(); renderAjustes(); }
 function catEditor(kind){
   const list=(kind==="gasto"?S.catGasto:S.catIngreso)||[];
-  const items=list.map(c=>`<div class="cat-item"><span class="cat-dot" style="background:${catColor(c)}"></span><input class="cat-edit" data-kind="${kind}" data-old="${esc(c)}" value="${esc(c)}" maxlength="24"><button class="cat-x" data-act="del-cat" data-kind="${kind}" data-cat="${esc(c)}" aria-label="Eliminar ${esc(c)}">×</button></div>`).join("");
+  const items=list.map((c,idx)=>`<div class="cat-item"><span class="cat-dot" style="background:${catColor(c)}"></span><input class="cat-edit" data-kind="${kind}" data-old="${esc(c)}" value="${esc(c)}" maxlength="24"><button class="cat-move" data-act="cat-up" data-kind="${kind}" data-cat="${esc(c)}" aria-label="Subir" ${idx===0?"disabled":""}>▲</button><button class="cat-move" data-act="cat-down" data-kind="${kind}" data-cat="${esc(c)}" aria-label="Bajar" ${idx===list.length-1?"disabled":""}>▼</button><button class="cat-x" data-act="del-cat" data-kind="${kind}" data-cat="${esc(c)}" aria-label="Eliminar ${esc(c)}">×</button></div>`).join("");
   return `<div class="cat-list">${items||`<div class="muted">Sin categorías.</div>`}</div>
     <div class="cat-add"><input id="new-cat-${kind}" placeholder="Nueva categoría…" maxlength="24"><button data-act="add-cat" data-kind="${kind}">Agregar</button></div>`;
 }
@@ -1014,38 +1052,30 @@ function renderAjustes(){
   document.querySelectorAll("#aj-seg button").forEach(b=>b.classList.toggle("on",b.dataset.ajtab===_ajtab));
   let h="";
   if(_ajtab==="general"){
-    h=`<div class="card"><div class="card-t" style="margin-bottom:8px">Perfil</div>
-        <div class="field"><label>Tu nombre</label><input id="set-name" value="${esc(S.name||"")}" placeholder="¿Cómo te llamás?"></div>
-        <button class="btn primary block" data-act="save-name">Guardar nombre</button></div>
-      <div class="card">
-        <div class="aj-row"><div><div class="aj-l">Animaciones</div><div class="aj-d">Transiciones y efectos al moverte por la app.</div></div>
-          <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
-        <div class="aj-row"><div style="flex:1"><div class="aj-l">Color de acento</div><div class="aj-d">El color principal de Iris.</div>
-          <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div></div>
-      <div class="card"><div class="card-t" style="margin-bottom:8px">Datos</div>
-        <div class="muted" style="margin-bottom:14px">Iris guarda todo en este dispositivo. Tus datos no salen del teléfono.</div>
+    h=collap("Perfil",`<div class="field"><label>Tu nombre</label><input id="set-name" value="${esc(S.name||"")}" placeholder="¿Cómo te llamás?"></div>
+        <button class="btn primary block" data-act="save-name">Guardar nombre</button>`,true)
+      +`<div class="card"><div class="card-t" style="margin-bottom:8px">Datos</div>
+        <div class="muted" style="margin-bottom:14px">Tus datos se guardan en este dispositivo y, si iniciás sesión, se sincronizan en la nube.</div>
         <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
       <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1.4</div></div>`;
   } else if(_ajtab==="conectividad"){
     const li=(typeof loggedIn==="function")&&loggedIn();
-    const acct = li
-      ? `<div class="card"><div class="card-t" style="margin-bottom:6px">Cuenta · sincronización ✓</div>
-          <div class="muted" style="margin-bottom:10px">Sesión iniciada como <b>${esc((_sess&&_sess.user&&_sess.user.email)||"")}</b>. Tus datos se sincronizan solos en todos tus dispositivos donde inicies sesión.</div>
+    const acctTitle=li?"Cuenta · sincronización ✓":"Cuenta · sincronizar entre dispositivos";
+    const acctInner = li
+      ? `<div class="muted" style="margin-bottom:10px">Sesión iniciada como <b>${esc((_sess&&_sess.user&&_sess.user.email)||"")}</b>. Tus datos se sincronizan solos en todos tus dispositivos donde inicies sesión.</div>
           <button class="btn block" data-act="sync-now">Sincronizar ahora</button>
           <button class="btn block" data-act="auth-signout" style="margin-top:8px;color:var(--danger)">Cerrar sesión</button>
-          <div id="sync-status" class="muted" style="margin-top:10px;font-size:11px"></div></div>`
-      : `<div class="card"><div class="card-t" style="margin-bottom:6px">Cuenta · sincronizar entre dispositivos</div>
-          <div class="muted" style="margin-bottom:10px">Creá una cuenta (o entrá) y tus datos se sincronizan <b>automáticamente</b> en tu teléfono, tablet y compu. La clave de Gemini no se sincroniza (queda en cada dispositivo).</div>
+          <div id="sync-status" class="muted" style="margin-top:10px;font-size:11px"></div>`
+      : `<div class="muted" style="margin-bottom:10px">Creá una cuenta (o entrá) y tus datos se sincronizan <b>automáticamente</b> en tu teléfono, tablet y compu. La clave de Gemini no se sincroniza (queda en cada dispositivo).</div>
           <div class="field"><label>Email</label><input id="auth-email" type="email" inputmode="email" autocomplete="email" placeholder="vos@email.com"></div>
           <div class="field"><label>Contraseña</label><input id="auth-pass" type="password" autocomplete="current-password" placeholder="mínimo 6 caracteres"></div>
           <button class="btn primary block" data-act="auth-signin">Entrar</button>
           <button class="btn block" data-act="auth-signup" style="margin-top:8px">Crear cuenta nueva</button>
-          <div id="auth-status" class="muted" style="margin-top:10px;font-size:11px"></div></div>`;
-    let scCard="";
+          <div id="auth-status" class="muted" style="margin-top:10px;font-size:11px"></div>`;
+    let scInner;
     if(li){
-      scCard = (_shortcutShown && _shortcutTok)
-        ? `<div class="card"><div class="card-t" style="margin-bottom:6px">Atajos de iPhone</div>
-            <div class="muted" style="margin-bottom:10px">Con estos datos creás atajos para cargar <b>gasto, ingreso, tarea o evento</b> por Siri o desde la pantalla de inicio. Copiá la URL, tu token y el cuerpo de cada atajo (las instrucciones están abajo del todo).</div>
+      scInner = (_shortcutShown && _shortcutTok)
+        ? `<div class="muted" style="margin-bottom:10px">Con estos datos creás atajos para cargar <b>gasto, ingreso, tarea o evento</b> por Siri o desde la pantalla de inicio. A tus atajos viejos solo agregales el campo <b>token</b>.</div>
             <div class="field"><label>URL del endpoint (POST)</label><input id="sc-url" value="${esc(SHORTCUT_URL)}" readonly autocomplete="off"></div>
             <button class="btn block" data-act="sc-copy-url">Copiar URL</button>
             <div class="field" style="margin-top:12px"><label>Tu token personal</label><input id="sc-tok" value="${esc(_shortcutTok)}" readonly autocomplete="off"></div>
@@ -1058,30 +1088,27 @@ function renderAjustes(){
               <button class="btn block" style="flex:1;min-width:46%" data-act="sc-body-evento">Evento</button>
             </div>
             <button class="btn block" data-act="shortcuts-reset" style="margin-top:10px;color:var(--danger)">Regenerar token</button>
-            <div id="sc-status" class="muted" style="margin-top:8px;font-size:11px"></div></div>`
-        : `<div class="card"><div class="card-t" style="margin-bottom:6px">Atajos de iPhone</div>
-            <div class="muted" style="margin-bottom:10px">Cargá gastos, ingresos, tareas o eventos por Siri o desde la pantalla de inicio del iPhone, sin abrir la app.</div>
-            <button class="btn primary block" data-act="shortcuts-show">Activar atajos de iPhone</button></div>`;
+            <div id="sc-status" class="muted" style="margin-top:8px;font-size:11px"></div>`
+        : `<div class="muted" style="margin-bottom:10px">Cargá gastos, ingresos, tareas o eventos por Siri o desde la pantalla de inicio del iPhone, sin abrir la app.</div>
+            <button class="btn primary block" data-act="shortcuts-show">Activar atajos de iPhone</button>`;
     } else {
-      scCard = `<div class="card"><div class="card-t" style="margin-bottom:6px">Atajos de iPhone</div>
-        <div class="muted">Iniciá sesión (arriba) para activar los atajos: van atados a tu cuenta.</div></div>`;
+      scInner = `<div class="muted">Iniciá sesión (arriba) para activar los atajos: van atados a tu cuenta.</div>`;
     }
-    h=acct+scCard+`<div class="card"><div class="card-t" style="margin-bottom:6px">Iris IA · Google Gemini (gratis)</div>
-        <div class="muted" style="margin-bottom:10px">Con tu clave gratuita de Gemini, Iris piensa con tus datos: gastos, deudas, suscripciones, qué te falta pagar, consejos — y puede <b>cargar gastos/ingresos</b> cuando se lo pedís. Creá la clave gratis (sin tarjeta) en <b>aistudio.google.com/apikey</b>.</div>
+    const iaInner = `<div class="muted" style="margin-bottom:10px">Con tu clave gratuita de Gemini, Iris piensa con tus datos: gastos, deudas, suscripciones, qué te falta pagar, consejos — y puede <b>cargar gastos/ingresos</b> cuando se lo pedís. Creá la clave gratis (sin tarjeta) en <b>aistudio.google.com/apikey</b>.</div>
         <div class="field"><label>Clave de Gemini</label><input id="set-ai-key" type="password" value="${esc((S.ai&&S.ai.key)||"")}" placeholder="AIza…" autocomplete="off"></div>
         <button class="btn primary block" data-act="save-ai">Guardar clave</button>
-        <div class="muted" style="margin-top:10px;font-size:11px">Se guarda solo en este dispositivo. Sin clave, Iris usa su motor local básico.</div></div>
-      <div class="card"><div class="card-t" style="margin-bottom:8px">Avanzado · endpoint propio</div>
-        <div class="field"><label>Endpoint (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
+        <div class="muted" style="margin-top:10px;font-size:11px">Se guarda solo en este dispositivo. Sin clave, Iris usa su motor local básico.</div>`;
+    const avInner = `<div class="field"><label>Endpoint (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
         <div class="muted" style="margin:10px 0;font-size:11px">Si tenés tu propia función backend, pegá la URL. La clave de Gemini tiene prioridad.</div>
-        <button class="btn block" data-act="save-ai">Guardar endpoint</button></div>`;
+        <button class="btn block" data-act="save-ai">Guardar endpoint</button>`;
+    h=collap(acctTitle,acctInner,true)+collap("Atajos de iPhone",scInner,false)+collap("Iris IA · Google Gemini (gratis)",iaInner,false)+collap("Avanzado · endpoint propio",avInner,false);
   } else if(_ajtab==="personalizacion"){
-    h=`<div class="card"><div class="card-t" style="margin-bottom:4px">Categorías de gastos</div>
-        <div class="muted" style="margin-bottom:2px">Las que aparecen en el desplegable al cargar un gasto.</div>
-        ${catEditor("gasto")}</div>
-      <div class="card"><div class="card-t" style="margin-bottom:4px">Categorías de ingresos</div>
-        <div class="muted" style="margin-bottom:2px">Las que aparecen al cargar un ingreso.</div>
-        ${catEditor("ingreso")}</div>`;
+    h=collap("Apariencia",`<div class="aj-row"><div><div class="aj-l">Animaciones</div><div class="aj-d">Transiciones y efectos al moverte por la app.</div></div>
+          <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
+        <div class="aj-row"><div style="flex:1"><div class="aj-l">Color de acento</div><div class="aj-d">El color principal de Iris.</div>
+          <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div>`,true)
+      +collap("Categorías de gastos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un gasto. Usá ▲▼ para ordenarlas.</div>${catEditor("gasto")}`,false)
+      +collap("Categorías de ingresos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un ingreso. Usá ▲▼ para ordenarlas.</div>${catEditor("ingreso")}`,false);
   }
   panel.innerHTML=h;
 }
@@ -1176,7 +1203,7 @@ function scBody(kind){ const t=_shortcutTok||"TU_TOKEN";
   if(kind==="gasto")return JSON.stringify({token:t,kind:"gasto",amount:"MONTO",descr:"DESCRIPCION",method:"efectivo"});
   if(kind==="ingreso")return JSON.stringify({token:t,kind:"ingreso",amount:"MONTO",descr:"DESCRIPCION",method:"transferencia"});
   if(kind==="tarea")return JSON.stringify({token:t,kind:"tarea",descr:"TAREA"});
-  return JSON.stringify({token:t,kind:"evento",descr:"EVENTO",ev_time:"HORA"}); }
+  return JSON.stringify({token:t,kind:"evento",descr:"EVENTO",ev_date:"FECHA",ev_time:"HORA"}); }
 function scCopy(text,msg){ const done=()=>{ const e=$("#sc-status"); if(e)e.textContent=msg||"Copiado ✓"; }; if(navigator.clipboard){ navigator.clipboard.writeText(text).then(done).catch(done); } else done(); }
 
 /* ====================== EVENT DELEGATION ====================== */
@@ -1187,6 +1214,7 @@ document.addEventListener("click",e=>{
   const saveB=e.target.closest("[data-save]"); if(saveB){ doSave(saveB.dataset.save); return; }
   const pickB=e.target.closest("[data-pick]"); if(pickB){ pickB.parentElement.querySelectorAll("[data-pick]").forEach(c=>c.classList.remove("on")); pickB.classList.add("on"); _draft[pickB.dataset.pick]=pickB.dataset.v; if(pickB.dataset.pick==="type")syncCats(); if(pickB.dataset.pick==="type"||pickB.dataset.pick==="method")updateMovExtras(); return; }
   const ftabB=e.target.closest("[data-ftab]"); if(ftabB){ _ftab=ftabB.dataset.ftab; renderFinance(); return; }
+  const agtabB=e.target.closest("[data-agtab]"); if(agtabB){ _agtab=agtabB.dataset.agtab; renderAgenda(); return; }
   const ajB=e.target.closest("[data-ajtab]"); if(ajB){ _ajtab=ajB.dataset.ajtab; renderAjustes(); return; }
   const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendars(); return; }
   const dayB=e.target.closest("[data-day]"); if(dayB){ openDay(dayB.dataset.day); return; }
@@ -1201,9 +1229,12 @@ document.addEventListener("click",e=>{
     "set-accent":()=>{ S.set.accent=a.dataset.c; save(); applyAccent(); renderAjustes(); },
     "add-cat":()=>addCat(a.dataset.kind),
     "del-cat":()=>delCat(a.dataset.kind,a.dataset.cat),
-    "close":()=>closePop(),
-    "close-bg":()=>{ if(e.target.id==="overlay") closePop(); },
+    "cat-up":()=>moveCat(a.dataset.kind,a.dataset.cat,-1),
+    "cat-down":()=>moveCat(a.dataset.kind,a.dataset.cat,1),
+    "close":()=>{ _editId=null; closePop(); },
+    "close-bg":()=>{ if(e.target.id==="overlay"){ _editId=null; closePop(); } },
     "add-task":()=>openForm("task"),"add-event":()=>openForm("event"),"add-shop":()=>openForm("shop"),
+    "go-tasks":()=>{ _agtab="tareas"; go("agenda"); },
     "add-mov":()=>openForm("mov"),"add-saving":()=>openForm("saving"),"add-debt":()=>openForm("debt"),"add-loan":()=>openForm("loan"),
     "add-service":()=>openForm("service"),"pay-service":()=>payService(id),"del-service":()=>{ S.services=S.services.filter(x=>x.id!==id); save(); render(); },"cal-service":()=>addServiceToCalendar(id),
     "add-note":()=>{ const inp=$("#note-input"); const t=((inp&&inp.value)||"").trim(); if(!t)return; S.notes.push({id:uid(),text:t}); save(); render(); },
@@ -1215,6 +1246,8 @@ document.addEventListener("click",e=>{
     "del-event":()=>{S.events=S.events.filter(x=>x.id!==id);save();reopenAfter("eventos");},
     "cal-ev":()=>addToCalendar(id),
     "del-mov":()=>{S.moves=S.moves.filter(x=>x.id!==id);save();render();},
+    "edit-mov":()=>{ const m=S.moves.find(x=>x.id===id); if(m)openForm("mov",m); },
+    "edit-ev":()=>{ const ev=S.events.find(x=>x.id===id); if(ev)openForm("event",ev); },
     "del-saving":()=>{S.savings=S.savings.filter(x=>x.id!==id);save();render();},
     "del-debt":()=>{S.debts=S.debts.filter(x=>x.id!==id);save();render();},
     "del-loan":()=>{S.loans=S.loans.filter(x=>x.id!==id);save();render();},
