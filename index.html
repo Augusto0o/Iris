@@ -511,6 +511,7 @@
 const KEY="iris.v1";
 const SUPA_URL="https://jgppbiwxgqxdkdrvofgg.supabase.co";
 const SUPA_KEY="sb_publishable_3SxgERLT1uFujAMvTcH_zQ_dw1feYqX";
+const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_ingest?apikey="+SUPA_KEY;
 const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], chat:[], ai:{endpoint:""},
   catGasto:["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"],
   catIngreso:["Sueldo","Venta","Otro"],
@@ -1024,7 +1025,32 @@ function renderAjustes(){
           <button class="btn primary block" data-act="auth-signin">Entrar</button>
           <button class="btn block" data-act="auth-signup" style="margin-top:8px">Crear cuenta nueva</button>
           <div id="auth-status" class="muted" style="margin-top:10px;font-size:11px"></div></div>`;
-    h=acct+`<div class="card"><div class="card-t" style="margin-bottom:6px">Iris IA · Google Gemini (gratis)</div>
+    let scCard="";
+    if(li){
+      scCard = (_shortcutShown && _shortcutTok)
+        ? `<div class="card"><div class="card-t" style="margin-bottom:6px">Atajos de iPhone</div>
+            <div class="muted" style="margin-bottom:10px">Con estos datos creás atajos para cargar <b>gasto, ingreso, tarea o evento</b> por Siri o desde la pantalla de inicio. Copiá la URL, tu token y el cuerpo de cada atajo (las instrucciones están abajo del todo).</div>
+            <div class="field"><label>URL del endpoint (POST)</label><input id="sc-url" value="${esc(SHORTCUT_URL)}" readonly autocomplete="off"></div>
+            <button class="btn block" data-act="sc-copy-url">Copiar URL</button>
+            <div class="field" style="margin-top:12px"><label>Tu token personal</label><input id="sc-tok" value="${esc(_shortcutTok)}" readonly autocomplete="off"></div>
+            <button class="btn block" data-act="sc-copy-tok">Copiar token</button>
+            <div class="muted" style="margin:12px 0 6px;font-size:11px">Copiá el cuerpo JSON de cada atajo:</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn block" style="flex:1;min-width:46%" data-act="sc-body-gasto">Gasto</button>
+              <button class="btn block" style="flex:1;min-width:46%" data-act="sc-body-ingreso">Ingreso</button>
+              <button class="btn block" style="flex:1;min-width:46%" data-act="sc-body-tarea">Tarea</button>
+              <button class="btn block" style="flex:1;min-width:46%" data-act="sc-body-evento">Evento</button>
+            </div>
+            <button class="btn block" data-act="shortcuts-reset" style="margin-top:10px;color:var(--danger)">Regenerar token</button>
+            <div id="sc-status" class="muted" style="margin-top:8px;font-size:11px"></div></div>`
+        : `<div class="card"><div class="card-t" style="margin-bottom:6px">Atajos de iPhone</div>
+            <div class="muted" style="margin-bottom:10px">Cargá gastos, ingresos, tareas o eventos por Siri o desde la pantalla de inicio del iPhone, sin abrir la app.</div>
+            <button class="btn primary block" data-act="shortcuts-show">Activar atajos de iPhone</button></div>`;
+    } else {
+      scCard = `<div class="card"><div class="card-t" style="margin-bottom:6px">Atajos de iPhone</div>
+        <div class="muted">Iniciá sesión (arriba) para activar los atajos: van atados a tu cuenta.</div></div>`;
+    }
+    h=acct+scCard+`<div class="card"><div class="card-t" style="margin-bottom:6px">Iris IA · Google Gemini (gratis)</div>
         <div class="muted" style="margin-bottom:10px">Con tu clave gratuita de Gemini, Iris piensa con tus datos: gastos, deudas, suscripciones, qué te falta pagar, consejos — y puede <b>cargar gastos/ingresos</b> cuando se lo pedís. Creá la clave gratis (sin tarjeta) en <b>aistudio.google.com/apikey</b>.</div>
         <div class="field"><label>Clave de Gemini</label><input id="set-ai-key" type="password" value="${esc((S.ai&&S.ai.key)||"")}" placeholder="AIza…" autocomplete="off"></div>
         <button class="btn primary block" data-act="save-ai">Guardar clave</button>
@@ -1124,6 +1150,18 @@ document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&loggedIn
 window.addEventListener("online",()=>{ if(loggedIn()){ if(_syncDirty)syncPush(); else syncPull(); } });
 async function authBoot(){ if(!loggedIn())return; if(_sess.expires_at&&Date.now()>_sess.expires_at-30000)await authRefresh(); if(loggedIn()){ await syncPull({force:true}); startPoll(); } }
 
+/* ====================== ATAJOS iPhone (token de ingesta) ====================== */
+let _shortcutTok=null,_shortcutShown=false;
+async function shortcutEnsure(reset){ if(!loggedIn())return null; try{ const r=await authedFetch(SUPA_URL+"/rest/v1/rpc/"+(reset?"iris_token_reset":"iris_token_ensure"),{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}); if(r.ok){ _shortcutTok=await r.json(); return _shortcutTok; } }catch(_){} return null; }
+function shortcutsShow(){ _shortcutShown=true; shortcutEnsure(false).then(()=>renderAjustes()); }
+function shortcutsReset(){ shortcutEnsure(true).then(()=>{ const e=$("#sc-status"); if(e)e.textContent="Token regenerado ✓ (volvé a editar tus atajos con el nuevo)"; renderAjustes(); }); }
+function scBody(kind){ const t=_shortcutTok||"TU_TOKEN";
+  if(kind==="gasto")return JSON.stringify({p_token:t,p_kind:"mov",p_type:"gasto",p_amount:"MONTO",p_title:"DESCRIPCION"});
+  if(kind==="ingreso")return JSON.stringify({p_token:t,p_kind:"mov",p_type:"ingreso",p_amount:"MONTO",p_title:"DESCRIPCION"});
+  if(kind==="tarea")return JSON.stringify({p_token:t,p_kind:"task",p_title:"TAREA"});
+  return JSON.stringify({p_token:t,p_kind:"event",p_title:"EVENTO",p_time:"HORA"}); }
+function scCopy(text,msg){ const done=()=>{ const e=$("#sc-status"); if(e)e.textContent=msg||"Copiado ✓"; }; if(navigator.clipboard){ navigator.clipboard.writeText(text).then(done).catch(done); } else done(); }
+
 /* ====================== EVENT DELEGATION ====================== */
 document.addEventListener("click",e=>{
   const goB=e.target.closest("[data-go]"); if(goB){ go(goB.dataset.go); return; }
@@ -1166,6 +1204,10 @@ document.addEventListener("click",e=>{
     "iris":()=>openIris(),"iris-close":()=>closeIris(),"iris-send":()=>irisSend(),
     "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
     "auth-signin":()=>authSignIn(),"auth-signup":()=>authSignUp(),"auth-signout":()=>authSignOut(),"sync-now":()=>syncNow(),
+    "shortcuts-show":()=>shortcutsShow(),"shortcuts-reset":()=>shortcutsReset(),
+    "sc-copy-url":()=>scCopy(SHORTCUT_URL,"URL copiada ✓"),"sc-copy-tok":()=>scCopy(_shortcutTok||"","Token copiado ✓"),
+    "sc-body-gasto":()=>scCopy(scBody("gasto"),"Cuerpo de Gasto copiado ✓"),"sc-body-ingreso":()=>scCopy(scBody("ingreso"),"Cuerpo de Ingreso copiado ✓"),
+    "sc-body-tarea":()=>scCopy(scBody("tarea"),"Cuerpo de Tarea copiado ✓"),"sc-body-evento":()=>scCopy(scBody("evento"),"Cuerpo de Evento copiado ✓"),
     "voice-on":()=>setVoice(true),"voice-off":()=>setVoice(false),"voice-mic":()=>toggleMic(),
     "measure":()=>openMeasure()
   };
