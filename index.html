@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#070b16" id="theme-color-meta">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -323,18 +323,18 @@
   .sv-btn{flex:1;text-align:center;font-size:13px;font-weight:600;padding:10px;border-radius:13px;background:rgba(255,255,255,.08);color:var(--text);transition:transform var(--t),background var(--t);}
   .sv-btn:active{transform:scale(.96);}
   .sv-btn.accent{background:var(--grad);color:#fff;}
-  .sv-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -2px;padding:2px;}
+  .sv-carousel{display:grid;grid-auto-flow:column;grid-auto-columns:100%;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -2px;padding:2px;}
   .sv-carousel::-webkit-scrollbar{display:none;}
-  .sv-carousel .sv{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:center;margin-bottom:0;box-sizing:border-box;}
+  .sv-carousel .sv{min-width:0;scroll-snap-align:center;margin-bottom:0;box-sizing:border-box;}
   .sv-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;}
   .sv-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);transition:all var(--t);}
   .sv-dots i.on{background:var(--accent);width:18px;border-radius:3px;}
   .dp-tabs{display:flex;gap:6px;margin-bottom:12px;}
   .dp-tab{flex:1;padding:9px;border-radius:12px;font-size:13px;font-weight:600;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);transition:all var(--t);}
   .dp-tab.on{background:var(--grad);color:#fff;border-color:transparent;}
-  .dp-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .dp-carousel{display:grid;grid-auto-flow:column;grid-auto-columns:100%;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .dp-carousel::-webkit-scrollbar{display:none;}
-  .dp-slide{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:center;}
+  .dp-slide{min-width:0;scroll-snap-align:center;}
   .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
@@ -522,7 +522,7 @@
   <button class="tab" data-go="finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 8h5v5"/></svg>Finanzas</button>
   <button class="tab" data-go="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
 </nav></div>
-<button id="diag-fab" data-act="diag" aria-label="Medir pantalla">📐 medir</button>
+<button id="diag-fab" data-act="grid" aria-label="Grilla">📐 grilla</button>
 
 <!-- popup -->
 <div class="overlay" id="overlay" data-act="close-bg"><div class="pop" id="pop"></div></div>
@@ -1278,6 +1278,21 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target && e.tar
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
 function fmtMiles(v){ const r=String(v==null?"":v).replace(/[^\d]/g,"").replace(/^0+(?=\d)/,""); return r?r.replace(/\B(?=(\d{3})+(?!\d))/g,"."):""; }
+function toggleGrid(){
+  let g=document.getElementById("iris-grid");
+  if(g){ g.remove(); return; }
+  const vh=window.innerHeight, vw=window.innerWidth;
+  let saT=0,saB=0; try{ const pr=document.createElement("div"); pr.style.cssText="position:fixed;top:0;left:0;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);visibility:hidden"; document.body.appendChild(pr); const cs=getComputedStyle(pr); saT=parseInt(cs.paddingTop)||0; saB=parseInt(cs.paddingBottom)||0; pr.remove(); }catch(e){}
+  const nav=document.querySelector(".nav"); const nr=nav?nav.getBoundingClientRect():null;
+  g=document.createElement("div"); g.id="iris-grid";
+  g.style.cssText="position:fixed;inset:0;z-index:99998;pointer-events:none;font:10px/1 ui-monospace,monospace;";
+  let html="";
+  for(let y=0;y<=vh;y+=50){ html+=`<div style="position:absolute;left:0;right:0;top:${y}px;height:1px;background:rgba(255,70,70,.45)"></div><div style="position:absolute;left:2px;top:${y+1}px;color:#ff9090;background:rgba(0,0,0,.55);padding:1px 3px">${y}</div>`; }
+  html+=`<div style="position:absolute;left:0;right:0;top:0;height:${saT}px;background:rgba(80,255,130,.16);border-bottom:1px dashed #4dff8a"></div><div style="position:absolute;right:4px;top:${Math.max(0,saT-13)}px;color:#4dff8a;background:rgba(0,0,0,.6);padding:1px 4px">safe-top ${saT}</div>`;
+  html+=`<div style="position:absolute;left:0;right:0;bottom:0;height:${saB}px;background:rgba(80,255,130,.16);border-top:1px dashed #4dff8a"></div><div style="position:absolute;right:4px;bottom:${saB+2}px;color:#4dff8a;background:rgba(0,0,0,.6);padding:1px 4px">safe-bot ${saB}</div>`;
+  if(nr){ const t=Math.round(nr.top), b=Math.round(nr.bottom); html+=`<div style="position:absolute;left:0;right:0;top:${t}px;height:2px;background:#5b8cff"></div><div style="position:absolute;left:0;right:0;top:${b}px;height:2px;background:#5b8cff"></div><div style="position:absolute;left:4px;top:${t-14}px;color:#a9c2ff;background:rgba(0,0,0,.6);padding:1px 4px">menú ${t}→${b}  ·  viewport ${vw}x${vh}</div>`; }
+  g.innerHTML=html; document.body.appendChild(g);
+}
 function irisDiag(){
   const L=[]; const P=(...a)=>L.push(a.join(" "));
   try{
@@ -1428,6 +1443,7 @@ document.addEventListener("click",e=>{
     "edit-loan":()=>{ const d=S.loans.find(x=>x.id===id); if(d)openForm("loan",d); },
     "edit-service":()=>{ const s=S.services.find(x=>x.id===id); if(s)openForm("service",s); },
     "add-card":()=>openForm("card"),
+    "grid":()=>toggleGrid(),
     "diag":()=>{ const rep=irisDiag(); showPop(`<div class="pop-h"><div class="pop-t">Diagnóstico</div><button class="pop-x" data-act="close">✕</button></div><textarea id="diag-out" readonly style="width:100%;height:280px;font:11px/1.45 ui-monospace,monospace;background:rgba(0,0,0,.35);color:#cdd6f4;border:1px solid var(--line);border-radius:10px;padding:10px;white-space:pre;overflow:auto;box-sizing:border-box">${esc(rep)}</textarea><div class="pop-actions"><button class="btn primary block" data-act="copy-diag">Copiar reporte</button></div>`); },
     "copy-diag":()=>{ const ta=$("#diag-out"); if(ta){ try{ ta.focus(); ta.select(); ta.setSelectionRange(0,ta.value.length); }catch(_){}; const done=()=>{ const bb=document.querySelector('[data-act="copy-diag"]'); if(bb)bb.textContent="¡Copiado! Pegámelo en el chat"; }; if(navigator.clipboard){ navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ try{document.execCommand("copy");}catch(_){}; done(); }); } else { try{document.execCommand("copy");}catch(_){}; done(); } } },
     "edit-card":()=>{ const c=S.cards.find(x=>x.id===id); if(c)openForm("card",c); },
