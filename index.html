@@ -333,7 +333,8 @@
   .dp-tab.on{background:var(--grad);color:#fff;border-color:transparent;}
   .dp-carousel{display:grid;grid-auto-flow:column;grid-auto-columns:100%;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .dp-carousel::-webkit-scrollbar{display:none;}
-  .dp-slide{min-width:0;scroll-snap-align:center;}
+  .dp-slide{min-width:0;scroll-snap-align:center;display:flex;flex-direction:column;}
+  .dp-carousel .btn.primary,.sv-carousel .btn.primary{box-shadow:0 6px 18px rgba(0,0,0,.45);}
   .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
@@ -989,12 +990,13 @@ function renderFinMov(){ const host=$("#fin-mov-wrap"); if(!host)return;
 }
 function renderFinTjSv(){ const host=$("#fin-tjsv-wrap"); if(!host)return;
   const totC=(S.cards||[]).reduce((a,c)=>a+cardConsumo(c).cycle,0);
-  const tjInner=(S.cards.length?`<div class="dp-h">Consumo del ciclo <b>${money(totC)}</b></div>`+S.cards.map(cardRow).join(""):`<div class="empty" style="padding:8px 0">Sin tarjetas. Agregá tus tarjetas con su día de cierre y límite; al cargar un gasto con tarjeta elegís cuál.</div>`)
-    +`<button class="btn primary block" style="margin-top:12px" data-act="add-card">+ Nueva tarjeta</button>`;
+  const tjInner=`<div class="dp-h">Consumo del ciclo <b>${money(totC)}</b></div>`
+    +(S.cards.length?S.cards.map(cardRow).join(""):`<div class="empty" style="padding:8px 0">Sin tarjetas. Agregá tus tarjetas con su día de cierre y límite; al cargar un gasto con tarjeta elegís cuál.</div>`)
+    +`<button class="btn primary block" style="margin-top:auto" data-act="add-card">+ Nueva tarjeta</button>`;
   const totS=S.services.reduce((a,b)=>a+(+b.amount||0),0);
   const svInner=`<div class="dp-h">Fijo mensual <b>${money(totS)}</b></div>`
     +(S.services.length?S.services.slice().sort((a,b)=>(+a.day||0)-(+b.day||0)).map(serviceRow).join(""):`<div class="empty" style="padding:8px 0">Sin servicios fijos. Cargá luz, internet, alquiler… y Iris te avisa cuándo vencen.</div>`)
-    +`<button class="btn primary block" style="margin-top:12px" data-act="add-service">+ Nuevo servicio</button>`;
+    +`<button class="btn primary block" style="margin-top:auto" data-act="add-service">+ Nuevo servicio</button>`;
   const inner=`<div class="dp-tabs"><button class="dp-tab on" data-dp="0">Tarjetas</button><button class="dp-tab" data-dp="1">Servicios</button></div>
     <div class="dp-carousel" id="tjsv-carousel"><div class="dp-slide">${tjInner}</div><div class="dp-slide">${svInner}</div></div>`;
   host.innerHTML=collap("Tarjetas y Servicios",inner,"fin-tjsv",true);
@@ -1007,7 +1009,7 @@ function renderFinDeudas(){ const host=$("#fin-deudas-wrap"); if(!host)return;
   const totD=S.debts.reduce((a,b)=>a+(+b.amount||0),0);
   const deudasInner=`<div class="dp-h">Debés <b style="color:var(--danger)">${money(totD)}</b></div>`
     +(S.debts.length?S.debts.map(d=>debtRow(d,"debt")).join(""):`<div class="empty" style="padding:8px 0">No tenés deudas cargadas.</div>`)
-    +`<button class="btn primary block" style="margin-top:12px" data-act="add-debt">+ Nueva deuda</button>`;
+    +`<button class="btn primary block" style="margin-top:auto" data-act="add-debt">+ Nueva deuda</button>`;
   const map={}; S.moves.forEach(m=>{ if(m.cat!=="Prestado")return; const who=((m.who||"").trim())||"Sin nombre"; map[who]=(map[who]||0)+((m.type==="ingreso")?-(+m.amount||0):(+m.amount||0)); });
   const rows=Object.keys(map).map(k=>({who:k,amt:map[k]})).filter(r=>Math.round(r.amt)>0).sort((a,b)=>b.amt-a.amt);
   const totP=rows.reduce((a,b)=>a+b.amt,0);
