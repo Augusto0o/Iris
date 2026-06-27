@@ -511,7 +511,7 @@
 const KEY="iris.v1";
 const SUPA_URL="https://jgppbiwxgqxdkdrvofgg.supabase.co";
 const SUPA_KEY="sb_publishable_3SxgERLT1uFujAMvTcH_zQ_dw1feYqX";
-const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_ingest?apikey="+SUPA_KEY;
+const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_quick_add?apikey="+SUPA_KEY;
 const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], chat:[], ai:{endpoint:""},
   catGasto:["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"],
   catIngreso:["Sueldo","Venta","Otro"],
@@ -1156,10 +1156,10 @@ async function shortcutEnsure(reset){ if(!loggedIn())return null; try{ const r=a
 function shortcutsShow(){ _shortcutShown=true; shortcutEnsure(false).then(()=>renderAjustes()); }
 function shortcutsReset(){ shortcutEnsure(true).then(()=>{ const e=$("#sc-status"); if(e)e.textContent="Token regenerado ✓ (volvé a editar tus atajos con el nuevo)"; renderAjustes(); }); }
 function scBody(kind){ const t=_shortcutTok||"TU_TOKEN";
-  if(kind==="gasto")return JSON.stringify({p_token:t,p_kind:"mov",p_type:"gasto",p_amount:"MONTO",p_title:"DESCRIPCION"});
-  if(kind==="ingreso")return JSON.stringify({p_token:t,p_kind:"mov",p_type:"ingreso",p_amount:"MONTO",p_title:"DESCRIPCION"});
-  if(kind==="tarea")return JSON.stringify({p_token:t,p_kind:"task",p_title:"TAREA"});
-  return JSON.stringify({p_token:t,p_kind:"event",p_title:"EVENTO",p_time:"HORA"}); }
+  if(kind==="gasto")return JSON.stringify({token:t,kind:"gasto",amount:"MONTO",descr:"DESCRIPCION",method:"efectivo"});
+  if(kind==="ingreso")return JSON.stringify({token:t,kind:"ingreso",amount:"MONTO",descr:"DESCRIPCION",method:"transferencia"});
+  if(kind==="tarea")return JSON.stringify({token:t,kind:"tarea",descr:"TAREA"});
+  return JSON.stringify({token:t,kind:"evento",descr:"EVENTO",ev_time:"HORA"}); }
 function scCopy(text,msg){ const done=()=>{ const e=$("#sc-status"); if(e)e.textContent=msg||"Copiado ✓"; }; if(navigator.clipboard){ navigator.clipboard.writeText(text).then(done).catch(done); } else done(); }
 
 /* ====================== EVENT DELEGATION ====================== */
