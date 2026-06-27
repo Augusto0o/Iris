@@ -456,7 +456,7 @@
       <div class="gauge-wrap"><div id="gauge"></div><div class="gauge-cap" id="gauge-cap"></div></div>
       <div class="tip" id="tip"></div>
     </div>
-    <div class="card"><div class="cal-head" style="margin-bottom:8px"><div class="card-t" style="margin:0">Ahorros</div></div><div id="fin-ahorros"></div></div>
+    <div id="fin-ahorros-wrap"></div>
     <div class="seg" id="f-seg">
       <button data-ftab="mov" class="on">Movimientos</button>
       <button data-ftab="servicios">Servicios</button>
@@ -743,8 +743,8 @@ function renderAgenda(){
   if(!dates.includes(ti)) dates.push(ti);
   const limit=addDaysISO(ti,60);
   dates=[...new Set(dates)].filter(d=>d<=limit).sort();
-  let html=`<div class="ag-month">${new Date(ti+"T00:00").toLocaleDateString("es-AR",{month:"long",year:"numeric"})}</div>`;
-  let printed=0;
+  let html="";
+  let curMonth=null, printed=0;
   dates.forEach(d=>{
     const dd=new Date(d+"T00:00"), isToday=d===ti, isPast=d<ti;
     const ev=((map[d]&&map[d].events)||[]).slice().sort((a,b)=>(a.time||"").localeCompare(b.time||""));
@@ -753,6 +753,7 @@ function renderAgenda(){
     ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario">📅</button><button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
     tk.forEach(t=>{ items+=`<div class="ag-task ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><span class="ag-t">${esc(t.title)}</span><button class="ag-x" data-act="del-task" data-id="${t.id}">×</button></div>`; });
     if(!items){ if(isToday) items=`<div class="ag-none">Nada agendado hoy.</div>`; else return; }
+    const mk=d.slice(0,7); if(mk!==curMonth){ curMonth=mk; html+=`<div class="ag-month">${cap1(dd.toLocaleDateString("es-AR",{month:"long",year:"numeric"}))}</div>`; }
     const dow=cap1(dd.toLocaleDateString("es-AR",{weekday:"short"}).replace(".","")).slice(0,3);
     html+=`<div class="ag-day" id="ag-${d}"><div class="ag-date ${isToday?"today":(isPast?"overdue":"")}"><div class="ag-dow">${isToday?"Hoy":dow}</div><div class="ag-num">${dd.getDate()}</div></div><div class="ag-items">${items}</div></div>`;
     printed++;
@@ -922,7 +923,7 @@ function renderFinance(){
     body.innerHTML=h2;
   }
 }
-function renderFinAhorros(){ const host=$("#fin-ahorros"); if(!host)return; host.innerHTML=(S.savings.length?S.savings.map(svCard).join(""):`<div class="empty" style="padding:10px 0">Sin metas de ahorro.</div>`)+`<button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`; }
+function renderFinAhorros(){ const host=$("#fin-ahorros-wrap"); if(!host)return; const inner=(S.savings.length?S.savings.map(svCard).join(""):`<div class="empty" style="padding:10px 0">Sin metas de ahorro.</div>`)+`<button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`; host.innerHTML=collap("Ahorros",inner,"fin-ahorros",true); }
 function movRow(x){ const ico=CAT_ICON[x.cat]||(x.type==="ingreso"?"💼":"✨");
   return `<div class="row"><span class="mv-ico">${ico}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div><div class="row-sub">${x.cat||""} · ${x.date||""}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span><button class="x-row" data-act="del-mov" data-id="${x.id}">×</button></div>`; }
 function svCard(g){ const saved=+g.saved||0,target=+g.target||0,pct=target>0?Math.min(100,Math.round(saved/target*100)):0,rem=Math.max(0,target-saved);
@@ -1037,9 +1038,11 @@ function doSave(type){
 /* ---- AJUSTES (pestañas) ---- */
 let _ajtab="general";
 const ACCENTS=["#5b8cff","#a78bfa","#22d3ee","#3ddc97","#ffc861","#ff6b6b","#ff8fab"];
-function applyAccent(){ document.documentElement.style.setProperty("--accent",(S.set&&S.set.accent)||"#5b8cff"); }
+function _lighten(hex,amt){ let h=(hex||"#5b8cff").replace("#",""); if(h.length===3)h=h.split("").map(c=>c+c).join(""); let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16); const f=amt>=0?(c=>c+(255-c)*amt):(c=>c*(1+amt)); const cl=c=>Math.max(0,Math.min(255,Math.round(c))).toString(16).padStart(2,"0"); return "#"+cl(f(r))+cl(f(g))+cl(f(b)); }
+function applyAccent(){ const a=(S.set&&S.set.accent)||"#5b8cff"; const s=document.documentElement.style; s.setProperty("--accent",a); s.setProperty("--grad","linear-gradient(135deg,"+a+","+_lighten(a,0.30)+")"); s.setProperty("--grad-bv","linear-gradient(135deg,"+_lighten(a,-0.10)+","+_lighten(a,0.34)+")"); }
 function applyAnim(){ document.body.classList.toggle("no-anim", !(S.set&&S.set.anim)); }
-function collap(title,inner,open){ return `<details class="card collap"${open?" open":""}><summary>${title}</summary><div class="collap-b">${inner}</div></details>`; }
+function collap(title,inner,key,defOpen){ const c=(S.set&&S.set.collapsed)||{}; const open=(key in c)?!!c[key]:!!defOpen; return `<details class="card collap" data-collap="${key}"${open?" open":""}><summary>${title}</summary><div class="collap-b">${inner}</div></details>`; }
+document.addEventListener("toggle",e=>{ const d=e.target; if(d&&d.tagName==="DETAILS"&&d.dataset&&d.dataset.collap){ if(!S.set.collapsed)S.set.collapsed={}; if(S.set.collapsed[d.dataset.collap]!==d.open){ S.set.collapsed[d.dataset.collap]=d.open; save(); } } },true);
 function moveCat(kind,name,dir){ const list=kind==="gasto"?S.catGasto:S.catIngreso; const i=list.indexOf(name); const j=i+dir; if(i<0||j<0||j>=list.length)return; const t=list[i]; list[i]=list[j]; list[j]=t; save(); renderAjustes(); }
 function catEditor(kind){
   const list=(kind==="gasto"?S.catGasto:S.catIngreso)||[];
@@ -1053,7 +1056,7 @@ function renderAjustes(){
   let h="";
   if(_ajtab==="general"){
     h=collap("Perfil",`<div class="field"><label>Tu nombre</label><input id="set-name" value="${esc(S.name||"")}" placeholder="¿Cómo te llamás?"></div>
-        <button class="btn primary block" data-act="save-name">Guardar nombre</button>`,true)
+        <button class="btn primary block" data-act="save-name">Guardar nombre</button>`,"aj-perfil",true)
       +`<div class="card"><div class="card-t" style="margin-bottom:8px">Datos</div>
         <div class="muted" style="margin-bottom:14px">Tus datos se guardan en este dispositivo y, si iniciás sesión, se sincronizan en la nube.</div>
         <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
@@ -1101,14 +1104,14 @@ function renderAjustes(){
     const avInner = `<div class="field"><label>Endpoint (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
         <div class="muted" style="margin:10px 0;font-size:11px">Si tenés tu propia función backend, pegá la URL. La clave de Gemini tiene prioridad.</div>
         <button class="btn block" data-act="save-ai">Guardar endpoint</button>`;
-    h=collap(acctTitle,acctInner,true)+collap("Atajos de iPhone",scInner,false)+collap("Iris IA · Google Gemini (gratis)",iaInner,false)+collap("Avanzado · endpoint propio",avInner,false);
+    h=collap(acctTitle,acctInner,"aj-cuenta",true)+collap("Atajos de iPhone",scInner,"aj-atajos",false)+collap("Iris IA · Google Gemini (gratis)",iaInner,"aj-ia",false)+collap("Avanzado · endpoint propio",avInner,"aj-avanzado",false);
   } else if(_ajtab==="personalizacion"){
     h=collap("Apariencia",`<div class="aj-row"><div><div class="aj-l">Animaciones</div><div class="aj-d">Transiciones y efectos al moverte por la app.</div></div>
           <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
         <div class="aj-row"><div style="flex:1"><div class="aj-l">Color de acento</div><div class="aj-d">El color principal de Iris.</div>
-          <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div>`,true)
-      +collap("Categorías de gastos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un gasto. Usá ▲▼ para ordenarlas.</div>${catEditor("gasto")}`,false)
-      +collap("Categorías de ingresos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un ingreso. Usá ▲▼ para ordenarlas.</div>${catEditor("ingreso")}`,false);
+          <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div>`,"aj-apariencia",true)
+      +collap("Categorías de gastos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un gasto. Usá ▲▼ para ordenarlas.</div>${catEditor("gasto")}`,"aj-catgasto",false)
+      +collap("Categorías de ingresos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un ingreso. Usá ▲▼ para ordenarlas.</div>${catEditor("ingreso")}`,"aj-catingreso",false);
   }
   panel.innerHTML=h;
 }
