@@ -210,20 +210,24 @@
   .orb-btn:active{transform:scale(.92);}
   /* orbe Iris = ícono fluido (referencia) */
   .orb{display:block;width:100%;height:100%;border-radius:50%;position:relative;overflow:hidden;
-    background:radial-gradient(circle at 50% 32%,#8aa6d6 0%,#5d6cae 44%,#474684 76%,#25264c 100%);
+    background:radial-gradient(circle at 50% 32%,rgba(150,176,224,.5) 0%,rgba(95,110,178,.42) 46%,rgba(72,70,134,.5) 78%,rgba(38,40,80,.58) 100%);
+    -webkit-backdrop-filter:blur(6px) saturate(1.25);backdrop-filter:blur(6px) saturate(1.25);
     animation:orbBreathe 4.5s ease-in-out infinite;}
-  .orb-b1,.orb-b2{position:absolute;border-radius:50%;will-change:transform;}
-  .orb-b1{width:80%;height:80%;left:2%;top:0;z-index:1;filter:blur(8px);
-    background:radial-gradient(circle,rgba(186,214,248,.5) 0%,rgba(186,214,248,0) 66%);animation:orbDrift1 6s ease-in-out infinite;}
-  .orb-b2{width:70%;height:70%;right:0;bottom:-4%;z-index:1;filter:blur(8px);
-    background:radial-gradient(circle,rgba(190,172,230,.42) 0%,rgba(190,172,230,0) 64%);animation:orbDrift2 7.5s ease-in-out infinite;}
+  .orb-spin{position:absolute;inset:-12%;z-index:1;animation:orbSpin 13s linear infinite;will-change:transform;}
+  .orb-b1,.orb-b2,.orb-sheen{position:absolute;border-radius:50%;}
+  .orb-b1{width:60%;height:60%;left:12%;top:8%;filter:blur(7px);
+    background:radial-gradient(circle,rgba(190,216,250,.62) 0%,rgba(190,216,250,0) 66%);animation:orbDrift1 6s ease-in-out infinite;}
+  .orb-b2{width:52%;height:52%;right:10%;bottom:10%;filter:blur(7px);
+    background:radial-gradient(circle,rgba(196,176,236,.52) 0%,rgba(196,176,236,0) 64%);animation:orbDrift2 7.5s ease-in-out infinite;}
+  .orb-sheen{inset:6%;background:conic-gradient(from 0deg,rgba(255,255,255,0) 0deg,rgba(185,210,250,.20) 70deg,rgba(255,255,255,0) 150deg,rgba(175,155,225,.17) 250deg,rgba(255,255,255,0) 330deg);}
   .orb::before{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:2;
-    box-shadow:inset 0 -9px 18px rgba(14,10,38,.55),inset 0 7px 16px rgba(170,200,245,.28),inset 0 0 0 1px rgba(200,220,255,.12);}
+    box-shadow:inset 0 -8px 16px rgba(14,10,38,.45),inset 0 6px 14px rgba(170,200,245,.25),inset 0 0 0 1px rgba(200,220,255,.14);}
   .orb::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:3;
-    background:radial-gradient(38% 30% at 36% 24%,rgba(255,255,255,.5),rgba(255,255,255,0) 70%);}
+    background:radial-gradient(36% 28% at 35% 24%,rgba(255,255,255,.52),rgba(255,255,255,0) 70%);}
+  @keyframes orbSpin{to{transform:rotate(360deg);}}
   @keyframes orbBreathe{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
-  @keyframes orbDrift1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(10%,9%) scale(1.1);}}
-  @keyframes orbDrift2{0%,100%{transform:translate(0,0) scale(1.05);}50%{transform:translate(-9%,-7%) scale(.92);}}
+  @keyframes orbDrift1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(10%,9%) scale(1.12);}}
+  @keyframes orbDrift2{0%,100%{transform:translate(0,0) scale(1.05);}50%{transform:translate(-9%,-8%) scale(.9);}}
   @keyframes spin{to{transform:rotate(360deg);}}
   @keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
 
@@ -531,7 +535,7 @@
 <div class="navwrap"><nav class="nav">
   <button class="tab on" data-go="inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Inicio</button>
   <button class="tab" data-go="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Agenda</button>
-  <div class="orbslot"><button class="orb-btn" data-act="iris" aria-label="Hablar con Iris"><span class="orb"><i class="orb-b1"></i><i class="orb-b2"></i></span></button></div>
+  <div class="orbslot"><button class="orb-btn" data-act="iris" aria-label="Hablar con Iris"><span class="orb"><span class="orb-spin"><i class="orb-b1"></i><i class="orb-b2"></i><i class="orb-sheen"></i></span></span></button></div>
   <button class="tab" data-go="finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 8h5v5"/></svg>Finanzas</button>
   <button class="tab" data-go="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
 </nav></div>
