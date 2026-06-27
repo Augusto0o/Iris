@@ -1245,7 +1245,8 @@ function renderAjustes(){
           <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div>`,"aj-apariencia",true)
       +collap("Recordatorios",`<div class="field"><label>Avisarme antes (eventos y tareas con hora)</label><select id="set-remind">${[[0,"En el momento"],[5,"5 minutos antes"],[10,"10 minutos antes"],[15,"15 minutos antes"],[30,"30 minutos antes"],[60,"1 hora antes"],[1440,"1 día antes"]].map(o=>`<option value="${o[0]}" ${o[0]===_remMin()?"selected":""}>${o[1]}</option>`).join("")}</select></div><div class="muted" style="margin-top:8px;font-size:11px">Al tocar 🔔 "Recordarme" en un evento o tarea, Iris crea un archivo que agregás a tu Calendario y el iPhone te avisa con sonido (aunque Iris esté cerrada).</div>`,"aj-recordatorios",false)
       +collap("Categorías de gastos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un gasto. Usá ▲▼ para ordenarlas.</div>${catEditor("gasto")}`,"aj-catgasto",false)
-      +collap("Categorías de ingresos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un ingreso. Usá ▲▼ para ordenarlas.</div>${catEditor("ingreso")}`,"aj-catingreso",false);
+      +collap("Categorías de ingresos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un ingreso. Usá ▲▼ para ordenarlas.</div>${catEditor("ingreso")}`,"aj-catingreso",false)
+      +collap("Diagnóstico de pantalla",`<div class="muted" style="margin-bottom:10px;font-size:12px">Si algo se ve mal, generá el reporte de medidas y mandámelo en el chat junto con una captura.</div><button class="btn primary block" data-act="diag">Generar reporte</button>`,"aj-diag",false);
   }
   panel.innerHTML=h;
 }
@@ -1275,6 +1276,35 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target && e.tar
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
 function fmtMiles(v){ const r=String(v==null?"":v).replace(/[^\d]/g,"").replace(/^0+(?=\d)/,""); return r?r.replace(/\B(?=(\d{3})+(?!\d))/g,"."):""; }
+function irisDiag(){
+  const L=[]; const P=(...a)=>L.push(a.join(" "));
+  try{
+    const de=document.documentElement, b=document.body, vv=window.visualViewport||{};
+    P("=== IRIS DIAG ===");
+    P("fecha:", new Date().toISOString());
+    P("UA:", navigator.userAgent);
+    P("standalone(PWA):", (navigator.standalone===true)||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches));
+    P("dpr:", window.devicePixelRatio||1);
+    P("window.inner:", innerWidth+"x"+innerHeight);
+    P("screen:", screen.width+"x"+screen.height, "avail:", screen.availWidth+"x"+screen.availHeight);
+    P("visualViewport:", Math.round(vv.width||0)+"x"+Math.round(vv.height||0), "scale:", (vv.scale||1), "offsetTop:", Math.round(vv.offsetTop||0));
+    try{ const pr=document.createElement("div"); pr.style.cssText="position:fixed;top:0;left:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);visibility:hidden"; document.body.appendChild(pr); const cs=getComputedStyle(pr); P("safe-area (T R B L):", cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft); pr.remove(); }catch(e){}
+    P("documentEl: client "+de.clientWidth+"x"+de.clientHeight+" scroll "+de.scrollWidth+"x"+de.scrollHeight);
+    P("body: client "+b.clientWidth+"x"+b.clientHeight+" scroll "+b.scrollWidth+"x"+b.scrollHeight);
+    P("overflow horizontal:", de.scrollWidth>de.clientWidth?("SÍ +"+(de.scrollWidth-de.clientWidth)+"px"):"no");
+    const scr=[...document.querySelectorAll(".screen")].find(s=>getComputedStyle(s).display!=="none"&&s.getBoundingClientRect().height>0);
+    P("pantalla activa:", scr?("#"+scr.id):"?");
+    try{ const k=Object.keys(localStorage).find(x=>x.startsWith("iris")); const s=JSON.parse(localStorage.getItem(k)||"{}"); P("datos:", "moves="+((s.moves||[]).length), "tasks="+((s.tasks||[]).length), "events="+((s.events||[]).length), "savings="+((s.savings||[]).length), "cards="+((s.cards||[]).length), "services="+((s.services||[]).length), "debts="+((s.debts||[]).length)); }catch(e){ P("datos: (no leíble)"); }
+    P("--- elementos (ancho x alto @ x,y) ---");
+    ["#app",".screen.active","#s-finanzas",".top",".card.hero",".metric-grid","#fin-mov-wrap","#fin-mov-wrap .card",".health-card","#fin-ahorros-wrap",".sv-carousel",".sv","#fin-deudas-wrap","#fin-tjsv-wrap",".dp-carousel",".dp-slide",".tabbar",".fab"].forEach(sl=>{ const el=document.querySelector(sl); if(el){ const r=el.getBoundingClientRect(); const cs=getComputedStyle(el); P(sl+":", Math.round(r.width)+"x"+Math.round(r.height), "@"+Math.round(r.x)+","+Math.round(r.y), "disp="+cs.display, "pos="+cs.position, "ovX="+cs.overflowX); } });
+    const icos=[...document.querySelectorAll("svg.ico")]; if(icos.length){ const ws=icos.map(s=>Math.round(s.getBoundingClientRect().width)); P("svg.ico:", icos.length+" total", "min="+Math.min(...ws)+"px", "max="+Math.max(...ws)+"px"); } else P("svg.ico: 0 en pantalla");
+    const vw=de.clientWidth, wide=[];
+    document.querySelectorAll(scr?("#"+scr.id+" *"):"body *").forEach(el=>{ const r=el.getBoundingClientRect(); if(r.width>vw+2){ wide.push((el.id?"#"+el.id:(typeof el.className==="string"&&el.className?"."+el.className.trim().split(/\s+/)[0]:el.tagName.toLowerCase()))+"="+Math.round(r.width)); } });
+    P("MÁS ANCHOS QUE LA PANTALLA ("+vw+"px):", wide.slice(0,15).join("  ")||"ninguno");
+    P("alto total scroll:", de.scrollHeight+"px");
+  }catch(e){ P("ERROR diag:", e.message); }
+  return L.join("\n");
+}
 document.addEventListener("input",e=>{
   const t=e.target; if(!t||!t.classList||!t.classList.contains("num"))return;
   const sel=t.selectionStart||0;
@@ -1392,6 +1422,8 @@ document.addEventListener("click",e=>{
     "edit-loan":()=>{ const d=S.loans.find(x=>x.id===id); if(d)openForm("loan",d); },
     "edit-service":()=>{ const s=S.services.find(x=>x.id===id); if(s)openForm("service",s); },
     "add-card":()=>openForm("card"),
+    "diag":()=>{ const rep=irisDiag(); showPop(`<div class="pop-h"><div class="pop-t">Diagnóstico</div><button class="pop-x" data-act="close">✕</button></div><textarea id="diag-out" readonly style="width:100%;height:280px;font:11px/1.45 ui-monospace,monospace;background:rgba(0,0,0,.35);color:#cdd6f4;border:1px solid var(--line);border-radius:10px;padding:10px;white-space:pre;overflow:auto;box-sizing:border-box">${esc(rep)}</textarea><div class="pop-actions"><button class="btn primary block" data-act="copy-diag">Copiar reporte</button></div>`); },
+    "copy-diag":()=>{ const ta=$("#diag-out"); if(ta){ try{ ta.focus(); ta.select(); ta.setSelectionRange(0,ta.value.length); }catch(_){}; const done=()=>{ const bb=document.querySelector('[data-act="copy-diag"]'); if(bb)bb.textContent="¡Copiado! Pegámelo en el chat"; }; if(navigator.clipboard){ navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ try{document.execCommand("copy");}catch(_){}; done(); }); } else { try{document.execCommand("copy");}catch(_){}; done(); } } },
     "edit-card":()=>{ const c=S.cards.find(x=>x.id===id); if(c)openForm("card",c); },
     "del-card":()=>{ if(confirm("¿Borrar esta tarjeta? Los gastos quedan, pero sin tarjeta asignada.")){ S.cards=S.cards.filter(x=>x.id!==id); save(); render(); } },
     "del-saving":()=>{S.savings=S.savings.filter(x=>x.id!==id);save();render();},
