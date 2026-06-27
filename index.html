@@ -321,6 +321,12 @@
   .sv-btn{flex:1;text-align:center;font-size:13px;font-weight:600;padding:10px;border-radius:13px;background:rgba(255,255,255,.08);color:var(--text);transition:transform var(--t),background var(--t);}
   .sv-btn:active{transform:scale(.96);}
   .sv-btn.accent{background:var(--grad);color:#fff;}
+  .sv-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -2px;padding:2px;}
+  .sv-carousel::-webkit-scrollbar{display:none;}
+  .sv-carousel .sv{min-width:85%;width:85%;flex-shrink:0;scroll-snap-align:center;margin-bottom:0;}
+  .sv-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;}
+  .sv-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);transition:all var(--t);}
+  .sv-dots i.on{background:var(--accent);width:18px;border-radius:3px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
   .debt-ico{width:38px;height:38px;border-radius:12px;background:var(--card-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
@@ -364,6 +370,25 @@
   /* voice mode */
   .iris-voice{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:var(--s4);padding:var(--s5);}
   .iris.voice .iris-chat,.iris.voice .iris-qs,.iris.voice .askwrap{display:none;}
+  .iris-actions{display:flex;align-items:center;gap:6px;}
+  .iris-ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);}
+  .iris-ico svg{width:18px;height:18px;}
+  .iris-ico:active{transform:scale(.92);}
+  .msg.ai{position:relative;}
+  .msg-save{position:absolute;bottom:-9px;right:-6px;width:26px;height:26px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);color:var(--faint);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.3);}
+  .msg-save svg{width:13px;height:13px;}
+  .msg-save.on{color:var(--accent);border-color:var(--accent);}
+  .iris-saved{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:var(--s4);flex-direction:column;gap:var(--s3);}
+  .iris.saved .iris-chat,.iris.saved .iris-qs,.iris.saved .askwrap,.iris.saved .iris-voice{display:none;}
+  .iris.saved .iris-saved{display:flex;}
+  .saved-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .saved-head .saved-back{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line);}
+  .saved-head .saved-back svg{width:18px;height:18px;}
+  .saved-head .saved-t{font-size:17px;font-weight:700;}
+  .saved-item{position:relative;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:14px 40px 14px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap;}
+  .saved-item b{color:#ffb784;font-weight:700;}
+  .saved-item .saved-date{display:block;margin-top:8px;font-size:11px;color:var(--faint);}
+  .saved-item .x-row{position:absolute;top:10px;right:10px;}
   .iris.voice .iris-voice{display:flex;}
   .vorb{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
   .vorb .vglow{position:absolute;width:150px;height:150px;border-radius:50%;
@@ -494,10 +519,15 @@
 <div class="iris" id="iris">
   <div class="iris-top">
     <div class="iris-name">IRIS</div>
-    <button class="iris-close" data-act="iris-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <div class="iris-actions">
+      <button class="iris-ico" data-act="iris-saved" aria-label="Mensajes guardados" title="Guardados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></button>
+      <button class="iris-ico" data-act="iris-clear" aria-label="Borrar chat" title="Borrar chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button>
+      <button class="iris-close" data-act="iris-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
   </div>
   <div class="iris-body">
     <div class="iris-chat" id="iris-chat"></div>
+    <div class="iris-saved" id="iris-saved"></div>
     <div class="iris-qs" id="iris-qs"></div>
     <div class="askwrap">
       <div class="askglow"></div>
@@ -526,12 +556,12 @@ const KEY="iris.v1";
 const SUPA_URL="https://jgppbiwxgqxdkdrvofgg.supabase.co";
 const SUPA_KEY="sb_publishable_3SxgERLT1uFujAMvTcH_zQ_dw1feYqX";
 const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_quick_add?apikey="+SUPA_KEY;
-const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], notes:[], chat:[], ai:{endpoint:""},
+const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], notes:[], chat:[], saved:[], ai:{endpoint:""},
   catGasto:["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"],
   catIngreso:["Sueldo","Prestado","Regalo","Otros"],
   set:{anim:true,accent:"#5b8cff"} };
 let S=load();
-function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.saved))s.saved=[]; if(!Array.isArray(s.chat))s.chat=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && typeof loggedIn==="function" && loggedIn()) schedulePush(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -564,7 +594,7 @@ function go(s,_pop){ screen=s;
   window.scrollTo(0,0); render();
   if(!_pop){ try{ history.pushState({s:s},""); }catch(_){} }
 }
-function navBack(){ if($("#overlay")&&$("#overlay").classList.contains("open")){ closePop(); return true; } if($("#iris")&&$("#iris").classList.contains("open")){ closeIris(); return true; } return false; }
+function navBack(){ if($("#overlay")&&$("#overlay").classList.contains("open")){ closePop(); return true; } const iris=$("#iris"); if(iris&&iris.classList.contains("open")){ if(iris.classList.contains("saved")){ setIrisSaved(false); return true; } closeIris(); return true; } return false; }
 window.addEventListener("popstate",function(ev){ if(navBack()){ try{history.pushState({s:screen},"");}catch(_){ } return; } const s=(ev.state&&ev.state.s)||"inicio"; if(s!==screen) go(s,true); });
 try{ history.replaceState({s:screen},""); }catch(_){}
 (function(){ var standalone=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone;
@@ -923,7 +953,18 @@ function renderFinance(){
     body.innerHTML=h2;
   }
 }
-function renderFinAhorros(){ const host=$("#fin-ahorros-wrap"); if(!host)return; const inner=(S.savings.length?S.savings.map(svCard).join(""):`<div class="empty" style="padding:10px 0">Sin metas de ahorro.</div>`)+`<button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`; host.innerHTML=collap("Ahorros",inner,"fin-ahorros",true); }
+function renderFinAhorros(){ const host=$("#fin-ahorros-wrap"); if(!host)return;
+  let inner;
+  if(S.savings.length){
+    const dots=S.savings.length>1?`<div class="sv-dots">${S.savings.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div>`:"";
+    inner=`<div class="sv-carousel" id="sv-carousel">${S.savings.map(svCard).join("")}</div>${dots}<button class="btn primary block" style="margin-top:12px" data-act="add-saving">+ Nueva meta</button>`;
+  } else {
+    inner=`<div class="empty" style="padding:10px 0">Sin metas de ahorro.</div><button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`;
+  }
+  host.innerHTML=collap("Ahorros",inner,"fin-ahorros",true);
+  const car=$("#sv-carousel");
+  if(car&&S.savings.length>1){ car.onscroll=()=>{ const per=car.scrollWidth/S.savings.length; const i=Math.round(car.scrollLeft/per); host.querySelectorAll(".sv-dots i").forEach((d,j)=>d.classList.toggle("on",j===Math.min(Math.max(i,0),S.savings.length-1))); }; }
+}
 function movRow(x){ const ico=CAT_ICON[x.cat]||(x.type==="ingreso"?"💼":"✨");
   return `<div class="row"><span class="mv-ico">${ico}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div><div class="row-sub">${x.cat||""} · ${x.date||""}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span><button class="x-row" data-act="del-mov" data-id="${x.id}">×</button></div>`; }
 function svCard(g){ const saved=+g.saved||0,target=+g.target||0,pct=target>0?Math.min(100,Math.round(saved/target*100)):0,rem=Math.max(0,target-saved);
@@ -1257,6 +1298,11 @@ document.addEventListener("click",e=>{
     "save-add":()=>contribute(id,1),"save-sub":()=>contribute(id,-1),
     "do-contrib":()=>doContribute(),
     "iris":()=>openIris(),"iris-close":()=>closeIris(),"iris-send":()=>irisSend(),
+    "iris-clear":()=>clearChat(),
+    "iris-saved":()=>setIrisSaved(true),
+    "iris-saved-back":()=>setIrisSaved(false),
+    "iris-savemsg":()=>{ const m=S.chat.find(x=>x.id===id); if(!m)return; if(!S.saved)S.saved=[]; const k=S.saved.findIndex(s=>s.srcId===id); if(k>=0)S.saved.splice(k,1); else S.saved.push({id:uid(),srcId:id,t:m.t,date:todayISO()}); save(); irisRender(); },
+    "iris-unsave":()=>{ S.saved=(S.saved||[]).filter(s=>s.id!==id); save(); renderIrisSaved(); },
     "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
     "auth-signin":()=>authSignIn(),"auth-signup":()=>authSignUp(),"auth-signout":()=>authSignOut(),"sync-now":()=>syncNow(),
     "shortcuts-show":()=>shortcutsShow(),"shortcuts-reset":()=>shortcutsReset(),
@@ -1343,17 +1389,30 @@ function saveAI(){ S.ai=S.ai||{}; const k=$("#set-ai-key"); if(k) S.ai.key=k.val
 /* ====================== IRIS (asistente) ====================== */
 const QUICKS=["¿Qué tengo hoy?","¿Cuánto gasté este mes?","¿Estoy gastando mucho?","Dame un consejo financiero","¿Cuánto debo?"];
 function openIris(){ $("#iris").classList.add("open"); document.body.classList.add("modal-open"); irisRender(); setTimeout(()=>$("#iris-input")&&$("#iris-input").focus(),200); }
-function closeIris(){ $("#iris").classList.remove("open","voice","listening"); document.body.classList.remove("modal-open"); stopMic(); }
+function closeIris(){ $("#iris").classList.remove("open","voice","listening","saved"); document.body.classList.remove("modal-open"); stopMic(); }
 function setVoice(on){ $("#iris").classList.toggle("voice",on); if(on){ buildRing(); $("#vstatus").textContent="Tocá el micrófono para hablar"; } else { stopMic(); setTimeout(()=>$("#iris-input")&&$("#iris-input").focus(),100); } }
 function buildRing(){ const r=$("#vring"); if(r.children.length)return; let h=""; for(let i=0;i<12;i++){ h+=`<i style="transform:rotate(${i*30}deg) translateY(-66px);animation-delay:${i*0.1}s"></i>`; } r.innerHTML=h; }
 function irisRender(){
   $("#iris-qs").innerHTML=QUICKS.map(q=>`<button class="ch" data-q="${esc(q)}">${esc(q)}</button>`).join("");
   $("#iris-qs").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{ $("#iris-input").value=b.dataset.q; irisSend(); });
   const c=$("#iris-chat");
+  S.chat.forEach(m=>{ if(!m.id)m.id="m"+Math.random().toString(36).slice(2,9); });
   if(!S.chat.length){ c.innerHTML=`<div class="msg ai">Hola${S.name?" "+esc(S.name.split(" ")[0]):""} 👋 Soy <b>Iris</b>. Preguntame por tus <b>tareas</b>, tu <b>agenda</b> o tus <b>finanzas</b> (gastos, deudas, ahorro), o pedime un <b>consejo</b>. Todo con tus datos, privado.</div>`; }
-  else { c.innerHTML=S.chat.slice(-30).map(m=>`<div class="msg ${m.r}">${m.r==="ai"?m.t:esc(m.t)}</div>`).join(""); }
+  else { c.innerHTML=S.chat.slice(-30).map(m=>{
+      if(m.r==="ai"){ const on=(S.saved||[]).some(s=>s.srcId===m.id); return `<div class="msg ai">${m.t}<button class="msg-save ${on?"on":""}" data-act="iris-savemsg" data-id="${m.id}" aria-label="Guardar" title="${on?"Quitar de guardados":"Guardar mensaje"}"><svg viewBox="0 0 24 24" fill="${on?"currentColor":"none"}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></button></div>`; }
+      return `<div class="msg me">${esc(m.t)}</div>`;
+    }).join(""); }
   c.scrollTop=c.scrollHeight;
+  if($("#iris").classList.contains("saved")) renderIrisSaved();
 }
+function setIrisSaved(on){ $("#iris").classList.toggle("saved",on); if(on)renderIrisSaved(); }
+function renderIrisSaved(){ const host=$("#iris-saved"); if(!host)return;
+  const list=(S.saved||[]).slice().reverse();
+  const items=list.length?list.map(s=>`<div class="saved-item">${s.t}<span class="saved-date">Guardado el ${s.date||""}</span><button class="x-row" data-act="iris-unsave" data-id="${s.id}" aria-label="Borrar">×</button></div>`).join("")
+    :`<div class="empty">No guardaste mensajes todavía.\nTocá el 🔖 en una respuesta de Iris para guardarla acá.</div>`;
+  host.innerHTML=`<div class="saved-head"><button class="saved-back" data-act="iris-saved-back" aria-label="Volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="saved-t">Guardados</div></div>${items}`;
+}
+function clearChat(){ if(!S.chat.length){ setIrisSaved(false); return; } if(confirm("¿Borrar toda la conversación con Iris? Los mensajes guardados no se borran.")){ S.chat=[]; save(); irisRender(); } }
 function irisSend(){ const i=$("#iris-input"); const q=i.value.trim(); if(!q)return; i.value=""; pushMsg("me",q);
   const c=$("#iris-chat"); let tip=null; if(c){ tip=document.createElement("div"); tip.className="msg ai"; tip.textContent="pensando…"; c.appendChild(tip); c.scrollTop=c.scrollHeight; }
   askAI(q).then(a=>{ if(tip&&tip.remove)tip.remove(); pushMsg("ai",a); });
@@ -1426,7 +1485,7 @@ async function askAI(q){
     return reply?esc(reply).replace(/\n/g,"<br>"):answer(q);
   }catch(_){ return "⚠️ No pude conectar con la IA. Por ahora te respondo local:<br><br>"+answer(q); }
 }
-function pushMsg(r,t){ S.chat.push({r,t}); save(); irisRender(); }
+function pushMsg(r,t){ S.chat.push({r,t,id:"m"+Math.random().toString(36).slice(2,9)}); save(); irisRender(); }
 
 function answer(qRaw){
   const q=qRaw.toLowerCase(), ti=todayISO(); const f=monthFin(); const has=(...w)=>w.some(x=>q.includes(x));
