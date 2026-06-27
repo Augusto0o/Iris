@@ -490,6 +490,7 @@
       <div class="card metric tap" data-act="open-txlist" data-v="expense"><div class="lbl">Gastos</div><div class="mval down" id="mc-expense">$0</div><div class="spark" id="spark-expense"></div></div>
       <div class="card metric tap" data-act="open-txlist" data-v="all"><div class="lbl">Balance</div><div class="mval" id="mc-balance">$0</div><div class="spark" id="spark-balance"></div></div>
     </div>
+    <div id="fin-mov-wrap"></div>
     <div class="card health-card tap" data-act="open-analysis">
       <div class="cal-head" style="margin-bottom:4px"><div class="card-t" style="margin:0">Salud financiera del mes</div><span class="see-more" style="font-size:11px;color:var(--accent);font-weight:600">ver análisis ›</span></div>
       <div class="gauge-wrap"><div id="gauge"></div><div class="gauge-cap" id="gauge-cap"></div></div>
@@ -497,12 +498,7 @@
     </div>
     <div id="fin-ahorros-wrap"></div>
     <div id="fin-deudas-wrap"></div>
-    <div class="seg" id="f-seg">
-      <button data-ftab="mov" class="on">Movimientos</button>
-      <button data-ftab="tarjetas">Tarjetas</button>
-      <button data-ftab="servicios">Servicios</button>
-    </div>
-    <div class="card"><div id="f-body"></div></div>
+    <div id="fin-tjsv-wrap"></div>
   </section>
 
   <!-- AJUSTES -->
@@ -651,7 +647,6 @@ try{ history.replaceState({s:screen},""); }catch(_){}
 let _calRef=new Date(); _calRef.setDate(1);
 let _selDay=todayISO();
 let _formDate=null;
-let _ftab="mov";
 let _agtab="agenda";
 
 function render(){
@@ -981,24 +976,32 @@ function openAnalysis(){
 }
 function renderFinance(){
   renderHealth();
+  renderFinMov();
   renderFinAhorros();
   renderFinDeudas();
-  document.querySelectorAll("#f-seg button").forEach(b=>b.classList.toggle("on",b.dataset.ftab===_ftab));
-  const body=$("#f-body");
-  if(_ftab==="mov"){
-    let mvs=S.moves.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id>a.id?1:-1)).slice(0,40);
-    body.innerHTML=(mvs.length?mvs.map(movRow).join(""):`<div class="empty">Sin movimientos. Tocá + para agregar.</div>`)
-      +`<button class="btn primary block" style="margin-top:16px" data-act="add-mov">+ Movimiento</button>`;
-  } else if(_ftab==="tarjetas"){
-    const tot=(S.cards||[]).reduce((a,c)=>a+cardConsumo(c).cycle,0);
-    body.innerHTML=(S.cards.length?`<div class="muted" style="margin-bottom:12px">Consumo del ciclo (todas): <b>${money(tot)}</b></div>`+S.cards.map(cardRow).join(""):`<div class="empty">Sin tarjetas. Agregá tus tarjetas con su día de cierre y límite; al cargar un gasto con tarjeta elegís cuál, y acá ves el consumo del ciclo y cuánto te queda.</div>`)
-      +`<button class="btn primary block" style="margin-top:16px" data-act="add-card">+ Nueva tarjeta</button>`;
-  } else if(_ftab==="servicios"){
-    const tot=S.services.reduce((a,b)=>a+(+b.amount||0),0);
-    body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total fijo mensual: <b>${money(tot)}</b></div>`
-      +(S.services.length?S.services.slice().sort((a,b)=>(+a.day||0)-(+b.day||0)).map(serviceRow).join(""):`<div class="empty">Sin servicios. Cargá tus pagos fijos (luz, internet, alquiler…) y Iris te avisa cuándo vencen.</div>`)
-      +`<button class="btn primary block" style="margin-top:16px" data-act="add-service">+ Nuevo servicio</button>`;
-  }
+  renderFinTjSv();
+}
+function renderFinMov(){ const host=$("#fin-mov-wrap"); if(!host)return;
+  const mvs=S.moves.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id>a.id?1:-1)).slice(0,40);
+  const inner=(mvs.length?mvs.map(movRow).join(""):`<div class="empty">Sin movimientos. Tocá + para agregar.</div>`)
+    +`<button class="btn primary block" style="margin-top:16px" data-act="add-mov">+ Movimiento</button>`;
+  host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:10px">Movimientos</div>${inner}</div>`;
+}
+function renderFinTjSv(){ const host=$("#fin-tjsv-wrap"); if(!host)return;
+  const totC=(S.cards||[]).reduce((a,c)=>a+cardConsumo(c).cycle,0);
+  const tjInner=(S.cards.length?`<div class="dp-h">Consumo del ciclo <b>${money(totC)}</b></div>`+S.cards.map(cardRow).join(""):`<div class="empty" style="padding:8px 0">Sin tarjetas. Agregá tus tarjetas con su día de cierre y límite; al cargar un gasto con tarjeta elegís cuál.</div>`)
+    +`<button class="btn primary block" style="margin-top:12px" data-act="add-card">+ Nueva tarjeta</button>`;
+  const totS=S.services.reduce((a,b)=>a+(+b.amount||0),0);
+  const svInner=`<div class="dp-h">Fijo mensual <b>${money(totS)}</b></div>`
+    +(S.services.length?S.services.slice().sort((a,b)=>(+a.day||0)-(+b.day||0)).map(serviceRow).join(""):`<div class="empty" style="padding:8px 0">Sin servicios fijos. Cargá luz, internet, alquiler… y Iris te avisa cuándo vencen.</div>`)
+    +`<button class="btn primary block" style="margin-top:12px" data-act="add-service">+ Nuevo servicio</button>`;
+  const inner=`<div class="dp-tabs"><button class="dp-tab on" data-dp="0">Tarjetas</button><button class="dp-tab" data-dp="1">Servicios</button></div>
+    <div class="dp-carousel" id="tjsv-carousel"><div class="dp-slide">${tjInner}</div><div class="dp-slide">${svInner}</div></div>`;
+  host.innerHTML=collap("Tarjetas y Servicios",inner,"fin-tjsv",true);
+  const car=$("#tjsv-carousel");
+  if(car){ const tabs=host.querySelectorAll(".dp-tab");
+    car.onscroll=()=>{ const i=Math.round(car.scrollLeft/car.clientWidth); tabs.forEach((b,j)=>b.classList.toggle("on",j===i)); };
+    tabs.forEach(b=>b.onclick=()=>{ const i=+b.dataset.dp; car.scrollTo({left:i*car.clientWidth,behavior:"smooth"}); }); }
 }
 function renderFinDeudas(){ const host=$("#fin-deudas-wrap"); if(!host)return;
   const totD=S.debts.reduce((a,b)=>a+(+b.amount||0),0);
@@ -1012,7 +1015,7 @@ function renderFinDeudas(){ const host=$("#fin-deudas-wrap"); if(!host)return;
     +(rows.length?rows.map(r=>`<div class="debt"><span class="debt-ico">${svgIco("swap")}</span><div class="row-main"><div class="row-title">${esc(r.who)}</div><div class="row-sub">categoría Prestado</div></div><span class="debt-amt up">${money(r.amt)}</span></div>`).join(""):`<div class="empty" style="padding:8px 0">Nadie te debe. Cargá un gasto en categoría "Prestado" y poné a quién se lo prestaste.</div>`);
   const inner=`<div class="dp-tabs"><button class="dp-tab on" data-dp="0">Deudas</button><button class="dp-tab" data-dp="1">Préstamos</button></div>
     <div class="dp-carousel" id="dp-carousel"><div class="dp-slide">${deudasInner}</div><div class="dp-slide">${prestInner}</div></div>`;
-  host.innerHTML=collap("Deudas y préstamos",inner,"fin-deudas",true);
+  host.innerHTML=collap("Deudas y Préstamos",inner,"fin-deudas",true);
   const car=$("#dp-carousel");
   if(car){ const tabs=host.querySelectorAll(".dp-tab");
     car.onscroll=()=>{ const i=Math.round(car.scrollLeft/car.clientWidth); tabs.forEach((b,j)=>b.classList.toggle("on",j===i)); };
@@ -1126,7 +1129,7 @@ function openForm(type,ex){ _draft={}; _editId=(ex&&ex.id)||null;
   _formDate=null;
 }
 function prefillForm(type,ex){
-  if(type==="mov"){ if($("#i-amount"))$("#i-amount").value=ex.amount||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-title"))$("#i-title").value=ex.title||"";
+  if(type==="mov"){ if($("#i-amount"))$("#i-amount").value=fmtMiles(ex.amount); if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-title"))$("#i-title").value=ex.title||"";
     if($("#i-cat")){ $("#i-cat").value=ex.cat||_draft.cat; _draft.cat=$("#i-cat").value; }
     document.querySelectorAll('#mov-type [data-pick="type"]').forEach(b=>b.classList.toggle("on",b.dataset.v===(ex.type||"gasto")));
     document.querySelectorAll('#mov-method [data-pick="method"]').forEach(b=>b.classList.toggle("on",b.dataset.v===(ex.method||"efectivo")));
@@ -1134,10 +1137,10 @@ function prefillForm(type,ex){
   } else if(type==="event"){ if($("#i-title"))$("#i-title").value=ex.title||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-time"))$("#i-time").value=ex.time||""; if($("#i-note"))$("#i-note").value=ex.note||"";
   } else if(type==="task"){ if($("#i-title"))$("#i-title").value=ex.title||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-time"))$("#i-time").value=ex.time||""; if($("#i-priority"))$("#i-priority").value=ex.priority||"media";
   } else if(type==="shop"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-qty"))$("#i-qty").value=ex.qty||1;
-  } else if(type==="saving"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-target"))$("#i-target").value=ex.target||""; if($("#i-saved"))$("#i-saved").value=ex.saved||"";
-  } else if(type==="debt"||type==="loan"){ if($("#i-who"))$("#i-who").value=ex.who||""; if($("#i-amount"))$("#i-amount").value=ex.amount||""; if($("#i-note"))$("#i-note").value=ex.note||"";
-  } else if(type==="service"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-amount"))$("#i-amount").value=ex.amount||""; if($("#i-day"))$("#i-day").value=ex.day||""; _draft.smethod=ex.method||"transferencia"; document.querySelectorAll('#svc-method [data-pick="smethod"]').forEach(b=>b.classList.toggle("on",b.dataset.v===_draft.smethod));
-  } else if(type==="card"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-cierre"))$("#i-cierre").value=ex.cierre||""; if($("#i-limit"))$("#i-limit").value=ex.limit||""; }
+  } else if(type==="saving"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-target"))$("#i-target").value=fmtMiles(ex.target); if($("#i-saved"))$("#i-saved").value=fmtMiles(ex.saved);
+  } else if(type==="debt"||type==="loan"){ if($("#i-who"))$("#i-who").value=ex.who||""; if($("#i-amount"))$("#i-amount").value=fmtMiles(ex.amount); if($("#i-note"))$("#i-note").value=ex.note||"";
+  } else if(type==="service"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-amount"))$("#i-amount").value=fmtMiles(ex.amount); if($("#i-day"))$("#i-day").value=ex.day||""; _draft.smethod=ex.method||"transferencia"; document.querySelectorAll('#svc-method [data-pick="smethod"]').forEach(b=>b.classList.toggle("on",b.dataset.v===_draft.smethod));
+  } else if(type==="card"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-cierre"))$("#i-cierre").value=ex.cierre||""; if($("#i-limit"))$("#i-limit").value=fmtMiles(ex.limit); }
   const pt=document.querySelector("#pop .pop-t"); if(pt){ const T={mov:"Editar movimiento",event:"Editar evento",task:"Editar tarea",shop:"Editar artículo",saving:"Editar meta",debt:"Editar deuda",loan:"Editar préstamo",service:"Editar servicio",card:"Editar tarjeta"}; if(T[type])pt.textContent=T[type]; }
 }
 function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
@@ -1160,8 +1163,8 @@ function doSave(type){
   else if(type==="saving"){ if(!v("i-title"))return; if(_editId){ const g=S.savings.find(x=>x.id===_editId); if(g){ g.name=v("i-title"); g.target=num("i-target"); g.saved=num("i-saved"); } } else { S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); } }
   else if(type==="debt"){ if(!v("i-who"))return; if(_editId){ const d=S.debts.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); } }
   else if(type==="loan"){ if(!v("i-who"))return; if(_editId){ const d=S.loans.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); } }
-  else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; if(_editId){ const s=S.services.find(x=>x.id===_editId); if(s){ s.name=v("i-title"); s.amount=num("i-amount"); s.day=day; s.method=_draft.smethod||"transferencia"; } } else { S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:_draft.smethod||"transferencia",lastPaid:""}); _ftab="servicios"; } }
-  else if(type==="card"){ if(!v("i-title"))return; let ci=parseInt(($("#i-cierre")&&$("#i-cierre").value)||"",10); if(!(ci>=1&&ci<=31))ci=0; const lim=num("i-limit"); if(_editId){ const cc=S.cards.find(x=>x.id===_editId); if(cc){ cc.name=v("i-title"); cc.cierre=ci; cc.limit=lim; } } else { S.cards.push({id:uid(),name:v("i-title"),cierre:ci,limit:lim}); _ftab="tarjetas"; } }
+  else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; if(_editId){ const s=S.services.find(x=>x.id===_editId); if(s){ s.name=v("i-title"); s.amount=num("i-amount"); s.day=day; s.method=_draft.smethod||"transferencia"; } } else { S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:_draft.smethod||"transferencia",lastPaid:""}); } }
+  else if(type==="card"){ if(!v("i-title"))return; let ci=parseInt(($("#i-cierre")&&$("#i-cierre").value)||"",10); if(!(ci>=1&&ci<=31))ci=0; const lim=num("i-limit"); if(_editId){ const cc=S.cards.find(x=>x.id===_editId); if(cc){ cc.name=v("i-title"); cc.cierre=ci; cc.limit=lim; } } else { S.cards.push({id:uid(),name:v("i-title"),cierre:ci,limit:lim}); } }
   save(); closePop(); render(); _editId=null;
 }
 
@@ -1271,6 +1274,7 @@ document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); 
 document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target && e.target.id==="note-input"){ e.preventDefault(); const t=e.target.value.trim(); if(t){ S.notes.push({id:uid(),text:t}); save(); render(); } } });
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
+function fmtMiles(v){ const r=String(v==null?"":v).replace(/[^\d]/g,"").replace(/^0+(?=\d)/,""); return r?r.replace(/\B(?=(\d{3})+(?!\d))/g,"."):""; }
 document.addEventListener("input",e=>{
   const t=e.target; if(!t||!t.classList||!t.classList.contains("num"))return;
   const sel=t.selectionStart||0;
@@ -1347,7 +1351,6 @@ document.addEventListener("click",e=>{
   const addB=e.target.closest("[data-add]"); if(addB){ _formDate=addB.dataset.date||null; openForm(addB.dataset.add); return; }
   const saveB=e.target.closest("[data-save]"); if(saveB){ doSave(saveB.dataset.save); return; }
   const pickB=e.target.closest("[data-pick]"); if(pickB){ pickB.parentElement.querySelectorAll("[data-pick]").forEach(c=>c.classList.remove("on")); pickB.classList.add("on"); _draft[pickB.dataset.pick]=pickB.dataset.v; if(pickB.dataset.pick==="type")syncCats(); if(pickB.dataset.pick==="type"||pickB.dataset.pick==="method")updateMovExtras(); return; }
-  const ftabB=e.target.closest("[data-ftab]"); if(ftabB){ _ftab=ftabB.dataset.ftab; renderFinance(); return; }
   const agtabB=e.target.closest("[data-agtab]"); if(agtabB){ _agtab=agtabB.dataset.agtab; renderAgenda(); return; }
   const ajB=e.target.closest("[data-ajtab]"); if(ajB){ _ajtab=ajB.dataset.ajtab; renderAjustes(); return; }
   const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendars(); return; }
