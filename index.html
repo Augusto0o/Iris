@@ -410,6 +410,7 @@
         <div class="cal-nav"><button data-cal="-1">‹</button><button data-cal="0">Hoy</button><button data-cal="1">›</button></div></div>
       <div class="cal-grid" id="home-cal-grid"></div>
     </div>
+    <div id="home-notes"></div>
   </section>
 
   <!-- AGENDA (calendario glass + lista) -->
@@ -512,12 +513,12 @@ const KEY="iris.v1";
 const SUPA_URL="https://jgppbiwxgqxdkdrvofgg.supabase.co";
 const SUPA_KEY="sb_publishable_3SxgERLT1uFujAMvTcH_zQ_dw1feYqX";
 const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_quick_add?apikey="+SUPA_KEY;
-const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], chat:[], ai:{endpoint:""},
-  catGasto:["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"],
-  catIngreso:["Sueldo","Venta","Otro"],
+const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], notes:[], chat:[], ai:{endpoint:""},
+  catGasto:["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"],
+  catIngreso:["Sueldo","Prestado","Regalo","Otros"],
   set:{anim:true,accent:"#5b8cff"} };
 let S=load();
-function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && typeof loggedIn==="function" && loggedIn()) schedulePush(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -529,7 +530,8 @@ function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0
 function todayISO(){ return iso(new Date()); }
 function thisMonth(){ return todayISO().slice(0,7); }
 const CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
-const CAT_ICON={Comida:"🍽️",Transporte:"🚕",Hogar:"🏠",Ocio:"🎮",Salud:"💊",Sueldo:"💼",Servicios:"💡",Compras:"🛍️",Venta:"🏷️",Otro:"✨"};
+const CAT_ICON={Comida:"🍽️",Transporte:"🚕",Hogar:"🏠",Ocio:"🎮",Salud:"💊",Sueldo:"💼",Servicios:"💡",Compras:"🛍️",Venta:"🏷️",Kiosco:"🏪",Suscripciones:"🔁",Salidas:"🍻",Prestado:"🤝",Regalo:"🎁",Otros:"✨",Otro:"✨"};
+function addMonthsISO(isoStr,k){ const p=(isoStr||todayISO()).split("-").map(Number); const day=p[2]; const d=new Date(p[0],p[1]-1,1); d.setMonth(d.getMonth()+k); const dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); d.setDate(Math.min(day,dim)); return iso(d); }
 const GASTO_CATS=["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"];
 const INGRESO_CATS=["Sueldo","Venta","Otro"];
 function greetWord(){ const h=new Date().getHours(); return h<6?"Buenas noches":h<13?"Buenos días":h<20?"Buenas tardes":"Buenas noches"; }
@@ -579,7 +581,7 @@ function render(){
   const shop=S.shop.filter(s=>!s.done);
   $("#t-tasks").textContent=todayTasks.length; $("#t-events").textContent=todayEvents.length; $("#t-shop").textContent=shop.length;
 
-  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderHomeServices(); renderAjustes(); applyAccent(); applyAnim();
+  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderHomeServices(); renderHomeNotes(); renderAjustes(); applyAccent(); applyAnim();
   const sn=$("#set-name"); if(sn && document.activeElement!==sn) sn.value=S.name||"";
   const sa=$("#set-ai"); if(sa && document.activeElement!==sa) sa.value=(S.ai&&S.ai.endpoint)||"";
 }
@@ -607,9 +609,9 @@ function openPop(type){
   }
   showPop(html);
 }
-function taskRow(t){ return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}</div></div><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
+function taskRow(t){ const pc={alta:"#ff5a6a",media:"#ffb02e",baja:"#7a8699"}[t.priority||"media"]; return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main"><div class="row-title"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${pc};margin-right:7px;vertical-align:middle"></span>${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}</div></div><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
 function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
-function shopRow(s){ return `<div class="row ${s.done?"done":""}"><button class="check ${s.done?"done":""}" data-act="toggle-shop" data-id="${s.id}">${s.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(s.name)}</div></div><button class="x-row" data-act="del-shop" data-id="${s.id}">×</button></div>`; }
+function shopRow(s){ return `<div class="row ${s.done?"done":""}"><button class="check ${s.done?"done":""}" data-act="toggle-shop" data-id="${s.id}">${s.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(s.name)}${(+s.qty>1)?` <span style="opacity:.55">×${+s.qty}</span>`:""}</div></div><button class="x-row" data-act="del-shop" data-id="${s.id}">×</button></div>`; }
 
 /* ---- ventana de un día (ver + crear) ---- */
 /* ---- recordatorios -> calendario nativo (.ics, Apple/Google) ---- */
@@ -654,6 +656,8 @@ function addServiceToCalendar(id){ const s=S.services.find(x=>x.id===id); if(!s)
 function renderHomeServices(){ const host=$("#home-services"); if(!host)return; const pend=pendingServices(); if(!pend.length){ host.innerHTML=""; host.style.display="none"; return; } host.style.display="";
   host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:8px">Servicios por pagar</div>`+pend.map(s=>{ const inf=svcInfo(s); const tag=inf.status==="vencido"?`<span class="svc-tag over">Vencido</span>`:inf.status==="hoy"?`<span class="svc-tag today">Hoy</span>`:`<span class="svc-tag soon">En ${inf.diff} día${inf.diff===1?"":"s"}</span>`;
     return `<div class="row"><span class="mv-ico">🧾</span><div class="row-main"><div class="row-title">${esc(s.name)} ${tag}</div><div class="row-sub">${money(s.amount)} · vence ${inf.due.toLocaleDateString("es-AR",{day:"numeric",month:"short"})}</div></div><button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 14px">Pagar</button></div>`; }).join("")+`</div>`; }
+function renderHomeNotes(){ const host=$("#home-notes"); if(!host)return; const list=(S.notes||[]).map(n=>`<div class="row"><div class="row-main"><div class="row-title">${esc(n.text)}</div></div><button class="x-row" data-act="del-note" data-id="${n.id}">×</button></div>`).join("")||`<div class="empty" style="padding:6px 0">Sin notas.</div>`;
+  host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:8px">Notas</div>${list}<div style="display:flex;gap:8px;margin-top:10px"><input id="note-input" placeholder="Nueva nota…" style="flex:1;padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:inherit;font:inherit"><button class="btn primary" data-act="add-note" style="width:auto;padding:0 18px">+</button></div></div>`; }
 function openDay(ds){
   _selDay=ds; renderCalendars();
   const dd=new Date(ds+"T00:00");
@@ -886,10 +890,14 @@ function renderFinance(){
       +(S.debts.length?S.debts.map(d=>debtRow(d,"debt")).join(""):`<div class="empty">No tenés deudas cargadas.</div>`)
       +`<button class="btn primary block" style="margin-top:16px" data-act="add-debt">+ Nueva deuda</button>`;
   } else if(_ftab==="prestamos"){
-    const tot=S.loans.reduce((a,b)=>a+(+b.amount||0),0);
-    body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total que te deben: <b style="color:var(--ok)">${money(tot)}</b></div>`
-      +(S.loans.length?S.loans.map(d=>debtRow(d,"loan")).join(""):`<div class="empty">No prestaste nada cargado.</div>`)
-      +`<button class="btn primary block" style="margin-top:16px" data-act="add-loan">+ Nuevo préstamo</button>`;
+    const map={}; S.moves.forEach(m=>{ if(m.cat!=="Prestado")return; const who=((m.who||"").trim())||"Sin nombre"; map[who]=(map[who]||0)+((m.type==="ingreso")?-(+m.amount||0):(+m.amount||0)); });
+    const rows=Object.keys(map).map(k=>({who:k,amt:map[k]})).filter(r=>Math.round(r.amt)>0).sort((a,b)=>b.amt-a.amt);
+    const tot=rows.reduce((a,b)=>a+b.amt,0);
+    let h2=`<div class="muted" style="margin-bottom:10px">Total que te deben: <b style="color:var(--ok)">${money(tot)}</b></div>`;
+    h2+= rows.length?rows.map(r=>`<div class="debt"><span class="debt-ico">🤝</span><div class="row-main"><div class="row-title">${esc(r.who)}</div><div class="row-sub">categoría Prestado</div></div><span class="debt-amt up">${money(r.amt)}</span></div>`).join(""):`<div class="empty">Nadie te debe. Cargá un gasto en categoría "Prestado" (acá o por el atajo) y poné a quién se lo prestaste.</div>`;
+    if((S.loans||[]).length){ h2+=`<div class="card-t" style="margin:18px 0 6px">Cargados a mano</div>`+S.loans.map(d=>debtRow(d,"loan")).join(""); }
+    h2+=`<button class="btn primary block" style="margin-top:16px" data-act="add-loan">+ Préstamo manual</button>`;
+    body.innerHTML=h2;
   }
 }
 function movRow(x){ const ico=CAT_ICON[x.cat]||(x.type==="ingreso"?"💼":"✨");
@@ -919,6 +927,7 @@ function openForm(type){ _draft={};
     task:`<div class="pop-h"><div class="pop-t">Nueva tarea</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Tarea</label><input id="i-title" placeholder="Ej: Pagar la luz" autofocus></div>
       <div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_formDate||todayISO()}"></div>
+      <div class="field"><label>Prioridad</label><select id="i-priority"><option value="alta">🔴 Alta</option><option value="media" selected>🟡 Media</option><option value="baja">⚪ Baja</option></select></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="task">Guardar</button></div>`,
     event:`<div class="pop-h"><div class="pop-t">Nuevo evento</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Evento</label><input id="i-title" placeholder="Ej: Reunión" autofocus></div>
@@ -928,6 +937,7 @@ function openForm(type){ _draft={};
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="event">Guardar</button></div>`,
     shop:`<div class="pop-h"><div class="pop-t">Agregar a la compra</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Artículo</label><input id="i-title" placeholder="Ej: Leche" autofocus></div>
+      <div class="field"><label>Cantidad</label><input id="i-qty" type="number" min="1" value="1" inputmode="numeric"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="shop">Guardar</button></div>`,
     mov:`<div class="pop-h"><div class="pop-t">Nuevo movimiento</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Tipo</label><div class="seg-modal" id="mov-type"><button type="button" class="on" data-pick="type" data-v="gasto">Gasto</button><button type="button" data-pick="type" data-v="ingreso">Ingreso</button></div></div>
@@ -935,6 +945,8 @@ function openForm(type){ _draft={};
       <div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_formDate||todayISO()}"></div>
       <div class="field"><label>Categoría</label><select id="i-cat"></select></div>
       <div class="field"><label>Método de pago</label><div class="seg-modal" id="mov-method"><button type="button" class="on" data-pick="method" data-v="efectivo">Efectivo</button><button type="button" data-pick="method" data-v="transferencia">Transferencia</button><button type="button" data-pick="method" data-v="tarjeta">Tarjeta</button></div></div>
+      <div class="field" id="f-cuotas-wrap" style="display:none"><label>Cuotas</label><input id="i-cuotas" type="number" min="1" max="60" inputmode="numeric" value="1"></div>
+      <div class="field" id="f-prestamo-wrap" style="display:none"><label id="i-who-lbl">¿A quién le prestaste?</label><input id="i-who" placeholder="Nombre"></div>
       <div class="field"><label>Descripción (opcional)</label><input id="i-title" placeholder="Ej: nafta, súper…"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="mov">Guardar</button></div>`,
     saving:`<div class="pop-h"><div class="pop-t">Nueva meta de ahorro</div><button class="pop-x" data-act="close">✕</button></div>
@@ -960,21 +972,25 @@ function openForm(type){ _draft={};
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="service">Guardar</button></div>`
   };
   showPop(F[type]);
-  if(type==="mov"){ _draft.type="gasto"; _draft.cat="Comida"; _draft.method="efectivo"; syncCats(); }
+  if(type==="mov"){ _draft.type="gasto"; _draft.cat="Comida"; _draft.method="efectivo"; syncCats(); updateMovExtras(); }
   if(type==="service"){ _draft.smethod="transferencia"; }
   _formDate=null;
 }
 function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
   let cur=w.value||_draft.cat; if(!cats.includes(cur))cur=cats[0]; _draft.cat=cur;
   w.innerHTML=cats.map(c=>`<option value="${esc(c)}" ${c===cur?"selected":""}>${CAT_ICON[c]||"🏷️"} ${esc(c)}</option>`).join(""); }
+function updateMovExtras(){ if(!$("#i-cat"))return; const cat=($("#i-cat").value)||_draft.cat||""; const isCard=_draft.method==="tarjeta"&&_draft.type==="gasto"; const cw=$("#f-cuotas-wrap"); if(cw)cw.style.display=isCard?"":"none"; const isPrestado=cat==="Prestado"; const pw=$("#f-prestamo-wrap"); if(pw)pw.style.display=isPrestado?"":"none"; const lbl=$("#i-who-lbl"); if(lbl)lbl.textContent=_draft.type==="ingreso"?"¿Quién te devolvió?":"¿A quién le prestaste?"; }
 
 function doSave(type){
   const v=id=>{const e=$("#"+id);return e?e.value.trim():"";};
   const num=id=>{const e=$("#"+id);return e?parseInt((e.value||"").replace(/[^\d]/g,""),10)||0:0;};
-  if(type==="task"){ if(!v("i-title"))return; S.tasks.push({id:uid(),title:v("i-title"),date:$("#i-date").value||"",done:false}); }
+  if(type==="task"){ if(!v("i-title"))return; S.tasks.push({id:uid(),title:v("i-title"),date:$("#i-date").value||"",done:false,priority:($("#i-priority")&&$("#i-priority").value)||"media"}); }
   else if(type==="event"){ if(!v("i-title"))return; S.events.push({id:uid(),title:v("i-title"),date:$("#i-date").value||todayISO(),time:$("#i-time").value||"",note:v("i-note")}); }
-  else if(type==="shop"){ if(!v("i-title"))return; S.shop.push({id:uid(),name:v("i-title"),done:false}); }
-  else if(type==="mov"){ const a=num("i-amount"); if(a<=0)return; const c=($("#i-cat")&&$("#i-cat").value)||_draft.cat||"Otro"; S.moves.push({id:uid(),type:_draft.type||"gasto",amount:a,cat:c,method:_draft.method||"efectivo",title:v("i-title"),date:$("#i-date").value||todayISO()}); }
+  else if(type==="shop"){ if(!v("i-title"))return; S.shop.push({id:uid(),name:v("i-title"),qty:Math.max(1,parseInt(($("#i-qty")&&$("#i-qty").value)||"1",10)||1),done:false}); }
+  else if(type==="mov"){ const a=num("i-amount"); if(a<=0)return; const c=($("#i-cat")&&$("#i-cat").value)||_draft.cat||"Otros"; const tp=_draft.type||"gasto"; const mth=_draft.method||"efectivo"; const dt=$("#i-date").value||todayISO(); let ttl=v("i-title"); const who=(c==="Prestado"&&$("#i-who"))?$("#i-who").value.trim():""; if(who){ ttl=(ttl?ttl+" · ":"")+(tp==="ingreso"?"Devuelto por "+who:"Prestado a "+who); }
+    let ncu=1; if(tp==="gasto"&&mth==="tarjeta"&&$("#i-cuotas")){ ncu=Math.max(1,Math.min(60,parseInt($("#i-cuotas").value,10)||1)); }
+    if(tp==="gasto"&&mth==="tarjeta"&&ncu>1){ const per=Math.round(a/ncu); const first=a-per*(ncu-1); const gid=uid(); for(let k=0;k<ncu;k++){ S.moves.push({id:uid(),type:"gasto",amount:k===0?first:per,cat:c,method:"tarjeta",title:(ttl?ttl+" · ":"")+"Cuota "+(k+1)+"/"+ncu,date:addMonthsISO(dt,k),cuotas:ncu,cuotaIndex:k+1,grp:gid,who:who}); } }
+    else { S.moves.push({id:uid(),type:tp,amount:a,cat:c,method:mth,title:ttl,date:dt,who:who}); } }
   else if(type==="saving"){ if(!v("i-title"))return; S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); _ftab="ahorros"; }
   else if(type==="debt"){ if(!v("i-who"))return; S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="deudas"; }
   else if(type==="loan"){ if(!v("i-who"))return; S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="prestamos"; }
@@ -1090,7 +1106,8 @@ function renameCat(kind,oldName,newName){
   S.moves.forEach(m=>{ if(m.cat===oldName && ((kind==="gasto"&&m.type==="gasto")||(kind==="ingreso"&&m.type==="ingreso"))) m.cat=newName; });
   save(); render();
 }
-document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } });
+document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } const ic=e.target.closest("#i-cat"); if(ic){ _draft.cat=ic.value; updateMovExtras(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target && e.target.id==="note-input"){ e.preventDefault(); const t=e.target.value.trim(); if(t){ S.notes.push({id:uid(),text:t}); save(); render(); } } });
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
 document.addEventListener("input",e=>{
@@ -1168,7 +1185,7 @@ document.addEventListener("click",e=>{
   const popB=e.target.closest("[data-pop]"); if(popB){ openPop(popB.dataset.pop); return; }
   const addB=e.target.closest("[data-add]"); if(addB){ _formDate=addB.dataset.date||null; openForm(addB.dataset.add); return; }
   const saveB=e.target.closest("[data-save]"); if(saveB){ doSave(saveB.dataset.save); return; }
-  const pickB=e.target.closest("[data-pick]"); if(pickB){ pickB.parentElement.querySelectorAll("[data-pick]").forEach(c=>c.classList.remove("on")); pickB.classList.add("on"); _draft[pickB.dataset.pick]=pickB.dataset.v; if(pickB.dataset.pick==="type")syncCats(); return; }
+  const pickB=e.target.closest("[data-pick]"); if(pickB){ pickB.parentElement.querySelectorAll("[data-pick]").forEach(c=>c.classList.remove("on")); pickB.classList.add("on"); _draft[pickB.dataset.pick]=pickB.dataset.v; if(pickB.dataset.pick==="type")syncCats(); if(pickB.dataset.pick==="type"||pickB.dataset.pick==="method")updateMovExtras(); return; }
   const ftabB=e.target.closest("[data-ftab]"); if(ftabB){ _ftab=ftabB.dataset.ftab; renderFinance(); return; }
   const ajB=e.target.closest("[data-ajtab]"); if(ajB){ _ajtab=ajB.dataset.ajtab; renderAjustes(); return; }
   const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendars(); return; }
@@ -1189,6 +1206,8 @@ document.addEventListener("click",e=>{
     "add-task":()=>openForm("task"),"add-event":()=>openForm("event"),"add-shop":()=>openForm("shop"),
     "add-mov":()=>openForm("mov"),"add-saving":()=>openForm("saving"),"add-debt":()=>openForm("debt"),"add-loan":()=>openForm("loan"),
     "add-service":()=>openForm("service"),"pay-service":()=>payService(id),"del-service":()=>{ S.services=S.services.filter(x=>x.id!==id); save(); render(); },"cal-service":()=>addServiceToCalendar(id),
+    "add-note":()=>{ const inp=$("#note-input"); const t=((inp&&inp.value)||"").trim(); if(!t)return; S.notes.push({id:uid(),text:t}); save(); render(); },
+    "del-note":()=>{ S.notes=S.notes.filter(x=>x.id!==id); save(); render(); },
     "toggle-task":()=>{const t=S.tasks.find(x=>x.id===id);if(t){t.done=!t.done;save();reopenAfter("tareas");}},
     "del-task":()=>{S.tasks=S.tasks.filter(x=>x.id!==id);save();reopenAfter("tareas");},
     "toggle-shop":()=>{const t=S.shop.find(x=>x.id===id);if(t){t.done=!t.done;save();reopenAfter("compras");}},
