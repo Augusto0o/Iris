@@ -327,6 +327,13 @@
   .sv-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;}
   .sv-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);transition:all var(--t);}
   .sv-dots i.on{background:var(--accent);width:18px;border-radius:3px;}
+  .dp-tabs{display:flex;gap:6px;margin-bottom:12px;}
+  .dp-tab{flex:1;padding:9px;border-radius:12px;font-size:13px;font-weight:600;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);transition:all var(--t);}
+  .dp-tab.on{background:var(--grad);color:#fff;border-color:transparent;}
+  .dp-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .dp-carousel::-webkit-scrollbar{display:none;}
+  .dp-slide{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:center;}
+  .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
   .debt-ico{width:38px;height:38px;border-radius:12px;background:var(--card-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
@@ -482,12 +489,11 @@
       <div class="tip" id="tip"></div>
     </div>
     <div id="fin-ahorros-wrap"></div>
+    <div id="fin-deudas-wrap"></div>
     <div class="seg" id="f-seg">
       <button data-ftab="mov" class="on">Movimientos</button>
       <button data-ftab="tarjetas">Tarjetas</button>
       <button data-ftab="servicios">Servicios</button>
-      <button data-ftab="deudas">Deudas</button>
-      <button data-ftab="prestamos">Préstamos</button>
     </div>
     <div class="card"><div id="f-body"></div></div>
   </section>
@@ -560,9 +566,9 @@ const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_quick_add?apikey="+SUPA_KEY;
 const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], notes:[], chat:[], saved:[], cards:[], ai:{endpoint:""},
   catGasto:["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"],
   catIngreso:["Sueldo","Prestado","Regalo","Otros"],
-  set:{anim:true,accent:"#5b8cff"} };
+  set:{anim:true,accent:"#5b8cff",remindMin:30} };
 let S=load();
-function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.saved))s.saved=[]; if(!Array.isArray(s.chat))s.chat=[]; if(!Array.isArray(s.cards))s.cards=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff",remindMin:30},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.saved))s.saved=[]; if(!Array.isArray(s.chat))s.chat=[]; if(!Array.isArray(s.cards))s.cards=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && typeof loggedIn==="function" && loggedIn()) schedulePush(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -654,18 +660,19 @@ function openPop(type){
   }
   showPop(html);
 }
-function taskRow(t){ const pc={alta:"#ff5a6a",media:"#ffb02e",baja:"#7a8699"}[t.priority||"media"]; return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main" data-act="edit-task" data-id="${t.id}" style="cursor:pointer"><div class="row-title"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${pc};margin-right:7px;vertical-align:middle"></span>${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}</div></div><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
-function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
+function taskRow(t){ const pc={alta:"#ff5a6a",media:"#ffb02e",baja:"#7a8699"}[t.priority||"media"]; return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main" data-act="edit-task" data-id="${t.id}" style="cursor:pointer"><div class="row-title"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${pc};margin-right:7px;vertical-align:middle"></span>${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}${t.time?(" · "+t.time):""}</div></div><button class="x-row" data-act="remind-task" data-id="${t.id}" title="Recordarme" style="color:var(--accent)">🔔</button><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
+function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">🔔</button><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
 function shopRow(s){ return `<div class="row ${s.done?"done":""}"><button class="check ${s.done?"done":""}" data-act="toggle-shop" data-id="${s.id}">${s.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(s.name)}${(+s.qty>1)?` <span style="opacity:.55">×${+s.qty}</span>`:""}</div></div><button class="x-row" data-act="del-shop" data-id="${s.id}">×</button></div>`; }
 
 /* ---- ventana de un día (ver + crear) ---- */
 /* ---- recordatorios -> calendario nativo (.ics, Apple/Google) ---- */
 function icsEsc(s){ return String(s||"").replace(/([\\;,])/g,"\\$1").replace(/\n/g,"\\n"); }
+function _remMin(){ const m=(S.set&&S.set.remindMin); return (m===0||m>0)?m:30; }
 function eventICS(ev){
   const d=(ev.date||todayISO()).replace(/-/g,"");
   const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
-  let dt,trig;
-  if(ev.time){ const t=ev.time.replace(":","")+"00"; dt="DTSTART:"+d+"T"+t+"\r\nDTEND:"+d+"T"+t; trig="-PT10M"; }
+  let dt,trig; const rm=_remMin();
+  if(ev.time){ const t=ev.time.replace(":","")+"00"; dt="DTSTART:"+d+"T"+t+"\r\nDTEND:"+d+"T"+t; trig="-PT"+rm+"M"; }
   else { dt="DTSTART;VALUE=DATE:"+d; trig="PT9H"; }
   return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Iris//Agenda//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH",
     "BEGIN:VEVENT","UID:"+ev.id+"@iris.app","DTSTAMP:"+stamp,dt,"SUMMARY:"+icsEsc(ev.title),
@@ -673,6 +680,18 @@ function eventICS(ev){
     "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(ev.title),"TRIGGER:"+trig,"END:VALARM",
     "END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n");
 }
+function taskICS(t){
+  const d=(t.date||todayISO()).replace(/-/g,"");
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  let dt,trig; const rm=_remMin();
+  if(t.time&&/^\d{1,2}:\d{2}/.test(t.time)){ const tt=t.time.slice(0,5).replace(":","")+"00"; dt="DTSTART:"+d+"T"+tt+"\r\nDTEND:"+d+"T"+tt; trig="-PT"+rm+"M"; }
+  else { dt="DTSTART;VALUE=DATE:"+d; trig="PT9H"; }
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Iris//Tareas//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VEVENT","UID:task-"+t.id+"@iris.app","DTSTAMP:"+stamp,dt,"SUMMARY:"+icsEsc("✓ "+(t.title||"Tarea")),
+    "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(t.title||"Tarea"),"TRIGGER:"+trig,"END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+}
+function remindTask(id){ const t=S.tasks.find(x=>x.id===id); if(t)dlICS(taskICS(t),"recordatorio_"+(t.title||"tarea")); }
 function addToCalendar(id){
   const ev=S.events.find(e=>e.id===id); if(!ev)return;
   const blob=new Blob([eventICS(ev)],{type:"text/calendar;charset=utf-8"});
@@ -692,7 +711,7 @@ function _svcTag(inf,svc){ return inf.status==="pagado"?`<span class="svc-tag pa
 function serviceRow(s){ const inf=svcInfo(s);
   return `<div class="row"><span class="mv-ico">🧾</span><div class="row-main" data-act="edit-service" data-id="${s.id}" style="cursor:pointer"><div class="row-title">${esc(s.name)} ${_svcTag(inf,s)}</div><div class="row-sub">${money(s.amount)} · todos los ${(+s.day||1)}${s.method?(" · "+esc(s.method)):""}</div></div>`
     +(inf.paid?"":`<button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 12px;margin-right:6px">Pagar</button>`)
-    +`<button class="x-row" data-act="cal-service" data-id="${s.id}" title="Recordatorio en el calendario" style="color:var(--accent)">📅</button>`
+    +`<button class="x-row" data-act="cal-service" data-id="${s.id}" title="Recordarme" style="color:var(--accent)">🔔</button>`
     +`<button class="x-row" data-act="del-service" data-id="${s.id}">×</button></div>`; }
 function payService(id){ const s=S.services.find(x=>x.id===id); if(!s)return; S.moves.push({id:uid(),type:"gasto",amount:+s.amount||0,cat:"Servicios",method:s.method||"transferencia",title:s.name,date:todayISO()}); s.lastPaid=thisMonth(); save(); render(); }
 function svcICS(svc){ const due=svcDueDate(svc,0); const d=iso(due).replace(/-/g,""); const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""); const bmd=Math.min(Math.max(1,+svc.day||1),28); const sum="Pagar "+(svc.name||"servicio")+" — "+money(svc.amount);
@@ -711,7 +730,7 @@ function openDay(ds){
   const tk=S.tasks.filter(t=>t.date===ds);
   const mv=S.moves.filter(x=>x.date===ds);
   let body="";
-  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario" style="color:var(--accent)">📅</button></div>`).join(""); }
+  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">🔔</button></div>`).join(""); }
   if(tk.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Tareas</div>`+tk.map(t=>`<div class="row ${t.done?"done":""}"><span class="dot" style="background:var(--violet)"></span><div class="row-main"><div class="row-title">${esc(t.title)}</div></div></div>`).join(""); }
   if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><span class="mv-ico">${CAT_ICON[x.cat]||"✨"}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
   if(!body) body=`<div class="empty">Nada este día. Agregá abajo 👇</div>`;
@@ -781,7 +800,7 @@ function renderAgenda(){
     const ev=((map[d]&&map[d].events)||[]).slice().sort((a,b)=>(a.time||"").localeCompare(b.time||""));
     let tk=((map[d]&&map[d].tasks)||[]); if(isPast) tk=tk.filter(t=>!t.done);
     let items="";
-    ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="cal-ev" data-id="${e.id}" title="Agregar al calendario">📅</button><button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
+    ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="cal-ev" data-id="${e.id}" title="Recordarme">🔔</button><button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
     tk.forEach(t=>{ items+=`<div class="ag-task ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><span class="ag-t">${esc(t.title)}</span><button class="ag-x" data-act="del-task" data-id="${t.id}">×</button></div>`; });
     if(!items){ if(isToday) items=`<div class="ag-none">Nada agendado hoy.</div>`; else return; }
     const mk=d.slice(0,7); if(mk!==curMonth){ curMonth=mk; html+=`<div class="ag-month">${cap1(dd.toLocaleDateString("es-AR",{month:"long",year:"numeric"}))}</div>`; }
@@ -927,6 +946,7 @@ function openAnalysis(){
 function renderFinance(){
   renderHealth();
   renderFinAhorros();
+  renderFinDeudas();
   document.querySelectorAll("#f-seg button").forEach(b=>b.classList.toggle("on",b.dataset.ftab===_ftab));
   const body=$("#f-body");
   if(_ftab==="mov"){
@@ -942,21 +962,25 @@ function renderFinance(){
     body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total fijo mensual: <b>${money(tot)}</b></div>`
       +(S.services.length?S.services.slice().sort((a,b)=>(+a.day||0)-(+b.day||0)).map(serviceRow).join(""):`<div class="empty">Sin servicios. Cargá tus pagos fijos (luz, internet, alquiler…) y Iris te avisa cuándo vencen.</div>`)
       +`<button class="btn primary block" style="margin-top:16px" data-act="add-service">+ Nuevo servicio</button>`;
-  } else if(_ftab==="deudas"){
-    const tot=S.debts.reduce((a,b)=>a+(+b.amount||0),0);
-    body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total que debés: <b style="color:var(--danger)">${money(tot)}</b></div>`
-      +(S.debts.length?S.debts.map(d=>debtRow(d,"debt")).join(""):`<div class="empty">No tenés deudas cargadas.</div>`)
-      +`<button class="btn primary block" style="margin-top:16px" data-act="add-debt">+ Nueva deuda</button>`;
-  } else if(_ftab==="prestamos"){
-    const map={}; S.moves.forEach(m=>{ if(m.cat!=="Prestado")return; const who=((m.who||"").trim())||"Sin nombre"; map[who]=(map[who]||0)+((m.type==="ingreso")?-(+m.amount||0):(+m.amount||0)); });
-    const rows=Object.keys(map).map(k=>({who:k,amt:map[k]})).filter(r=>Math.round(r.amt)>0).sort((a,b)=>b.amt-a.amt);
-    const tot=rows.reduce((a,b)=>a+b.amt,0);
-    let h2=`<div class="muted" style="margin-bottom:10px">Total que te deben: <b style="color:var(--ok)">${money(tot)}</b></div>`;
-    h2+= rows.length?rows.map(r=>`<div class="debt"><span class="debt-ico">🤝</span><div class="row-main"><div class="row-title">${esc(r.who)}</div><div class="row-sub">categoría Prestado</div></div><span class="debt-amt up">${money(r.amt)}</span></div>`).join(""):`<div class="empty">Nadie te debe. Cargá un gasto en categoría "Prestado" (acá o por el atajo) y poné a quién se lo prestaste.</div>`;
-    if((S.loans||[]).length){ h2+=`<div class="card-t" style="margin:18px 0 6px">Cargados a mano</div>`+S.loans.map(d=>debtRow(d,"loan")).join(""); }
-    h2+=`<button class="btn primary block" style="margin-top:16px" data-act="add-loan">+ Préstamo manual</button>`;
-    body.innerHTML=h2;
   }
+}
+function renderFinDeudas(){ const host=$("#fin-deudas-wrap"); if(!host)return;
+  const totD=S.debts.reduce((a,b)=>a+(+b.amount||0),0);
+  const deudasInner=`<div class="dp-h">Debés <b style="color:var(--danger)">${money(totD)}</b></div>`
+    +(S.debts.length?S.debts.map(d=>debtRow(d,"debt")).join(""):`<div class="empty" style="padding:8px 0">No tenés deudas cargadas.</div>`)
+    +`<button class="btn primary block" style="margin-top:12px" data-act="add-debt">+ Nueva deuda</button>`;
+  const map={}; S.moves.forEach(m=>{ if(m.cat!=="Prestado")return; const who=((m.who||"").trim())||"Sin nombre"; map[who]=(map[who]||0)+((m.type==="ingreso")?-(+m.amount||0):(+m.amount||0)); });
+  const rows=Object.keys(map).map(k=>({who:k,amt:map[k]})).filter(r=>Math.round(r.amt)>0).sort((a,b)=>b.amt-a.amt);
+  const totP=rows.reduce((a,b)=>a+b.amt,0);
+  const prestInner=`<div class="dp-h">Te deben <b style="color:var(--ok)">${money(totP)}</b></div>`
+    +(rows.length?rows.map(r=>`<div class="debt"><span class="debt-ico">🤝</span><div class="row-main"><div class="row-title">${esc(r.who)}</div><div class="row-sub">categoría Prestado</div></div><span class="debt-amt up">${money(r.amt)}</span></div>`).join(""):`<div class="empty" style="padding:8px 0">Nadie te debe. Cargá un gasto en categoría "Prestado" y poné a quién se lo prestaste.</div>`);
+  const inner=`<div class="dp-tabs"><button class="dp-tab on" data-dp="0">Deudas</button><button class="dp-tab" data-dp="1">Préstamos</button></div>
+    <div class="dp-carousel" id="dp-carousel"><div class="dp-slide">${deudasInner}</div><div class="dp-slide">${prestInner}</div></div>`;
+  host.innerHTML=collap("Deudas y préstamos",inner,"fin-deudas",true);
+  const car=$("#dp-carousel");
+  if(car){ const tabs=host.querySelectorAll(".dp-tab");
+    car.onscroll=()=>{ const i=Math.round(car.scrollLeft/car.clientWidth); tabs.forEach((b,j)=>b.classList.toggle("on",j===i)); };
+    tabs.forEach(b=>b.onclick=()=>{ const i=+b.dataset.dp; car.scrollTo({left:i*car.clientWidth,behavior:"smooth"}); }); }
 }
 function renderFinAhorros(){ const host=$("#fin-ahorros-wrap"); if(!host)return;
   let inner;
@@ -999,7 +1023,7 @@ function closePop(){ const o=$("#overlay"); o.classList.add("closing"); document
 function openAdd(){
   const map={inicio:[["task","Tarea","✓"],["event","Evento","◷"],["shop","Compra","🛍️"],["mov","Movimiento","$"]],
     agenda:[["event","Evento","◷"],["task","Tarea","✓"]],
-    finanzas:[["mov","Movimiento","$"],["card","Tarjeta","💳"],["service","Servicio","🧾"],["saving","Meta","🎯"],["debt","Deuda","💸"],["loan","Préstamo","🤝"]]}[screen]||[["task","Tarea","✓"]];
+    finanzas:[["mov","Movimiento","$"],["card","Tarjeta","💳"],["service","Servicio","🧾"],["saving","Meta","🎯"],["debt","Deuda","💸"]]}[screen]||[["task","Tarea","✓"]];
   showPop(`<div class="pop-h"><div class="pop-t">Agregar</div><button class="pop-x" data-act="close">✕</button></div>
     <div class="chips">${map.map(o=>`<button class="ch" data-add="${o[0]}">${o[2]} ${o[1]}</button>`).join("")}</div>`);
 }
@@ -1008,6 +1032,7 @@ function openForm(type,ex){ _draft={}; _editId=(ex&&ex.id)||null;
     task:`<div class="pop-h"><div class="pop-t">Nueva tarea</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Tarea</label><input id="i-title" placeholder="Ej: Pagar la luz" autofocus></div>
       <div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_formDate||todayISO()}"></div>
+      <div class="field"><label>Hora (opcional)</label><input id="i-time" type="time"></div>
       <div class="field"><label>Prioridad</label><select id="i-priority"><option value="alta">🔴 Alta</option><option value="media" selected>🟡 Media</option><option value="baja">⚪ Baja</option></select></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="task">Guardar</button></div>`,
     event:`<div class="pop-h"><div class="pop-t">Nuevo evento</div><button class="pop-x" data-act="close">✕</button></div>
@@ -1071,7 +1096,7 @@ function prefillForm(type,ex){
     document.querySelectorAll('#mov-method [data-pick="method"]').forEach(b=>b.classList.toggle("on",b.dataset.v===(ex.method||"efectivo")));
     updateMovExtras(); if($("#i-who")&&ex.who)$("#i-who").value=ex.who; if($("#i-cuotas")&&ex.cuotas)$("#i-cuotas").value=ex.cuotas; if($("#i-card"))$("#i-card").value=ex.card||"";
   } else if(type==="event"){ if($("#i-title"))$("#i-title").value=ex.title||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-time"))$("#i-time").value=ex.time||""; if($("#i-note"))$("#i-note").value=ex.note||"";
-  } else if(type==="task"){ if($("#i-title"))$("#i-title").value=ex.title||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-priority"))$("#i-priority").value=ex.priority||"media";
+  } else if(type==="task"){ if($("#i-title"))$("#i-title").value=ex.title||""; if($("#i-date"))$("#i-date").value=ex.date||todayISO(); if($("#i-time"))$("#i-time").value=ex.time||""; if($("#i-priority"))$("#i-priority").value=ex.priority||"media";
   } else if(type==="shop"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-qty"))$("#i-qty").value=ex.qty||1;
   } else if(type==="saving"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-target"))$("#i-target").value=ex.target||""; if($("#i-saved"))$("#i-saved").value=ex.saved||"";
   } else if(type==="debt"||type==="loan"){ if($("#i-who"))$("#i-who").value=ex.who||""; if($("#i-amount"))$("#i-amount").value=ex.amount||""; if($("#i-note"))$("#i-note").value=ex.note||"";
@@ -1087,7 +1112,7 @@ function updateMovExtras(){ if(!$("#i-cat"))return; const cat=($("#i-cat").value
 function doSave(type){
   const v=id=>{const e=$("#"+id);return e?e.value.trim():"";};
   const num=id=>{const e=$("#"+id);return e?parseInt((e.value||"").replace(/[^\d]/g,""),10)||0:0;};
-  if(type==="task"){ if(!v("i-title"))return; const dt=$("#i-date").value||""; const pr=($("#i-priority")&&$("#i-priority").value)||"media"; if(_editId){ const t=S.tasks.find(x=>x.id===_editId); if(t){ t.title=v("i-title"); t.date=dt; t.priority=pr; } } else { S.tasks.push({id:uid(),title:v("i-title"),date:dt,done:false,priority:pr}); } }
+  if(type==="task"){ if(!v("i-title"))return; const dt=$("#i-date").value||""; const tm=($("#i-time")&&$("#i-time").value)||""; const pr=($("#i-priority")&&$("#i-priority").value)||"media"; if(_editId){ const t=S.tasks.find(x=>x.id===_editId); if(t){ t.title=v("i-title"); t.date=dt; t.time=tm; t.priority=pr; } } else { S.tasks.push({id:uid(),title:v("i-title"),date:dt,time:tm,done:false,priority:pr}); } }
   else if(type==="event"){ if(!v("i-title"))return; if(_editId){ const ev=S.events.find(x=>x.id===_editId); if(ev){ ev.title=v("i-title"); ev.date=$("#i-date").value||todayISO(); ev.time=$("#i-time").value||""; ev.note=v("i-note"); } } else { S.events.push({id:uid(),title:v("i-title"),date:$("#i-date").value||todayISO(),time:$("#i-time").value||"",note:v("i-note")}); } }
   else if(type==="shop"){ if(!v("i-title"))return; const q=Math.max(1,parseInt(($("#i-qty")&&$("#i-qty").value)||"1",10)||1); if(_editId){ const s=S.shop.find(x=>x.id===_editId); if(s){ s.name=v("i-title"); s.qty=q; } } else { S.shop.push({id:uid(),name:v("i-title"),qty:q,done:false}); } }
   else if(type==="mov"){ const a=num("i-amount"); if(a<=0)return; const c=($("#i-cat")&&$("#i-cat").value)||_draft.cat||"Otros"; const tp=_draft.type||"gasto"; const mth=_draft.method||"efectivo"; const dt=$("#i-date").value||todayISO(); let ttl=v("i-title"); const who=(c==="Prestado"&&$("#i-who"))?$("#i-who").value.trim():""; const card=(mth==="tarjeta"&&tp==="gasto"&&$("#i-card"))?$("#i-card").value:"";
@@ -1097,8 +1122,8 @@ function doSave(type){
       if(tp==="gasto"&&mth==="tarjeta"&&ncu>1){ const per=Math.round(a/ncu); const first=a-per*(ncu-1); const gid=uid(); for(let k=0;k<ncu;k++){ S.moves.push({id:uid(),type:"gasto",amount:k===0?first:per,cat:c,method:"tarjeta",title:(ttl?ttl+" \u00b7 ":"")+"Cuota "+(k+1)+"/"+ncu,date:addMonthsISO(dt,k),cuotas:ncu,cuotaIndex:k+1,grp:gid,who:who,card:card}); } }
       else { S.moves.push({id:uid(),type:tp,amount:a,cat:c,method:mth,title:ttl,date:dt,who:who,card:card}); } } }
   else if(type==="saving"){ if(!v("i-title"))return; if(_editId){ const g=S.savings.find(x=>x.id===_editId); if(g){ g.name=v("i-title"); g.target=num("i-target"); g.saved=num("i-saved"); } } else { S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); } }
-  else if(type==="debt"){ if(!v("i-who"))return; if(_editId){ const d=S.debts.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="deudas"; } }
-  else if(type==="loan"){ if(!v("i-who"))return; if(_editId){ const d=S.loans.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="prestamos"; } }
+  else if(type==="debt"){ if(!v("i-who"))return; if(_editId){ const d=S.debts.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); } }
+  else if(type==="loan"){ if(!v("i-who"))return; if(_editId){ const d=S.loans.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); } }
   else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; if(_editId){ const s=S.services.find(x=>x.id===_editId); if(s){ s.name=v("i-title"); s.amount=num("i-amount"); s.day=day; s.method=_draft.smethod||"transferencia"; } } else { S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:_draft.smethod||"transferencia",lastPaid:""}); _ftab="servicios"; } }
   else if(type==="card"){ if(!v("i-title"))return; let ci=parseInt(($("#i-cierre")&&$("#i-cierre").value)||"",10); if(!(ci>=1&&ci<=31))ci=0; const lim=num("i-limit"); if(_editId){ const cc=S.cards.find(x=>x.id===_editId); if(cc){ cc.name=v("i-title"); cc.cierre=ci; cc.limit=lim; } } else { S.cards.push({id:uid(),name:v("i-title"),cierre:ci,limit:lim}); _ftab="tarjetas"; } }
   save(); closePop(); render(); _editId=null;
@@ -1179,6 +1204,7 @@ function renderAjustes(){
           <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
         <div class="aj-row"><div style="flex:1"><div class="aj-l">Color de acento</div><div class="aj-d">El color principal de Iris.</div>
           <div class="swatches" style="margin-top:11px">${ACCENTS.map(c=>`<button class="swatch ${S.set.accent===c?"on":""}" data-act="set-accent" data-c="${c}" style="background:${c}" aria-label="Acento ${c}"></button>`).join("")}</div></div></div>`,"aj-apariencia",true)
+      +collap("Recordatorios",`<div class="field"><label>Avisarme antes (eventos y tareas con hora)</label><select id="set-remind">${[[0,"En el momento"],[5,"5 minutos antes"],[10,"10 minutos antes"],[15,"15 minutos antes"],[30,"30 minutos antes"],[60,"1 hora antes"],[1440,"1 día antes"]].map(o=>`<option value="${o[0]}" ${o[0]===_remMin()?"selected":""}>${o[1]}</option>`).join("")}</select></div><div class="muted" style="margin-top:8px;font-size:11px">Al tocar 🔔 "Recordarme" en un evento o tarea, Iris crea un archivo que agregás a tu Calendario y el iPhone te avisa con sonido (aunque Iris esté cerrada).</div>`,"aj-recordatorios",false)
       +collap("Categorías de gastos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un gasto. Usá ▲▼ para ordenarlas.</div>${catEditor("gasto")}`,"aj-catgasto",false)
       +collap("Categorías de ingresos",`<div class="muted" style="margin-bottom:8px">Las que aparecen al cargar un ingreso. Usá ▲▼ para ordenarlas.</div>${catEditor("ingreso")}`,"aj-catingreso",false);
   }
@@ -1205,7 +1231,7 @@ function renameCat(kind,oldName,newName){
   S.moves.forEach(m=>{ if(m.cat===oldName && ((kind==="gasto"&&m.type==="gasto")||(kind==="ingreso"&&m.type==="ingreso"))) m.cat=newName; });
   save(); render();
 }
-document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } const ic=e.target.closest("#i-cat"); if(ic){ _draft.cat=ic.value; updateMovExtras(); } const icd=e.target.closest("#i-card"); if(icd){ _draft.card=icd.value; } });
+document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } const ic=e.target.closest("#i-cat"); if(ic){ _draft.cat=ic.value; updateMovExtras(); } const icd=e.target.closest("#i-card"); if(icd){ _draft.card=icd.value; } const srm=e.target.closest("#set-remind"); if(srm){ S.set.remindMin=parseInt(srm.value,10)||0; save(); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target && e.target.id==="note-input"){ e.preventDefault(); const t=e.target.value.trim(); if(t){ S.notes.push({id:uid(),text:t}); save(); render(); } } });
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
@@ -1255,7 +1281,7 @@ function syncPayload(){ const c=JSON.parse(JSON.stringify(S)); if(c.ai)delete c.
 function schedulePush(){ if(!loggedIn())return; _syncDirty=true; clearTimeout(_syncTimer); _syncTimer=setTimeout(syncPush,800); }
 async function syncPush(){ if(!loggedIn()||_syncBusy)return; _syncBusy=true; _syncMark("Guardando…"); try{ const r=await authedFetch(SUPA_URL+"/rest/v1/iris_state",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({user_id:_sess.user.id,data:syncPayload()})}); if(r.ok){ const rows=await r.json().catch(()=>[]); if(Array.isArray(rows)&&rows[0])_lastTs=rows[0].updated_at; _syncDirty=false; _syncMark("Al día ✓"); } else _syncMark("No se pudo guardar"); }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; }
 async function syncPull(opt){ opt=opt||{}; if(!loggedIn()||_syncBusy)return; _syncBusy=true; let pushAfter=false; try{ const r=await authedFetch(SUPA_URL+"/rest/v1/iris_state?select=data,updated_at",{method:"GET"}); if(r.ok){ const rows=await r.json().catch(()=>[]); if(Array.isArray(rows)&&rows.length&&rows[0].data){ const ts=rows[0].updated_at; if((opt.force||ts!==_lastTs) && !(_syncDirty&&!opt.force)) adoptRemote(rows[0].data,ts); _syncMark("Al día ✓"); } else pushAfter=true; } }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; if(pushAfter) await syncPush(); }
-function adoptRemote(data,ts){ if(!data)return; const key=(S.ai&&S.ai.key)||""; const m=Object.assign({},DEFAULT,data); m.set=Object.assign({anim:true,accent:"#5b8cff"},m.set||{}); m.ai=Object.assign({endpoint:""},m.ai||{}); if(key)m.ai.key=key; if(!Array.isArray(m.catGasto)||!m.catGasto.length)m.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(m.catIngreso)||!m.catIngreso.length)m.catIngreso=DEFAULT.catIngreso.slice(); S=m; _lastTs=ts||_lastTs; _syncDirty=false; save(true); applyAccent(); applyAnim(); render(); }
+function adoptRemote(data,ts){ if(!data)return; const key=(S.ai&&S.ai.key)||""; const m=Object.assign({},DEFAULT,data); m.set=Object.assign({anim:true,accent:"#5b8cff",remindMin:30},m.set||{}); m.ai=Object.assign({endpoint:""},m.ai||{}); if(key)m.ai.key=key; if(!Array.isArray(m.catGasto)||!m.catGasto.length)m.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(m.catIngreso)||!m.catIngreso.length)m.catIngreso=DEFAULT.catIngreso.slice(); S=m; _lastTs=ts||_lastTs; _syncDirty=false; save(true); applyAccent(); applyAnim(); render(); }
 async function syncOnLogin(){ _syncMark("Sincronizando…"); await syncPull({force:true}); startPoll(); renderAjustes(); }
 function syncNow(){ if(!loggedIn())return; if(_syncDirty)syncPush(); else syncPull({force:true}); }
 function _syncBlocked(){ const o=$("#overlay"),ir=$("#iris"),ae=document.activeElement; const typing=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName); return (o&&o.classList.contains("open"))||(ir&&ir.classList.contains("open"))||typing; }
@@ -1317,6 +1343,7 @@ document.addEventListener("click",e=>{
     "del-shop":()=>{S.shop=S.shop.filter(x=>x.id!==id);save();reopenAfter("compras");},
     "del-event":()=>{S.events=S.events.filter(x=>x.id!==id);save();reopenAfter("eventos");},
     "cal-ev":()=>addToCalendar(id),
+    "remind-task":()=>remindTask(id),
     "del-mov":()=>{S.moves=S.moves.filter(x=>x.id!==id);save();render();},
     "edit-mov":()=>{ const m=S.moves.find(x=>x.id===id); if(m)openForm("mov",m); },
     "edit-ev":()=>{ const ev=S.events.find(x=>x.id===id); if(ev)openForm("event",ev); },
