@@ -1622,7 +1622,7 @@ function toggleMic(){ if(_listening){ stopMic(); return; }
 function stopMic(){ if(_rec){ try{_rec.stop();}catch(_){} } _listening=false; $("#iris").classList.remove("listening"); }
 
 /* ====================== INIT ====================== */
-function init(){ render(); /* single-file: sin SW */ authBoot(); }
+function init(){ render(); if("serviceWorker" in navigator){ navigator.serviceWorker.getRegistrations().then(function(rs){ if(rs&&rs.length){ rs.forEach(function(r){r.unregister();}); if(window.caches){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});} if(!sessionStorage.getItem("_swclean")){sessionStorage.setItem("_swclean","1");location.reload();} } }).catch(function(){}); } authBoot(); }
 init();
 
 /* ---- guías de medición: abrí la app con ?guides (o #guides) ---- */
