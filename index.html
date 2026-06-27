@@ -379,6 +379,12 @@
 
   .muted{color:var(--dim);font-size:13px;line-height:1.5;}
   @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+  .svc-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;vertical-align:middle;margin-left:4px}
+  .svc-tag.over{background:rgba(255,107,107,.18);color:#ff6b6b}
+  .svc-tag.today{background:rgba(255,200,97,.2);color:#ffc861}
+  .svc-tag.soon{background:rgba(91,140,255,.18);color:var(--accent)}
+  .svc-tag.paid{background:rgba(61,220,151,.16);color:#3ddc97}
+  .svc-tag.ok{background:rgba(255,255,255,.07);color:#8b93a7}
 </style>
 </head>
 <body>
@@ -398,6 +404,7 @@
       <button class="tile" data-pop="eventos"><div class="tn" id="t-events">0</div><div class="tk">Eventos hoy</div></button>
       <button class="tile" data-pop="compras"><div class="tn" id="t-shop">0</div><div class="tk">Compras</div></button>
     </div>
+    <div id="home-services"></div>
     <div class="card cal-card">
       <div class="cal-head"><div class="cal-title" id="home-cal-title">—</div>
         <div class="cal-nav"><button data-cal="-1">‹</button><button data-cal="0">Hoy</button><button data-cal="1">›</button></div></div>
@@ -437,6 +444,7 @@
     </div>
     <div class="seg" id="f-seg">
       <button data-ftab="mov" class="on">Movimientos</button>
+      <button data-ftab="servicios">Servicios</button>
       <button data-ftab="ahorros">Ahorros</button>
       <button data-ftab="deudas">Deudas</button>
       <button data-ftab="prestamos">Préstamos</button>
@@ -503,12 +511,12 @@
 const KEY="iris.v1";
 const SUPA_URL="https://jgppbiwxgqxdkdrvofgg.supabase.co";
 const SUPA_KEY="sb_publishable_3SxgERLT1uFujAMvTcH_zQ_dw1feYqX";
-const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], chat:[], ai:{endpoint:""},
+const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], chat:[], ai:{endpoint:""},
   catGasto:["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"],
   catIngreso:["Sueldo","Venta","Otro"],
   set:{anim:true,accent:"#5b8cff"} };
 let S=load();
-function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && typeof loggedIn==="function" && loggedIn()) schedulePush(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -570,7 +578,7 @@ function render(){
   const shop=S.shop.filter(s=>!s.done);
   $("#t-tasks").textContent=todayTasks.length; $("#t-events").textContent=todayEvents.length; $("#t-shop").textContent=shop.length;
 
-  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderAjustes(); applyAccent(); applyAnim();
+  renderCalendars(); renderAgenda(); renderFinance(); renderHomeChart(); renderHomeServices(); renderAjustes(); applyAccent(); applyAnim();
   const sn=$("#set-name"); if(sn && document.activeElement!==sn) sn.value=S.name||"";
   const sa=$("#set-ai"); if(sa && document.activeElement!==sa) sa.value=(S.ai&&S.ai.endpoint)||"";
 }
@@ -625,6 +633,26 @@ function addToCalendar(id){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
+function dlICS(text,name){ const blob=new Blob([text],{type:"text/calendar;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=((name||"iris").replace(/[^\w\-]+/g,"_")||"iris")+".ics"; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url),3000); }
+
+/* ====================== SERVICIOS FIJOS ====================== */
+function _dim(y,m){ return new Date(y,m+1,0).getDate(); }
+function svcDueDate(svc,off){ const n=new Date(); const ref=new Date(n.getFullYear(),n.getMonth()+(off||0),1); const y=ref.getFullYear(),m=ref.getMonth(); const day=Math.min(Math.max(1,+svc.day||1),_dim(y,m)); return new Date(y,m,day); }
+function svcInfo(svc){ const tm=thisMonth(); const paid=svc.lastPaid===tm; const today=new Date(); today.setHours(0,0,0,0); let due=svcDueDate(svc,0); if(paid)due=svcDueDate(svc,1); const diff=Math.round((due-today)/86400000); let status=paid?"pagado":diff<0?"vencido":diff===0?"hoy":diff<=5?"pronto":"ok"; return {paid,due,diff,status}; }
+function pendingServices(){ return S.services.filter(s=>{ const st=svcInfo(s).status; return st==="vencido"||st==="hoy"||st==="pronto"; }).sort((a,b)=>svcInfo(a).diff-svcInfo(b).diff); }
+function _svcTag(inf,svc){ return inf.status==="pagado"?`<span class="svc-tag paid">Pagado</span>`:inf.status==="vencido"?`<span class="svc-tag over">Vencido</span>`:inf.status==="hoy"?`<span class="svc-tag today">Hoy</span>`:inf.status==="pronto"?`<span class="svc-tag soon">En ${inf.diff} día${inf.diff===1?"":"s"}</span>`:`<span class="svc-tag ok">Día ${Math.min(+svc.day||1,28)}</span>`; }
+function serviceRow(s){ const inf=svcInfo(s);
+  return `<div class="row"><span class="mv-ico">🧾</span><div class="row-main"><div class="row-title">${esc(s.name)} ${_svcTag(inf,s)}</div><div class="row-sub">${money(s.amount)} · todos los ${(+s.day||1)}${s.method?(" · "+esc(s.method)):""}</div></div>`
+    +(inf.paid?"":`<button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 12px;margin-right:6px">Pagar</button>`)
+    +`<button class="x-row" data-act="cal-service" data-id="${s.id}" title="Recordatorio en el calendario" style="color:var(--accent)">📅</button>`
+    +`<button class="x-row" data-act="del-service" data-id="${s.id}">×</button></div>`; }
+function payService(id){ const s=S.services.find(x=>x.id===id); if(!s)return; S.moves.push({id:uid(),type:"gasto",amount:+s.amount||0,cat:"Servicios",method:s.method||"transferencia",title:s.name,date:todayISO()}); s.lastPaid=thisMonth(); save(); render(); }
+function svcICS(svc){ const due=svcDueDate(svc,0); const d=iso(due).replace(/-/g,""); const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""); const bmd=Math.min(Math.max(1,+svc.day||1),28); const sum="Pagar "+(svc.name||"servicio")+" — "+money(svc.amount);
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Iris//Servicios//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT","UID:svc-"+svc.id+"@iris.app","DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+d,"RRULE:FREQ=MONTHLY;BYMONTHDAY="+bmd,"SUMMARY:"+icsEsc(sum),"BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc("Pagar "+(svc.name||"servicio")),"TRIGGER:PT9H","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n"); }
+function addServiceToCalendar(id){ const s=S.services.find(x=>x.id===id); if(!s)return; dlICS(svcICS(s),"pagar_"+(s.name||"servicio")); }
+function renderHomeServices(){ const host=$("#home-services"); if(!host)return; const pend=pendingServices(); if(!pend.length){ host.innerHTML=""; host.style.display="none"; return; } host.style.display="";
+  host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:8px">Servicios por pagar</div>`+pend.map(s=>{ const inf=svcInfo(s); const tag=inf.status==="vencido"?`<span class="svc-tag over">Vencido</span>`:inf.status==="hoy"?`<span class="svc-tag today">Hoy</span>`:`<span class="svc-tag soon">En ${inf.diff} día${inf.diff===1?"":"s"}</span>`;
+    return `<div class="row"><span class="mv-ico">🧾</span><div class="row-main"><div class="row-title">${esc(s.name)} ${tag}</div><div class="row-sub">${money(s.amount)} · vence ${inf.due.toLocaleDateString("es-AR",{day:"numeric",month:"short"})}</div></div><button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 14px">Pagar</button></div>`; }).join("")+`</div>`; }
 function openDay(ds){
   _selDay=ds; renderCalendars();
   const dd=new Date(ds+"T00:00");
@@ -843,6 +871,11 @@ function renderFinance(){
     let mvs=S.moves.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id>a.id?1:-1)).slice(0,40);
     body.innerHTML=(mvs.length?mvs.map(movRow).join(""):`<div class="empty">Sin movimientos. Tocá + para agregar.</div>`)
       +`<button class="btn primary block" style="margin-top:16px" data-act="add-mov">+ Movimiento</button>`;
+  } else if(_ftab==="servicios"){
+    const tot=S.services.reduce((a,b)=>a+(+b.amount||0),0);
+    body.innerHTML=`<div class="muted" style="margin-bottom:10px">Total fijo mensual: <b>${money(tot)}</b></div>`
+      +(S.services.length?S.services.slice().sort((a,b)=>(+a.day||0)-(+b.day||0)).map(serviceRow).join(""):`<div class="empty">Sin servicios. Cargá tus pagos fijos (luz, internet, alquiler…) y Iris te avisa cuándo vencen.</div>`)
+      +`<button class="btn primary block" style="margin-top:16px" data-act="add-service">+ Nuevo servicio</button>`;
   } else if(_ftab==="ahorros"){
     body.innerHTML=(S.savings.length?S.savings.map(svCard).join(""):`<div class="empty">Sin metas de ahorro.</div>`)
       +`<button class="btn primary block" style="margin-top:8px" data-act="add-saving">+ Nueva meta</button>`;
@@ -876,7 +909,7 @@ function closePop(){ const o=$("#overlay"); o.classList.add("closing"); document
 function openAdd(){
   const map={inicio:[["task","Tarea","✓"],["event","Evento","◷"],["shop","Compra","🛍️"],["mov","Movimiento","$"]],
     agenda:[["event","Evento","◷"],["task","Tarea","✓"]],
-    finanzas:[["mov","Movimiento","$"],["saving","Meta","🎯"],["debt","Deuda","💸"],["loan","Préstamo","🤝"]]}[screen]||[["task","Tarea","✓"]];
+    finanzas:[["mov","Movimiento","$"],["service","Servicio","🧾"],["saving","Meta","🎯"],["debt","Deuda","💸"],["loan","Préstamo","🤝"]]}[screen]||[["task","Tarea","✓"]];
   showPop(`<div class="pop-h"><div class="pop-t">Agregar</div><button class="pop-x" data-act="close">✕</button></div>
     <div class="chips">${map.map(o=>`<button class="ch" data-add="${o[0]}">${o[2]} ${o[1]}</button>`).join("")}</div>`);
 }
@@ -917,10 +950,17 @@ function openForm(type){ _draft={};
       <div class="field"><label>¿A quién le prestaste?</label><input id="i-who" placeholder="Ej: Ana" autofocus></div>
       <div class="field"><label>Monto</label><input id="i-amount" class="num" type="text" inputmode="numeric" placeholder="0"></div>
       <div class="field"><label>Nota</label><input id="i-note" placeholder="Opcional"></div>
-      <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="loan">Guardar</button></div>`
+      <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="loan">Guardar</button></div>`,
+    service:`<div class="pop-h"><div class="pop-t">Nuevo servicio fijo</div><button class="pop-x" data-act="close">✕</button></div>
+      <div class="field"><label>Servicio</label><input id="i-title" placeholder="Ej: Luz, Internet, Alquiler" autofocus></div>
+      <div class="field"><label>Monto</label><input id="i-amount" class="num" type="text" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label>Día de pago (del mes)</label><input id="i-day" type="number" min="1" max="31" inputmode="numeric" placeholder="Ej: 10"></div>
+      <div class="field"><label>Método</label><div class="seg-modal" id="svc-method"><button type="button" class="on" data-pick="smethod" data-v="transferencia">Transfer.</button><button type="button" data-pick="smethod" data-v="débito">Débito</button><button type="button" data-pick="smethod" data-v="tarjeta">Tarjeta</button><button type="button" data-pick="smethod" data-v="efectivo">Efectivo</button></div></div>
+      <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="service">Guardar</button></div>`
   };
   showPop(F[type]);
   if(type==="mov"){ _draft.type="gasto"; _draft.cat="Comida"; _draft.method="efectivo"; syncCats(); }
+  if(type==="service"){ _draft.smethod="transferencia"; }
   _formDate=null;
 }
 function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
@@ -937,6 +977,7 @@ function doSave(type){
   else if(type==="saving"){ if(!v("i-title"))return; S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); _ftab="ahorros"; }
   else if(type==="debt"){ if(!v("i-who"))return; S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="deudas"; }
   else if(type==="loan"){ if(!v("i-who"))return; S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); _ftab="prestamos"; }
+  else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:_draft.smethod||"transferencia",lastPaid:""}); _ftab="servicios"; }
   save(); closePop(); render();
 }
 
@@ -1109,6 +1150,7 @@ document.addEventListener("click",e=>{
     "close-bg":()=>{ if(e.target.id==="overlay") closePop(); },
     "add-task":()=>openForm("task"),"add-event":()=>openForm("event"),"add-shop":()=>openForm("shop"),
     "add-mov":()=>openForm("mov"),"add-saving":()=>openForm("saving"),"add-debt":()=>openForm("debt"),"add-loan":()=>openForm("loan"),
+    "add-service":()=>openForm("service"),"pay-service":()=>payService(id),"del-service":()=>{ S.services=S.services.filter(x=>x.id!==id); save(); render(); },"cal-service":()=>addServiceToCalendar(id),
     "toggle-task":()=>{const t=S.tasks.find(x=>x.id===id);if(t){t.done=!t.done;save();reopenAfter("tareas");}},
     "del-task":()=>{S.tasks=S.tasks.filter(x=>x.id!==id);save();reopenAfter("tareas");},
     "toggle-shop":()=>{const t=S.shop.find(x=>x.id===id);if(t){t.done=!t.done;save();reopenAfter("compras");}},
