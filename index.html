@@ -191,6 +191,7 @@
   /* bottom nav frosted pill + orbe central vivo */
   .navwrap{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;justify-content:center;
     padding:0 var(--s4) calc(env(safe-area-inset-bottom,0) + 10px);pointer-events:none;}
+  #diag-fab{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0) + 98px);z-index:60;background:rgba(91,140,255,.92);color:#fff;font:700 11px/1 -apple-system,system-ui,sans-serif;padding:9px 13px;border-radius:999px;border:none;box-shadow:0 6px 18px rgba(0,0,0,.45);}
   .nav{pointer-events:auto;display:flex;align-items:center;justify-content:space-around;gap:var(--s2);
     width:100%;max-width:420px;padding:10px var(--s3);border-radius:999px;position:relative;
     background:rgba(10,15,26,0.72);border:1px solid var(--line);
@@ -521,6 +522,7 @@
   <button class="tab" data-go="finanzas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 8h5v5"/></svg>Finanzas</button>
   <button class="tab" data-go="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
 </nav></div>
+<button id="diag-fab" data-act="diag" aria-label="Medir pantalla">📐 medir</button>
 
 <!-- popup -->
 <div class="overlay" id="overlay" data-act="close-bg"><div class="pop" id="pop"></div></div>
@@ -1279,30 +1281,34 @@ function fmtMiles(v){ const r=String(v==null?"":v).replace(/[^\d]/g,"").replace(
 function irisDiag(){
   const L=[]; const P=(...a)=>L.push(a.join(" "));
   try{
-    const de=document.documentElement, b=document.body, vv=window.visualViewport||{};
+    const de=document.documentElement, vv=window.visualViewport||{};
+    const m=el=>{const r=el.getBoundingClientRect();return Math.round(r.width)+"x"+Math.round(r.height)+" @"+Math.round(r.x)+","+Math.round(r.y);};
+    const nm=el=>el.id?"#"+el.id:(typeof el.className==="string"&&el.className?"."+el.className.trim().split(/\s+/)[0]:el.tagName.toLowerCase());
     P("=== IRIS DIAG ===");
     P("fecha:", new Date().toISOString());
     P("UA:", navigator.userAgent);
-    P("standalone(PWA):", (navigator.standalone===true)||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches));
-    P("dpr:", window.devicePixelRatio||1);
-    P("window.inner:", innerWidth+"x"+innerHeight);
-    P("screen:", screen.width+"x"+screen.height, "avail:", screen.availWidth+"x"+screen.availHeight);
-    P("visualViewport:", Math.round(vv.width||0)+"x"+Math.round(vv.height||0), "scale:", (vv.scale||1), "offsetTop:", Math.round(vv.offsetTop||0));
+    P("standalone(PWA):", (navigator.standalone===true)||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches), "| dpr:", window.devicePixelRatio||1);
+    P("window.inner:", innerWidth+"x"+innerHeight, "| visualVP:", Math.round(vv.width||0)+"x"+Math.round(vv.height||0), "| scale:", vv.scale||1);
     try{ const pr=document.createElement("div"); pr.style.cssText="position:fixed;top:0;left:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);visibility:hidden"; document.body.appendChild(pr); const cs=getComputedStyle(pr); P("safe-area (T R B L):", cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft); pr.remove(); }catch(e){}
-    P("documentEl: client "+de.clientWidth+"x"+de.clientHeight+" scroll "+de.scrollWidth+"x"+de.scrollHeight);
-    P("body: client "+b.clientWidth+"x"+b.clientHeight+" scroll "+b.scrollWidth+"x"+b.scrollHeight);
     P("overflow horizontal:", de.scrollWidth>de.clientWidth?("SÍ +"+(de.scrollWidth-de.clientWidth)+"px"):"no");
-    const scr=[...document.querySelectorAll(".screen")].find(s=>getComputedStyle(s).display!=="none"&&s.getBoundingClientRect().height>0);
-    P("pantalla activa:", scr?("#"+scr.id):"?");
-    try{ const k=Object.keys(localStorage).find(x=>x.startsWith("iris")); const s=JSON.parse(localStorage.getItem(k)||"{}"); P("datos:", "moves="+((s.moves||[]).length), "tasks="+((s.tasks||[]).length), "events="+((s.events||[]).length), "savings="+((s.savings||[]).length), "cards="+((s.cards||[]).length), "services="+((s.services||[]).length), "debts="+((s.debts||[]).length)); }catch(e){ P("datos: (no leíble)"); }
-    P("--- elementos (ancho x alto @ x,y) ---");
-    ["#app",".screen.active","#s-finanzas",".top",".card.hero",".metric-grid","#fin-mov-wrap","#fin-mov-wrap .card",".health-card","#fin-ahorros-wrap",".sv-carousel",".sv","#fin-deudas-wrap","#fin-tjsv-wrap",".dp-carousel",".dp-slide",".tabbar",".fab"].forEach(sl=>{ const el=document.querySelector(sl); if(el){ const r=el.getBoundingClientRect(); const cs=getComputedStyle(el); P(sl+":", Math.round(r.width)+"x"+Math.round(r.height), "@"+Math.round(r.x)+","+Math.round(r.y), "disp="+cs.display, "pos="+cs.position, "ovX="+cs.overflowX); } });
-    const icos=[...document.querySelectorAll("svg.ico")]; if(icos.length){ const ws=icos.map(s=>Math.round(s.getBoundingClientRect().width)); P("svg.ico:", icos.length+" total", "min="+Math.min(...ws)+"px", "max="+Math.max(...ws)+"px"); } else P("svg.ico: 0 en pantalla");
-    const vw=de.clientWidth, wide=[];
-    document.querySelectorAll(scr?("#"+scr.id+" *"):"body *").forEach(el=>{ const r=el.getBoundingClientRect(); if(r.width>vw+2){ wide.push((el.id?"#"+el.id:(typeof el.className==="string"&&el.className?"."+el.className.trim().split(/\s+/)[0]:el.tagName.toLowerCase()))+"="+Math.round(r.width)); } });
-    P("MÁS ANCHOS QUE LA PANTALLA ("+vw+"px):", wide.slice(0,15).join("  ")||"ninguno");
-    P("alto total scroll:", de.scrollHeight+"px");
-  }catch(e){ P("ERROR diag:", e.message); }
+    const app=document.querySelector(".app"); if(app){ P(".app:", m(app), "padTop="+getComputedStyle(app).paddingTop, "ov="+getComputedStyle(app).overflow); }
+    const navw=document.querySelector(".navwrap"), nav=document.querySelector(".nav");
+    if(navw)P(".navwrap:", m(navw), "padBottom="+getComputedStyle(navw).paddingBottom);
+    if(nav)P(".nav:", m(nav));
+    const scr=document.querySelector(".screen.on")||[...document.querySelectorAll(".screen")].find(s=>getComputedStyle(s).display!=="none"&&s.getBoundingClientRect().height>0);
+    P("PANTALLA ACTIVA:", scr?("#"+scr.id):"?", scr?("→ "+m(scr)):"");
+    if(scr){ const cs=getComputedStyle(scr); P("  scrollH="+scr.scrollHeight, "clientH="+scr.clientHeight, "ov="+cs.overflowY, "pad(T/B)="+cs.paddingTop+"/"+cs.paddingBottom);
+      P("--- hijos de #"+scr.id+" (w x h @ x,y) ---");
+      [...scr.children].forEach((el,i)=>{ P("  "+i, nm(el)+":", m(el), "disp="+getComputedStyle(el).display); });
+      const vw=de.clientWidth, wide=[]; scr.querySelectorAll("*").forEach(el=>{ const r=el.getBoundingClientRect(); if(r.width>vw+2)wide.push(nm(el)+"="+Math.round(r.width)); });
+      P("MÁS ANCHO QUE PANTALLA ("+vw+"px):", wide.slice(0,12).join("  ")||"ninguno");
+      const off=[]; scr.querySelectorAll("*").forEach(el=>{ const r=el.getBoundingClientRect(); if(r.left<-2||r.right>vw+2)off.push(nm(el)+"["+Math.round(r.left)+"→"+Math.round(r.right)+"]"); });
+      P("FUERA DE PANTALLA (x):", off.slice(0,10).join("  ")||"ninguno");
+    }
+    const icos=[...document.querySelectorAll(".screen.on svg.ico")];
+    if(icos.length){ const ws=icos.map(s=>Math.round(s.getBoundingClientRect().width)), hs=icos.map(s=>Math.round(s.getBoundingClientRect().height)); P("svg.ico en pantalla:", icos.length, "w "+Math.min(...ws)+"–"+Math.max(...ws)+"px  h "+Math.min(...hs)+"–"+Math.max(...hs)+"px"); } else P("svg.ico en pantalla: 0");
+    try{ const k=Object.keys(localStorage).find(x=>x.startsWith("iris")); const s=JSON.parse(localStorage.getItem(k)||"{}"); P("datos:", "moves="+((s.moves||[]).length),"savings="+((s.savings||[]).length),"events="+((s.events||[]).length),"cards="+((s.cards||[]).length),"services="+((s.services||[]).length),"debts="+((s.debts||[]).length)); P("login:", (typeof loggedIn==="function"&&loggedIn())?"sí":"no"); }catch(e){}
+  }catch(e){ P("ERROR:", e.message); }
   return L.join("\n");
 }
 document.addEventListener("input",e=>{
