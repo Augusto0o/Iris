@@ -506,10 +506,10 @@ const SUPA_KEY="sb_publishable_3SxgERLT1uFujAMvTcH_zQ_dw1feYqX";
 const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], chat:[], ai:{endpoint:""},
   catGasto:["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"],
   catIngreso:["Sueldo","Venta","Otro"],
-  set:{anim:true,accent:"#5b8cff"}, sync:{code:null} };
+  set:{anim:true,accent:"#5b8cff"} };
 let S=load();
-function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); s.sync=Object.assign({code:null},s.sync||{}); if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
-function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && S.sync && S.sync.code) schedulePush(); }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff"},s.set||{}); if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && typeof loggedIn==="function" && loggedIn()) schedulePush(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
 const $=s=>document.querySelector(s);
@@ -969,24 +969,21 @@ function renderAjustes(){
         <button class="btn block" data-act="wipe" style="color:var(--danger)">Borrar todos los datos</button></div>
       <div class="card"><div class="muted">Iris · estilo Frosted Glass · v1.4</div></div>`;
   } else if(_ajtab==="conectividad"){
-    const sc=S.sync&&S.sync.code;
-    const syncCard = sc
-      ? `<div class="card"><div class="card-t" style="margin-bottom:6px">Sincronización activa ✓</div>
-          <div class="muted" style="margin-bottom:10px">Este es tu código. Ponelo en tus otros dispositivos (acá mismo, en "Vincular") para que compartan los mismos datos.</div>
-          <div class="field"><label>Tu código</label><input id="sync-code" value="${esc(sc)}" readonly autocomplete="off"></div>
-          <button class="btn primary block" data-act="sync-copy">Copiar código</button>
-          <button class="btn block" data-act="sync-now" style="margin-top:8px">Sincronizar ahora</button>
-          <div class="field" style="margin-top:14px"><label>Vincular con otro código</label><input id="sync-code-in" placeholder="iris-xxxxxxxx" autocomplete="off"></div>
-          <button class="btn block" data-act="sync-link">Cambiar a ese código</button>
-          <button class="btn block" data-act="sync-off" style="margin-top:8px;color:var(--danger)">Desactivar</button>
+    const li=(typeof loggedIn==="function")&&loggedIn();
+    const acct = li
+      ? `<div class="card"><div class="card-t" style="margin-bottom:6px">Cuenta · sincronización ✓</div>
+          <div class="muted" style="margin-bottom:10px">Sesión iniciada como <b>${esc((_sess&&_sess.user&&_sess.user.email)||"")}</b>. Tus datos se sincronizan solos en todos tus dispositivos donde inicies sesión.</div>
+          <button class="btn block" data-act="sync-now">Sincronizar ahora</button>
+          <button class="btn block" data-act="auth-signout" style="margin-top:8px;color:var(--danger)">Cerrar sesión</button>
           <div id="sync-status" class="muted" style="margin-top:10px;font-size:11px"></div></div>`
-      : `<div class="card"><div class="card-t" style="margin-bottom:6px">Sincronizar entre dispositivos</div>
-          <div class="muted" style="margin-bottom:10px">Guardá tus datos en la nube y compartilos entre tu teléfono, tablet o compu con un <b>código</b>. Tus datos quedan protegidos por ese código. La clave de Gemini <b>no</b> se sincroniza (cada dispositivo usa la suya).</div>
-          <button class="btn primary block" data-act="sync-activate">Activar sincronización</button>
-          <div class="field" style="margin-top:16px"><label>¿Ya tenés un código de otro dispositivo?</label><input id="sync-code-in" placeholder="iris-xxxxxxxx" autocomplete="off"></div>
-          <button class="btn block" data-act="sync-link">Vincular con ese código</button>
-          <div id="sync-status" class="muted" style="margin-top:10px;font-size:11px"></div></div>`;
-    h=syncCard+`<div class="card"><div class="card-t" style="margin-bottom:6px">Iris IA · Google Gemini (gratis)</div>
+      : `<div class="card"><div class="card-t" style="margin-bottom:6px">Cuenta · sincronizar entre dispositivos</div>
+          <div class="muted" style="margin-bottom:10px">Creá una cuenta (o entrá) y tus datos se sincronizan <b>automáticamente</b> en tu teléfono, tablet y compu. La clave de Gemini no se sincroniza (queda en cada dispositivo).</div>
+          <div class="field"><label>Email</label><input id="auth-email" type="email" inputmode="email" autocomplete="email" placeholder="vos@email.com"></div>
+          <div class="field"><label>Contraseña</label><input id="auth-pass" type="password" autocomplete="current-password" placeholder="mínimo 6 caracteres"></div>
+          <button class="btn primary block" data-act="auth-signin">Entrar</button>
+          <button class="btn block" data-act="auth-signup" style="margin-top:8px">Crear cuenta nueva</button>
+          <div id="auth-status" class="muted" style="margin-top:10px;font-size:11px"></div></div>`;
+    h=acct+`<div class="card"><div class="card-t" style="margin-bottom:6px">Iris IA · Google Gemini (gratis)</div>
         <div class="muted" style="margin-bottom:10px">Con tu clave gratuita de Gemini, Iris piensa con tus datos: gastos, deudas, suscripciones, qué te falta pagar, consejos — y puede <b>cargar gastos/ingresos</b> cuando se lo pedís. Creá la clave gratis (sin tarjeta) en <b>aistudio.google.com/apikey</b>.</div>
         <div class="field"><label>Clave de Gemini</label><input id="set-ai-key" type="password" value="${esc((S.ai&&S.ai.key)||"")}" placeholder="AIza…" autocomplete="off"></div>
         <button class="btn primary block" data-act="save-ai">Guardar clave</button>
@@ -1041,21 +1038,50 @@ document.addEventListener("input",e=>{
   try{t.setSelectionRange(pos,pos);}catch(_){}
 });
 
-/* ====================== SYNC (Supabase por código) ====================== */
-let _syncTimer=null,_syncBusy=false;
-function genCode(){ const a="abcdefghijkmnpqrstuvwxyz23456789"; let s=""; for(let i=0;i<14;i++)s+=a[Math.floor(Math.random()*a.length)]; return "iris-"+s; }
-function syncPayload(){ const c=JSON.parse(JSON.stringify(S)); if(c.ai)delete c.ai.key; delete c.sync; return c; }
-function supaRpc(fn,body){ return fetch(SUPA_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)}); }
+/* ====================== CUENTA + SYNC AUTOMÁTICO (Supabase Auth) ====================== */
+const AKEY="iris.auth";
+let _sess=null; try{ _sess=JSON.parse(localStorage.getItem(AKEY)||"null"); }catch(_){}
+let _syncTimer=null,_syncBusy=false,_syncDirty=false,_syncPoll=null,_lastTs=null;
+function loggedIn(){ return !!(_sess&&_sess.access_token&&_sess.user&&_sess.user.id); }
+function saveSess(s){ _sess=s; try{ if(s)localStorage.setItem(AKEY,JSON.stringify(s)); else localStorage.removeItem(AKEY); }catch(_){} }
+function _mkSess(d){ return { access_token:d.access_token, refresh_token:d.refresh_token, expires_at:Date.now()+((d.expires_in||3600)*1000), user:{ id:d.user&&d.user.id, email:d.user&&d.user.email } }; }
+function _authMark(m){ const el=$("#auth-status"); if(el)el.textContent=m; }
 function _syncMark(m){ const el=$("#sync-status"); if(el)el.textContent=m; }
-function schedulePush(){ if(!S.sync||!S.sync.code)return; clearTimeout(_syncTimer); _syncTimer=setTimeout(syncPush,900); }
-async function syncPush(){ if(!S.sync||!S.sync.code||_syncBusy)return; _syncBusy=true; _syncMark("Sincronizando…"); try{ const r=await supaRpc("iris_push",{p_code:S.sync.code,p_data:syncPayload()}); _syncMark(r.ok?"Sincronizado ✓":"Error al sincronizar"); }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; }
-async function syncPull(){ if(!S.sync||!S.sync.code)return null; try{ const r=await supaRpc("iris_pull",{p_code:S.sync.code}); if(!r.ok)return null; const rows=await r.json(); if(Array.isArray(rows)&&rows.length&&rows[0].data)return rows[0]; }catch(_){} return null; }
-function adoptRemote(data){ if(!data)return; const key=(S.ai&&S.ai.key)||""; const code=S.sync&&S.sync.code; const m=Object.assign({},DEFAULT,data); m.set=Object.assign({anim:true,accent:"#5b8cff"},m.set||{}); m.ai=Object.assign({endpoint:""},m.ai||{}); if(key)m.ai.key=key; if(!Array.isArray(m.catGasto)||!m.catGasto.length)m.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(m.catIngreso)||!m.catIngreso.length)m.catIngreso=DEFAULT.catIngreso.slice(); m.sync={code:code}; S=m; save(true); applyAccent(); applyAnim(); render(); }
-async function syncActivate(){ S.sync=S.sync||{}; S.sync.code=genCode(); save(true); renderAjustes(); await syncPush(); renderAjustes(); }
-async function syncNow(){ _syncMark("Sincronizando…"); const remote=await syncPull(); if(remote){ adoptRemote(remote.data); _syncMark("Sincronizado ✓"); } else { await syncPush(); } renderAjustes(); }
-async function syncLink(){ const inp=$("#sync-code-in"); if(!inp)return; const code=(inp.value||"").trim().toLowerCase(); if(code.length<8){ _syncMark("Código inválido (mínimo 8)"); return; } S.sync=S.sync||{}; S.sync.code=code; save(true); _syncMark("Vinculando…"); const remote=await syncPull(); if(remote){ adoptRemote(remote.data); } else { await syncPush(); } renderAjustes(); }
-function syncOff(){ S.sync={code:null}; save(true); renderAjustes(); }
-function syncCopy(){ const c=(S.sync&&S.sync.code)||""; if(!c)return; if(navigator.clipboard){ navigator.clipboard.writeText(c).then(()=>_syncMark("Código copiado ✓")).catch(()=>_syncMark(c)); } else _syncMark(c); }
+function authHeaders(json){ const h={apikey:SUPA_KEY,Authorization:"Bearer "+((_sess&&_sess.access_token)||SUPA_KEY)}; if(json)h["Content-Type"]="application/json"; return h; }
+async function authRefresh(){ if(!_sess||!_sess.refresh_token)return false; try{ const r=await fetch(SUPA_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:_sess.refresh_token})}); if(!r.ok){ if(r.status>=400&&r.status<500)saveSess(null); return false; } saveSess(_mkSess(await r.json())); return true; }catch(_){ return false; } }
+async function authedFetch(url,opt,retry){ opt=opt||{}; opt.headers=Object.assign(authHeaders(!!opt.body),opt.headers||{}); if(!retry && _sess&&_sess.expires_at && Date.now()>_sess.expires_at-30000){ await authRefresh(); opt.headers=Object.assign(authHeaders(!!opt.body),opt.headers||{}); } let r=await fetch(url,opt); if(r.status===401 && !retry){ if(await authRefresh())return authedFetch(url,opt,true); } return r; }
+function _authErr(d){ const m=(d&&(d.msg||d.error_description||d.error||d.message))||"Error"; if(/already registered|already exists/i.test(m))return "Ese email ya tiene cuenta. Probá Entrar."; if(/invalid login|invalid credentials/i.test(m))return "Email o contraseña incorrectos."; if(/email not confirmed/i.test(m))return "Confirmá tu email (revisá tu casilla) y volvé a entrar."; if(/password/i.test(m)&&/6/.test(m))return "La contraseña necesita al menos 6 caracteres."; return m; }
+async function _authPwd(path,msg){
+  const email=(($("#auth-email")||{}).value||"").trim().toLowerCase();
+  const pw=(($("#auth-pass")||{}).value||"");
+  if(!/.+@.+\..+/.test(email)){ _authMark("Poné un email válido"); return; }
+  if(pw.length<6){ _authMark("La contraseña necesita 6+ caracteres"); return; }
+  _authMark(msg);
+  try{
+    const r=await fetch(SUPA_URL+"/auth/v1/"+path,{method:"POST",headers:{apikey:SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify({email,password:pw})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ _authMark(_authErr(d)); return; }
+    if(!d.access_token){ _authMark("Cuenta creada. Te mandamos un email para confirmarla: tocá el link y después entrá."); return; }
+    saveSess(_mkSess(d)); _authMark(""); renderAjustes(); await syncOnLogin();
+  }catch(_){ _authMark("Sin conexión"); }
+}
+function authSignIn(){ return _authPwd("token?grant_type=password","Entrando…"); }
+function authSignUp(){ return _authPwd("signup","Creando cuenta…"); }
+function authSignOut(){ stopPoll(); try{ if(_sess&&_sess.access_token)fetch(SUPA_URL+"/auth/v1/logout",{method:"POST",headers:authHeaders(false)}).catch(()=>{}); }catch(_){} saveSess(null); _lastTs=null; renderAjustes(); }
+function syncPayload(){ const c=JSON.parse(JSON.stringify(S)); if(c.ai)delete c.ai.key; return c; }
+function schedulePush(){ if(!loggedIn())return; _syncDirty=true; clearTimeout(_syncTimer); _syncTimer=setTimeout(syncPush,800); }
+async function syncPush(){ if(!loggedIn()||_syncBusy)return; _syncBusy=true; _syncMark("Guardando…"); try{ const r=await authedFetch(SUPA_URL+"/rest/v1/iris_state",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({user_id:_sess.user.id,data:syncPayload()})}); if(r.ok){ const rows=await r.json().catch(()=>[]); if(Array.isArray(rows)&&rows[0])_lastTs=rows[0].updated_at; _syncDirty=false; _syncMark("Al día ✓"); } else _syncMark("No se pudo guardar"); }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; }
+async function syncPull(opt){ opt=opt||{}; if(!loggedIn()||_syncBusy)return; _syncBusy=true; let pushAfter=false; try{ const r=await authedFetch(SUPA_URL+"/rest/v1/iris_state?select=data,updated_at",{method:"GET"}); if(r.ok){ const rows=await r.json().catch(()=>[]); if(Array.isArray(rows)&&rows.length&&rows[0].data){ const ts=rows[0].updated_at; if((opt.force||ts!==_lastTs) && !(_syncDirty&&!opt.force)) adoptRemote(rows[0].data,ts); _syncMark("Al día ✓"); } else pushAfter=true; } }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; if(pushAfter) await syncPush(); }
+function adoptRemote(data,ts){ if(!data)return; const key=(S.ai&&S.ai.key)||""; const m=Object.assign({},DEFAULT,data); m.set=Object.assign({anim:true,accent:"#5b8cff"},m.set||{}); m.ai=Object.assign({endpoint:""},m.ai||{}); if(key)m.ai.key=key; if(!Array.isArray(m.catGasto)||!m.catGasto.length)m.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(m.catIngreso)||!m.catIngreso.length)m.catIngreso=DEFAULT.catIngreso.slice(); S=m; _lastTs=ts||_lastTs; _syncDirty=false; save(true); applyAccent(); applyAnim(); render(); }
+async function syncOnLogin(){ _syncMark("Sincronizando…"); await syncPull({force:true}); startPoll(); renderAjustes(); }
+function syncNow(){ if(!loggedIn())return; if(_syncDirty)syncPush(); else syncPull({force:true}); }
+function _syncBlocked(){ const o=$("#overlay"),ir=$("#iris"),ae=document.activeElement; const typing=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName); return (o&&o.classList.contains("open"))||(ir&&ir.classList.contains("open"))||typing; }
+function syncTick(){ if(!loggedIn()||document.hidden)return; if(_syncDirty)syncPush(); else if(!_syncBlocked())syncPull(); }
+function startPoll(){ stopPoll(); if(loggedIn())_syncPoll=setInterval(syncTick,12000); }
+function stopPoll(){ if(_syncPoll){ clearInterval(_syncPoll); _syncPoll=null; } }
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&loggedIn()){ if(_syncDirty)syncPush(); else if(!_syncBlocked())syncPull(); } });
+window.addEventListener("online",()=>{ if(loggedIn()){ if(_syncDirty)syncPush(); else syncPull(); } });
+async function authBoot(){ if(!loggedIn())return; if(_sess.expires_at&&Date.now()>_sess.expires_at-30000)await authRefresh(); if(loggedIn()){ await syncPull({force:true}); startPoll(); } }
 
 /* ====================== EVENT DELEGATION ====================== */
 document.addEventListener("click",e=>{
@@ -1097,7 +1123,7 @@ document.addEventListener("click",e=>{
     "do-contrib":()=>doContribute(),
     "iris":()=>openIris(),"iris-close":()=>closeIris(),"iris-send":()=>irisSend(),
     "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
-    "sync-activate":()=>syncActivate(),"sync-now":()=>syncNow(),"sync-link":()=>syncLink(),"sync-off":()=>syncOff(),"sync-copy":()=>syncCopy(),
+    "auth-signin":()=>authSignIn(),"auth-signup":()=>authSignUp(),"auth-signout":()=>authSignOut(),"sync-now":()=>syncNow(),
     "voice-on":()=>setVoice(true),"voice-off":()=>setVoice(false),"voice-mic":()=>toggleMic(),
     "measure":()=>openMeasure()
   };
@@ -1299,7 +1325,7 @@ function toggleMic(){ if(_listening){ stopMic(); return; }
 function stopMic(){ if(_rec){ try{_rec.stop();}catch(_){} } _listening=false; $("#iris").classList.remove("listening"); }
 
 /* ====================== INIT ====================== */
-function init(){ render(); /* single-file: sin SW */ if(S.sync&&S.sync.code){ syncPull().then(r=>{ if(r&&r.data) adoptRemote(r.data); }); } }
+function init(){ render(); /* single-file: sin SW */ authBoot(); }
 init();
 
 /* ---- guías de medición: abrí la app con ?guides (o #guides) ---- */
