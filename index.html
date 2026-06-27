@@ -252,7 +252,8 @@
   .reco .rt{flex:1;font-size:13px;line-height:1.45;}
   .reco .rt b{color:var(--accent);}
   .chips{display:flex;gap:var(--s2);flex-wrap:wrap;}
-  .ch{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--line);color:var(--dim);transition:all var(--t);}
+  .ch{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--line);color:var(--dim);transition:all var(--t);display:inline-flex;align-items:center;gap:6px;}
+  .ch .ico{width:16px;height:16px;color:var(--accent);}
   .ch.on{background:var(--grad);border-color:transparent;color:#fff;}
   .pop-actions{display:flex;gap:var(--s3);margin-top:var(--s4);}
 
@@ -323,7 +324,7 @@
   .sv-btn.accent{background:var(--grad);color:#fff;}
   .sv-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -2px;padding:2px;}
   .sv-carousel::-webkit-scrollbar{display:none;}
-  .sv-carousel .sv{min-width:85%;width:85%;flex-shrink:0;scroll-snap-align:center;margin-bottom:0;}
+  .sv-carousel .sv{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:center;margin-bottom:0;box-sizing:border-box;}
   .sv-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;}
   .sv-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);transition:all var(--t);}
   .sv-dots i.on{background:var(--accent);width:18px;border-radius:3px;}
@@ -336,10 +337,16 @@
   .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
-  .debt-ico{width:38px;height:38px;border-radius:12px;background:var(--card-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .debt-ico{width:38px;height:38px;border-radius:12px;background:var(--card-2);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;}
   .debt-amt{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;flex-shrink:0;}
 
-  .mv-ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;background:var(--card-2);}
+  .mv-ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--card-2);color:var(--accent);}
+  .ico{width:20px;height:20px;display:block;}
+  .mv-ico .ico{width:20px;height:20px;}
+  .debt-ico .ico{width:19px;height:19px;}
+  .x-row .ico{width:18px;height:18px;}
+  .sv-ico{display:inline-flex;vertical-align:-3px;margin-right:6px;color:var(--accent);}
+  .sv-ico .ico{width:15px;height:15px;}
   .mv-amt{font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;flex-shrink:0;}
 
   /* ===== IRIS overlay (hablar con Iris) ===== */
@@ -581,6 +588,35 @@ function todayISO(){ return iso(new Date()); }
 function thisMonth(){ return todayISO().slice(0,7); }
 const CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
 const CAT_ICON={Comida:"🍽️",Transporte:"🚕",Hogar:"🏠",Ocio:"🎮",Salud:"💊",Sueldo:"💼",Servicios:"💡",Compras:"🛍️",Venta:"🏷️",Kiosco:"🏪",Suscripciones:"🔁",Salidas:"🍻",Prestado:"🤝",Regalo:"🎁",Otros:"✨",Otro:"✨"};
+const ICONS={
+  comida:'<path d="M6 3v6a2 2 0 0 0 4 0V3"/><path d="M8 3v18"/><path d="M16 3c-1.5 1-2 3-2 5s.5 3 2 3v10"/>',
+  transporte:'<path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/><path d="M4 11h16v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><circle cx="7.5" cy="16.5" r="1"/><circle cx="16.5" cy="16.5" r="1"/>',
+  home:'<path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/>',
+  ocio:'<path d="M7 8h10a4 4 0 0 1 4 4 3 3 0 0 1-5.5 1.7L14 12h-4l-1.5 1.7A3 3 0 0 1 3 12a4 4 0 0 1 4-4z"/><path d="M7 11v2M6 12h2M15 11.5h.01M17.5 13h.01"/>',
+  salud:'<path d="M12 20l-1.5-1.4C6.5 15 4 12.7 4 9.8 4 7.5 5.8 6 8 6c1.3 0 2.6.7 3.4 1.8h1.2C14.4 6.7 15.7 6 17 6c2.2 0 4 1.5 4 3.8 0 2.9-2.5 5.2-6.5 8.8z"/>',
+  sueldo:'<path d="M3 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h13"/><path d="M16 12h.01"/>',
+  bolt:'<path d="M13 3L5 13h6l-1 8 8-11h-6z"/>',
+  bag:'<path d="M6 8h12l.8 11a1 1 0 0 1-1 1.1H6.2a1 1 0 0 1-1-1.1z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+  tag:'<path d="M4 12l7.6-7.6a1 1 0 0 1 .7-.3l5.4.4a1 1 0 0 1 .9.9l.4 5.4a1 1 0 0 1-.3.7L11 19a1 1 0 0 1-1.4 0L4 13.4a1 1 0 0 1 0-1.4z"/><circle cx="15" cy="9" r="1"/>',
+  store:'<path d="M4 9l1.2-4h13.6L20 9"/><path d="M4 9a2.4 2.4 0 0 0 4 1 2.4 2.4 0 0 0 4 0 2.4 2.4 0 0 0 4 0 2.4 2.4 0 0 0 4-1"/><path d="M5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M9 20v-5h4v5"/>',
+  repeat:'<path d="M4 9a6 6 0 0 1 10-3.5L17 8"/><path d="M17 4v4h-4"/><path d="M20 15a6 6 0 0 1-10 3.5L7 16"/><path d="M7 20v-4h4"/>',
+  glass:'<path d="M6 4h12l-1.4 9.2A3 3 0 0 1 13.6 16h-3.2a3 3 0 0 1-3-2.8z"/><path d="M12 16v4"/><path d="M9 20h6"/>',
+  swap:'<path d="M6 9h12"/><path d="M9 6L6 9l3 3"/><path d="M18 15H6"/><path d="M15 12l3 3-3 3"/>',
+  gift:'<path d="M4 11h16v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M3 7h18v4H3z"/><path d="M12 7v13"/><path d="M12 7S10.5 3 8.5 4 9 7 12 7z"/><path d="M12 7s1.5-4 3.5-3-.5 3-3.5 3z"/>',
+  sparkle:'<path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6z"/><path d="M18.5 15l.5 1.5L20.5 17l-1.5.5L18.5 19l-.5-1.5L16.5 17l1.5-.5z"/>',
+  bell:'<path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5 2 5.5H4c.5-.5 2-1.5 2-5.5z"/><path d="M10 18a2 2 0 0 0 4 0"/>',
+  card:'<path d="M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><path d="M2 10h20"/><path d="M6 14.5h3"/>',
+  coins:'<ellipse cx="9" cy="6" rx="5" ry="2.2"/><path d="M4 6v4c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2V6"/><path d="M4 10v4c0 1.2 2.2 2.2 5 2.2 1 0 1.9-.1 2.7-.3"/><ellipse cx="16" cy="15" rx="5" ry="2.2"/><path d="M11 15v3c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2v-3"/>',
+  receipt:'<path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  wallet:'<path d="M3 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M16 12h.01"/>',
+  check:'<path d="M5 13l4 4L19 7"/>',
+  clock:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 1.5"/>',
+  dollar:'<path d="M12 3v18"/><path d="M16 7.5C16 5.6 14.2 4.5 12 4.5S8 5.6 8 7.5 9.8 10.5 12 11s4 1.6 4 3.5-1.8 3-4 3-4-1.1-4-3"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.6"/>'
+};
+const CAT_ICO_NAME={Comida:"comida",Transporte:"transporte",Hogar:"home",Ocio:"ocio",Salud:"salud",Sueldo:"sueldo",Servicios:"bolt",Compras:"bag",Venta:"tag",Kiosco:"store",Suscripciones:"repeat",Salidas:"glass",Prestado:"swap",Regalo:"gift",Otros:"sparkle",Otro:"sparkle"};
+function svgIco(name){ const p=ICONS[name]||ICONS.sparkle; return `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`; }
+function catIco(cat,isIngreso){ return svgIco(CAT_ICO_NAME[cat]||(isIngreso?"wallet":"sparkle")); }
 function addMonthsISO(isoStr,k){ const p=(isoStr||todayISO()).split("-").map(Number); const day=p[2]; const d=new Date(p[0],p[1]-1,1); d.setMonth(d.getMonth()+k); const dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); d.setDate(Math.min(day,dim)); return iso(d); }
 const GASTO_CATS=["Comida","Transporte","Hogar","Ocio","Salud","Servicios","Compras","Otro"];
 const INGRESO_CATS=["Sueldo","Venta","Otro"];
@@ -660,8 +696,8 @@ function openPop(type){
   }
   showPop(html);
 }
-function taskRow(t){ const pc={alta:"#ff5a6a",media:"#ffb02e",baja:"#7a8699"}[t.priority||"media"]; return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main" data-act="edit-task" data-id="${t.id}" style="cursor:pointer"><div class="row-title"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${pc};margin-right:7px;vertical-align:middle"></span>${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}${t.time?(" · "+t.time):""}</div></div><button class="x-row" data-act="remind-task" data-id="${t.id}" title="Recordarme" style="color:var(--accent)">🔔</button><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
-function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">🔔</button><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
+function taskRow(t){ const pc={alta:"#ff5a6a",media:"#ffb02e",baja:"#7a8699"}[t.priority||"media"]; return `<div class="row ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><div class="row-main" data-act="edit-task" data-id="${t.id}" style="cursor:pointer"><div class="row-title"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${pc};margin-right:7px;vertical-align:middle"></span>${esc(t.title)}</div><div class="row-sub">${t.date?(t.date===todayISO()?"Hoy":t.date):"Sin fecha"}${t.time?(" · "+t.time):""}</div></div><button class="x-row" data-act="remind-task" data-id="${t.id}" title="Recordarme" style="color:var(--accent)">${svgIco("bell")}</button><button class="x-row" data-act="del-task" data-id="${t.id}">×</button></div>`; }
+function evRow(e){ return `<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main"><div class="row-title">${esc(e.title)}</div>${e.note?`<div class="row-sub">${esc(e.note)}</div>`:""}</div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">${svgIco("bell")}</button><button class="x-row" data-act="del-event" data-id="${e.id}">×</button></div>`; }
 function shopRow(s){ return `<div class="row ${s.done?"done":""}"><button class="check ${s.done?"done":""}" data-act="toggle-shop" data-id="${s.id}">${s.done?CHK:""}</button><div class="row-main"><div class="row-title">${esc(s.name)}${(+s.qty>1)?` <span style="opacity:.55">×${+s.qty}</span>`:""}</div></div><button class="x-row" data-act="del-shop" data-id="${s.id}">×</button></div>`; }
 
 /* ---- ventana de un día (ver + crear) ---- */
@@ -709,9 +745,9 @@ function svcInfo(svc){ const tm=thisMonth(); const paid=svc.lastPaid===tm; const
 function pendingServices(){ return S.services.filter(s=>{ const st=svcInfo(s).status; return st==="vencido"||st==="hoy"||st==="pronto"; }).sort((a,b)=>svcInfo(a).diff-svcInfo(b).diff); }
 function _svcTag(inf,svc){ return inf.status==="pagado"?`<span class="svc-tag paid">Pagado</span>`:inf.status==="vencido"?`<span class="svc-tag over">Vencido</span>`:inf.status==="hoy"?`<span class="svc-tag today">Hoy</span>`:inf.status==="pronto"?`<span class="svc-tag soon">En ${inf.diff} día${inf.diff===1?"":"s"}</span>`:`<span class="svc-tag ok">Día ${Math.min(+svc.day||1,28)}</span>`; }
 function serviceRow(s){ const inf=svcInfo(s);
-  return `<div class="row"><span class="mv-ico">🧾</span><div class="row-main" data-act="edit-service" data-id="${s.id}" style="cursor:pointer"><div class="row-title">${esc(s.name)} ${_svcTag(inf,s)}</div><div class="row-sub">${money(s.amount)} · todos los ${(+s.day||1)}${s.method?(" · "+esc(s.method)):""}</div></div>`
+  return `<div class="row"><span class="mv-ico">${svgIco("receipt")}</span><div class="row-main" data-act="edit-service" data-id="${s.id}" style="cursor:pointer"><div class="row-title">${esc(s.name)} ${_svcTag(inf,s)}</div><div class="row-sub">${money(s.amount)} · todos los ${(+s.day||1)}${s.method?(" · "+esc(s.method)):""}</div></div>`
     +(inf.paid?"":`<button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 12px;margin-right:6px">Pagar</button>`)
-    +`<button class="x-row" data-act="cal-service" data-id="${s.id}" title="Recordarme" style="color:var(--accent)">🔔</button>`
+    +`<button class="x-row" data-act="cal-service" data-id="${s.id}" title="Recordarme" style="color:var(--accent)">${svgIco("bell")}</button>`
     +`<button class="x-row" data-act="del-service" data-id="${s.id}">×</button></div>`; }
 function payService(id){ const s=S.services.find(x=>x.id===id); if(!s)return; S.moves.push({id:uid(),type:"gasto",amount:+s.amount||0,cat:"Servicios",method:s.method||"transferencia",title:s.name,date:todayISO()}); s.lastPaid=thisMonth(); save(); render(); }
 function svcICS(svc){ const due=svcDueDate(svc,0); const d=iso(due).replace(/-/g,""); const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""); const bmd=Math.min(Math.max(1,+svc.day||1),28); const sum="Pagar "+(svc.name||"servicio")+" — "+money(svc.amount);
@@ -719,7 +755,7 @@ function svcICS(svc){ const due=svcDueDate(svc,0); const d=iso(due).replace(/-/g
 function addServiceToCalendar(id){ const s=S.services.find(x=>x.id===id); if(!s)return; dlICS(svcICS(s),"pagar_"+(s.name||"servicio")); }
 function renderHomeServices(){ const host=$("#home-services"); if(!host)return; const pend=pendingServices(); if(!pend.length){ host.innerHTML=""; host.style.display="none"; return; } host.style.display="";
   host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:8px">Servicios por pagar</div>`+pend.map(s=>{ const inf=svcInfo(s); const tag=inf.status==="vencido"?`<span class="svc-tag over">Vencido</span>`:inf.status==="hoy"?`<span class="svc-tag today">Hoy</span>`:`<span class="svc-tag soon">En ${inf.diff} día${inf.diff===1?"":"s"}</span>`;
-    return `<div class="row"><span class="mv-ico">🧾</span><div class="row-main"><div class="row-title">${esc(s.name)} ${tag}</div><div class="row-sub">${money(s.amount)} · vence ${inf.due.toLocaleDateString("es-AR",{day:"numeric",month:"short"})}</div></div><button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 14px">Pagar</button></div>`; }).join("")+`</div>`; }
+    return `<div class="row"><span class="mv-ico">${svgIco("receipt")}</span><div class="row-main"><div class="row-title">${esc(s.name)} ${tag}</div><div class="row-sub">${money(s.amount)} · vence ${inf.due.toLocaleDateString("es-AR",{day:"numeric",month:"short"})}</div></div><button class="sv-btn accent" data-act="pay-service" data-id="${s.id}" style="width:auto;padding:8px 14px">Pagar</button></div>`; }).join("")+`</div>`; }
 function renderHomeNotes(){ const host=$("#home-notes"); if(!host)return; const list=(S.notes||[]).map(n=>`<div class="row"><div class="row-main"><div class="row-title">${esc(n.text)}</div></div><button class="x-row" data-act="del-note" data-id="${n.id}">×</button></div>`).join("")||`<div class="empty" style="padding:6px 0">Sin notas.</div>`;
   host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:8px">Notas</div>${list}<div style="display:flex;gap:8px;margin-top:10px"><input id="note-input" placeholder="Nueva nota…" style="flex:1;padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:inherit;font:inherit"><button class="btn primary" data-act="add-note" style="width:auto;padding:0 18px">+</button></div></div>`; }
 function openDay(ds){
@@ -730,9 +766,9 @@ function openDay(ds){
   const tk=S.tasks.filter(t=>t.date===ds);
   const mv=S.moves.filter(x=>x.date===ds);
   let body="";
-  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">🔔</button></div>`).join(""); }
+  if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer"><div class="row-title">${esc(e.title)}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">${svgIco("bell")}</button></div>`).join(""); }
   if(tk.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Tareas</div>`+tk.map(t=>`<div class="row ${t.done?"done":""}"><span class="dot" style="background:var(--violet)"></span><div class="row-main"><div class="row-title">${esc(t.title)}</div></div></div>`).join(""); }
-  if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><span class="mv-ico">${CAT_ICON[x.cat]||"✨"}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
+  if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><span class="mv-ico">${catIco(x.cat,x.type==="ingreso")}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
   if(!body) body=`<div class="empty">Nada este día. Agregá abajo 👇</div>`;
   const sm=daySummary(ds);
   const dsum=`<div class="day-summary"><div class="day-sum"><div class="lbl">Ingresos</div><div class="v" style="color:var(--ok)">${money(sm.inc)}</div></div><div class="day-sum"><div class="lbl">Gastos</div><div class="v">${money(sm.exp)}</div></div><div class="day-sum"><div class="lbl">Balance</div><div class="v" style="${sm.bal<0?"color:var(--danger)":""}">${money(sm.bal)}</div></div></div>`;
@@ -800,7 +836,7 @@ function renderAgenda(){
     const ev=((map[d]&&map[d].events)||[]).slice().sort((a,b)=>(a.time||"").localeCompare(b.time||""));
     let tk=((map[d]&&map[d].tasks)||[]); if(isPast) tk=tk.filter(t=>!t.done);
     let items="";
-    ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="cal-ev" data-id="${e.id}" title="Recordarme">🔔</button><button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
+    ev.forEach(e=>{ items+=`<div class="ag-ev ${e.time?"timed":""}"><span class="ag-t" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer">${esc(e.title)}</span>${e.time?`<span class="ag-time">${e.time}</span>`:""}<button class="ag-x" data-act="cal-ev" data-id="${e.id}" title="Recordarme">${svgIco("bell")}</button><button class="ag-x" data-act="del-event" data-id="${e.id}">×</button></div>`; });
     tk.forEach(t=>{ items+=`<div class="ag-task ${t.done?"done":""}"><button class="check ${t.done?"done":""}" data-act="toggle-task" data-id="${t.id}">${t.done?CHK:""}</button><span class="ag-t">${esc(t.title)}</span><button class="ag-x" data-act="del-task" data-id="${t.id}">×</button></div>`; });
     if(!items){ if(isToday) items=`<div class="ag-none">Nada agendado hoy.</div>`; else return; }
     const mk=d.slice(0,7); if(mk!==curMonth){ curMonth=mk; html+=`<div class="ag-month">${cap1(dd.toLocaleDateString("es-AR",{month:"long",year:"numeric"}))}</div>`; }
@@ -973,7 +1009,7 @@ function renderFinDeudas(){ const host=$("#fin-deudas-wrap"); if(!host)return;
   const rows=Object.keys(map).map(k=>({who:k,amt:map[k]})).filter(r=>Math.round(r.amt)>0).sort((a,b)=>b.amt-a.amt);
   const totP=rows.reduce((a,b)=>a+b.amt,0);
   const prestInner=`<div class="dp-h">Te deben <b style="color:var(--ok)">${money(totP)}</b></div>`
-    +(rows.length?rows.map(r=>`<div class="debt"><span class="debt-ico">🤝</span><div class="row-main"><div class="row-title">${esc(r.who)}</div><div class="row-sub">categoría Prestado</div></div><span class="debt-amt up">${money(r.amt)}</span></div>`).join(""):`<div class="empty" style="padding:8px 0">Nadie te debe. Cargá un gasto en categoría "Prestado" y poné a quién se lo prestaste.</div>`);
+    +(rows.length?rows.map(r=>`<div class="debt"><span class="debt-ico">${svgIco("swap")}</span><div class="row-main"><div class="row-title">${esc(r.who)}</div><div class="row-sub">categoría Prestado</div></div><span class="debt-amt up">${money(r.amt)}</span></div>`).join(""):`<div class="empty" style="padding:8px 0">Nadie te debe. Cargá un gasto en categoría "Prestado" y poné a quién se lo prestaste.</div>`);
   const inner=`<div class="dp-tabs"><button class="dp-tab on" data-dp="0">Deudas</button><button class="dp-tab" data-dp="1">Préstamos</button></div>
     <div class="dp-carousel" id="dp-carousel"><div class="dp-slide">${deudasInner}</div><div class="dp-slide">${prestInner}</div></div>`;
   host.innerHTML=collap("Deudas y préstamos",inner,"fin-deudas",true);
@@ -994,20 +1030,20 @@ function renderFinAhorros(){ const host=$("#fin-ahorros-wrap"); if(!host)return;
   const car=$("#sv-carousel");
   if(car&&S.savings.length>1){ car.onscroll=()=>{ const per=car.scrollWidth/S.savings.length; const i=Math.round(car.scrollLeft/per); host.querySelectorAll(".sv-dots i").forEach((d,j)=>d.classList.toggle("on",j===Math.min(Math.max(i,0),S.savings.length-1))); }; }
 }
-function movRow(x){ const ico=CAT_ICON[x.cat]||(x.type==="ingreso"?"💼":"✨");
-  return `<div class="row"><span class="mv-ico">${ico}</span><div class="row-main" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div><div class="row-sub">${x.cat||""} · ${x.date||""}${x.card?(" · "+esc((S.cards.find(c=>c.id===x.card)||{}).name||"")):""}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span><button class="x-row" data-act="del-mov" data-id="${x.id}">×</button></div>`; }
+function movRow(x){
+  return `<div class="row"><span class="mv-ico">${catIco(x.cat,x.type==="ingreso")}</span><div class="row-main" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div><div class="row-sub">${x.cat||""} · ${x.date||""}${x.card?(" · "+esc((S.cards.find(c=>c.id===x.card)||{}).name||"")):""}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span><button class="x-row" data-act="del-mov" data-id="${x.id}">×</button></div>`; }
 function svCard(g){ const saved=+g.saved||0,target=+g.target||0,pct=target>0?Math.min(100,Math.round(saved/target*100)):0,rem=Math.max(0,target-saved);
-  return `<div class="sv"><div class="sv-h"><div class="sv-name">${esc(g.name||"Meta")}</div><div style="display:flex;gap:4px"><button class="x-row" data-act="edit-saving" data-id="${g.id}" title="Editar" style="color:var(--dim)">✎</button><button class="x-row" data-act="del-saving" data-id="${g.id}">×</button></div></div>
+  return `<div class="sv" data-act="edit-saving" data-id="${g.id}" style="cursor:pointer"><div class="sv-h"><div class="sv-name">${esc(g.name||"Meta")}</div><button class="x-row" data-act="del-saving" data-id="${g.id}">×</button></div>
     <div class="sv-num">${money(saved)}</div><div class="sv-sub">de ${money(target)}</div>
     <div class="sv-track"><div class="sv-fill" style="width:${pct}%"></div></div>
     <div class="sv-meta"><div class="sv-lbl">Guardado<b>${money(saved)}</b></div><span class="sv-pill">${pct}%</span><div class="sv-lbl" style="text-align:right">Falta<b>${rem>0?money(rem):"¡Listo!"}</b></div></div>
     <div class="sv-act"><button class="sv-btn accent" data-act="save-add" data-id="${g.id}">Ingresar</button><button class="sv-btn" data-act="save-sub" data-id="${g.id}">Retirar</button></div></div>`; }
-function debtRow(d,kind){ return `<div class="debt"><span class="debt-ico">${kind==="debt"?"💸":"🤝"}</span><div class="row-main" data-act="edit-${kind}" data-id="${d.id}" style="cursor:pointer"><div class="row-title">${esc(d.who||"—")}</div>${d.note?`<div class="row-sub">${esc(d.note)}</div>`:""}</div><span class="debt-amt ${kind==="debt"?"down":"up"}">${money(d.amount)}</span><button class="x-row" data-act="del-${kind}" data-id="${d.id}">×</button></div>`; }
+function debtRow(d,kind){ return `<div class="debt"><span class="debt-ico">${kind==="debt"?svgIco("coins"):svgIco("swap")}</span><div class="row-main" data-act="edit-${kind}" data-id="${d.id}" style="cursor:pointer"><div class="row-title">${esc(d.who||"—")}</div>${d.note?`<div class="row-sub">${esc(d.note)}</div>`:""}</div><span class="debt-amt ${kind==="debt"?"down":"up"}">${money(d.amount)}</span><button class="x-row" data-act="del-${kind}" data-id="${d.id}">×</button></div>`; }
 function cardCycle(cierre){ if(!(cierre>=1&&cierre<=31))return null; const clamp=(yy,mm)=>{ const dim=new Date(yy,mm+1,0).getDate(); return new Date(yy,mm,Math.min(cierre,dim)); }; const t=new Date(); t.setHours(0,0,0,0); let nextC,prevC; if(t.getDate()<=cierre){ nextC=clamp(t.getFullYear(),t.getMonth()); prevC=clamp(t.getFullYear(),t.getMonth()-1); } else { nextC=clamp(t.getFullYear(),t.getMonth()+1); prevC=clamp(t.getFullYear(),t.getMonth()); } const start=new Date(prevC); start.setDate(start.getDate()+1); return { start:iso(start), end:iso(nextC) }; }
 function cardConsumo(card){ const all=(S.moves||[]).filter(x=>x.type==="gasto"&&x.method==="tarjeta"&&x.card===card.id); const total=all.reduce((a,b)=>a+(+b.amount||0),0); const cyc=cardCycle(+card.cierre||0); let cycle=total; if(cyc){ cycle=all.filter(x=>x.date>=cyc.start&&x.date<=cyc.end).reduce((a,b)=>a+(+b.amount||0),0); } return { total, cycle, cyc }; }
 function cardRow(c){ const r=cardConsumo(c), lim=+c.limit||0, disp=Math.max(0,lim-r.cycle), pct=lim>0?Math.min(100,Math.round(r.cycle/lim*100)):0; const over=lim>0&&r.cycle>lim;
   return `<div class="sv" data-act="edit-card" data-id="${c.id}" style="cursor:pointer">
-    <div class="sv-h"><div class="sv-name">💳 ${esc(c.name)}</div><div style="display:flex;gap:4px"><button class="x-row" data-act="edit-card" data-id="${c.id}" title="Editar" style="color:var(--dim)">✎</button><button class="x-row" data-act="del-card" data-id="${c.id}">×</button></div></div>
+    <div class="sv-h"><div class="sv-name"><span class="sv-ico">${svgIco("card")}</span>${esc(c.name)}</div><button class="x-row" data-act="del-card" data-id="${c.id}">×</button></div>
     <div class="sv-num">${money(r.cycle)}</div><div class="sv-sub">consumo del ciclo${(+c.cierre>=1&&+c.cierre<=31)?` · cierra el ${c.cierre}`:" · sin cierre"}</div>
     ${lim>0?`<div class="sv-track"><div class="sv-fill" style="width:${pct}%${over?";background:var(--danger)":""}"></div></div>
     <div class="sv-meta"><div class="sv-lbl">Límite<b>${money(lim)}</b></div><span class="sv-pill"${over?' style="color:#ffb4b4;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.4)"':""}>${pct}%</span><div class="sv-lbl" style="text-align:right">${over?"Te pasaste":"Disponible"}<b style="${over?"color:var(--danger)":""}">${over?money(r.cycle-lim):money(disp)}</b></div></div>`
@@ -1021,11 +1057,11 @@ function showPop(html){ $("#pop").innerHTML=html; $("#overlay").classList.remove
 function closePop(){ const o=$("#overlay"); o.classList.add("closing"); document.body.classList.remove("modal-open"); setTimeout(()=>{o.classList.remove("open","closing");},220); }
 
 function openAdd(){
-  const map={inicio:[["task","Tarea","✓"],["event","Evento","◷"],["shop","Compra","🛍️"],["mov","Movimiento","$"]],
-    agenda:[["event","Evento","◷"],["task","Tarea","✓"]],
-    finanzas:[["mov","Movimiento","$"],["card","Tarjeta","💳"],["service","Servicio","🧾"],["saving","Meta","🎯"],["debt","Deuda","💸"]]}[screen]||[["task","Tarea","✓"]];
+  const map={inicio:[["task","Tarea","check"],["event","Evento","clock"],["shop","Compra","bag"],["mov","Movimiento","dollar"]],
+    agenda:[["event","Evento","clock"],["task","Tarea","check"]],
+    finanzas:[["mov","Movimiento","dollar"],["card","Tarjeta","card"],["service","Servicio","receipt"],["saving","Meta","target"],["debt","Deuda","coins"]]}[screen]||[["task","Tarea","check"]];
   showPop(`<div class="pop-h"><div class="pop-t">Agregar</div><button class="pop-x" data-act="close">✕</button></div>
-    <div class="chips">${map.map(o=>`<button class="ch" data-add="${o[0]}">${o[2]} ${o[1]}</button>`).join("")}</div>`);
+    <div class="chips">${map.map(o=>`<button class="ch" data-add="${o[0]}">${svgIco(o[2])} ${o[1]}</button>`).join("")}</div>`);
 }
 function openForm(type,ex){ _draft={}; _editId=(ex&&ex.id)||null;
   const F={
@@ -1033,7 +1069,7 @@ function openForm(type,ex){ _draft={}; _editId=(ex&&ex.id)||null;
       <div class="field"><label>Tarea</label><input id="i-title" placeholder="Ej: Pagar la luz" autofocus></div>
       <div class="field"><label>Fecha</label><input id="i-date" type="date" value="${_formDate||todayISO()}"></div>
       <div class="field"><label>Hora (opcional)</label><input id="i-time" type="time"></div>
-      <div class="field"><label>Prioridad</label><select id="i-priority"><option value="alta">🔴 Alta</option><option value="media" selected>🟡 Media</option><option value="baja">⚪ Baja</option></select></div>
+      <div class="field"><label>Prioridad</label><select id="i-priority"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option></select></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="task">Guardar</button></div>`,
     event:`<div class="pop-h"><div class="pop-t">Nuevo evento</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Evento</label><input id="i-title" placeholder="Ej: Reunión" autofocus></div>
@@ -1106,7 +1142,7 @@ function prefillForm(type,ex){
 }
 function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
   let cur=w.value||_draft.cat; if(!cats.includes(cur))cur=cats[0]; _draft.cat=cur;
-  w.innerHTML=cats.map(c=>`<option value="${esc(c)}" ${c===cur?"selected":""}>${CAT_ICON[c]||"🏷️"} ${esc(c)}</option>`).join(""); }
+  w.innerHTML=cats.map(c=>`<option value="${esc(c)}" ${c===cur?"selected":""}>${esc(c)}</option>`).join(""); }
 function updateMovExtras(){ if(!$("#i-cat"))return; const cat=($("#i-cat").value)||_draft.cat||""; const isCard=_draft.method==="tarjeta"&&_draft.type==="gasto"; const cw=$("#f-cuotas-wrap"); if(cw)cw.style.display=isCard?"":"none"; const cardw=$("#f-card-wrap"); if(cardw)cardw.style.display=isCard?"":"none"; const sel=$("#i-card"); if(sel&&isCard){ const cur=_draft.card||sel.value||""; sel.innerHTML=`<option value="">Sin tarjeta</option>`+(S.cards||[]).map(c=>`<option value="${c.id}" ${c.id===cur?"selected":""}>${esc(c.name)}</option>`).join(""); sel.value=cur; } const isPrestado=cat==="Prestado"; const pw=$("#f-prestamo-wrap"); if(pw)pw.style.display=isPrestado?"":"none"; const lbl=$("#i-who-lbl"); if(lbl)lbl.textContent=_draft.type==="ingreso"?"¿Quién te devolvió?":"¿A quién le prestaste?"; }
 
 function doSave(type){
