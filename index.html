@@ -381,6 +381,14 @@
   .acc-name{font-size:14px;font-weight:600;}
   .acc-type{font-size:11px;color:var(--faint);margin-top:1px;}
   .acc-bal{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .mov-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+  .mov-nav button[data-mov]{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);font-size:17px;display:flex;align-items:center;justify-content:center;}
+  .mov-nav button[data-mov]:active{transform:scale(.94);}
+  .mov-month{flex:1;text-align:center;font-size:14px;font-weight:700;text-transform:capitalize;background:none;border:none;color:var(--text);padding:6px;}
+  .mov-tot{display:flex;justify-content:center;gap:20px;margin-bottom:12px;}
+  .mov-tot span{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.3px;}
+  .mov-tot b{display:block;font-size:14px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;}
+  .mov-tot b.up{color:var(--ok);} .mov-tot b.down{color:var(--danger);}
   .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
@@ -1057,11 +1065,18 @@ function renderFinCuentas(){ const host=$("#fin-cuentas-wrap"); if(!host)return;
     <button class="btn primary block" style="margin-top:10px" data-act="add-account">+ Nueva cuenta</button>`;
   host.innerHTML=collap("Cuentas y patrimonio",inner,"fin-cuentas",true);
 }
+let _movRef=new Date(); _movRef.setDate(1);
 function renderFinMov(){ const host=$("#fin-mov-wrap"); if(!host)return;
-  const mvs=S.moves.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id>a.id?1:-1)).slice(0,40);
-  const inner=(mvs.length?mvs.map(movRow).join(""):`<div class="empty">Sin movimientos. Tocá + para agregar.</div>`)
-    +`<button class="btn primary block" style="margin-top:16px" data-act="add-mov">+ Movimiento</button>`;
-  host.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:10px">Movimientos</div>${inner}</div>`;
+  const key=_movRef.getFullYear()+"-"+String(_movRef.getMonth()+1).padStart(2,"0");
+  const mvs=S.moves.filter(x=>x.date&&x.date.slice(0,7)===key).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id>a.id?1:-1));
+  const inc=mvs.filter(x=>x.type==="ingreso").reduce((a,b)=>a+(+b.amount||0),0);
+  const exp=mvs.filter(x=>x.type==="gasto").reduce((a,b)=>a+(+b.amount||0),0);
+  const label=_movRef.toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+  const nav=`<div class="mov-nav"><button data-mov="-1" aria-label="Mes anterior">‹</button><button class="mov-month" data-mov="0" title="Volver al mes actual">${esc(label)}</button><button data-mov="1" aria-label="Mes siguiente">›</button></div>
+    <div class="mov-tot"><span>Ingresos<b class="up">${money(inc)}</b></span><span>Gastos<b class="down">${money(exp)}</b></span></div>`;
+  const list=mvs.length?mvs.map(movRow).join(""):`<div class="empty" style="padding:8px 0">Sin movimientos en ${esc(label)}.</div>`;
+  const inner=nav+list+`<button class="btn primary block" style="margin-top:16px" data-act="add-mov">+ Movimiento</button>`;
+  host.innerHTML=collap("Movimientos",inner,"fin-mov",true);
 }
 function renderFinTjSv(){ const host=$("#fin-tjsv-wrap"); if(!host)return;
   const totC=(S.cards||[]).reduce((a,c)=>a+cardConsumo(c).cycle,0);
@@ -1504,6 +1519,7 @@ document.addEventListener("click",e=>{
   const agtabB=e.target.closest("[data-agtab]"); if(agtabB){ _agtab=agtabB.dataset.agtab; renderAgenda(); return; }
   const ajB=e.target.closest("[data-ajtab]"); if(ajB){ _ajtab=ajB.dataset.ajtab; renderAjustes(); return; }
   const calB=e.target.closest("[data-cal]"); if(calB){ const v=+calB.dataset.cal; if(v===0){_calRef=new Date();_calRef.setDate(1);_selDay=todayISO();} else {_calRef.setMonth(_calRef.getMonth()+v);} renderCalendars(); return; }
+  const movB=e.target.closest("[data-mov]"); if(movB){ const v=+movB.dataset.mov; if(v===0){_movRef=new Date();_movRef.setDate(1);} else {_movRef.setMonth(_movRef.getMonth()+v);} renderFinMov(); return; }
   const dayB=e.target.closest("[data-day]"); if(dayB){ openDay(dayB.dataset.day); return; }
   const txcatB=e.target.closest("[data-txcat]"); if(txcatB){ _txcat=txcatB.dataset.txcat; renderTxList(); return; }
 
