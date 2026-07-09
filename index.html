@@ -389,6 +389,7 @@
   .mov-tot span{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.3px;}
   .mov-tot b{display:block;font-size:14px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;}
   .mov-tot b.up{color:var(--ok);} .mov-tot b.down{color:var(--danger);}
+  .add-mov-top{width:auto;flex:0 0 auto;padding:9px 15px;font-size:13px;border-radius:12px;white-space:nowrap;box-shadow:0 6px 16px rgba(var(--acc-rgb),.3);}
   .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
   .debt + .debt{border-top:1px solid var(--line);}
@@ -546,6 +547,7 @@
       <div class="card metric tap" data-act="open-txlist" data-v="expense"><div class="lbl">Gastos</div><div class="mval down" id="mc-expense">$0</div><div class="spark" id="spark-expense"></div></div>
       <div class="card metric tap" data-act="open-txlist" data-v="all"><div class="lbl">Balance</div><div class="mval" id="mc-balance">$0</div><div class="spark" id="spark-balance"></div></div>
     </div>
+    <button class="btn primary block" style="margin-bottom:12px" data-act="add-mov">+ Agregar movimiento</button>
     <div id="fin-mov-wrap"></div>
     <div class="card health-card tap" data-act="open-analysis">
       <div class="cal-head" style="margin-bottom:4px"><div class="card-t" style="margin:0">Salud financiera del mes</div><span class="see-more" style="font-size:11px;color:var(--accent);font-weight:600">ver análisis ›</span></div>
@@ -675,7 +677,7 @@ const INGRESO_CATS=["Sueldo","Venta","Otro"];
 function greetWord(){ const h=new Date().getHours(); return h<6?"Buenas noches":h<13?"Buenos días":h<20?"Buenas tardes":"Buenas noches"; }
 
 /* ---- finance helpers ---- */
-function monthFin(){ const m=thisMonth(); const mm=S.moves.filter(x=>x.date&&x.date.slice(0,7)===m);
+function monthFin(){ const m=thisMonth(); const mm=S.moves.filter(x=>x.date&&x.date.slice(0,7)===m&&x.cat!=="Prestado");
   const income=mm.filter(x=>x.type==="ingreso").reduce((a,b)=>a+(+b.amount||0),0);
   const expense=mm.filter(x=>x.type==="gasto").reduce((a,b)=>a+(+b.amount||0),0);
   return {income,expense,bal:income-expense,rate:income>0?Math.round((income-expense)/income*100):0,mm}; }
@@ -687,7 +689,8 @@ function accBalance(acc){ let b=+acc.opening||0;
 function savingsTotal(){ return S.savings.reduce((a,b)=>a+(+b.saved||0),0); }
 function accountsTotal(){ return S.accounts.reduce((a,b)=>a+accBalance(b),0); }
 function debtsTotal(){ return S.debts.reduce((a,b)=>a+(+b.amount||0),0); }
-function totalMoney(){ return accountsTotal()+savingsTotal(); }
+function receivablesTotal(){ const map={}; S.moves.forEach(m=>{ if(m.cat!=="Prestado")return; const who=((m.who||"").trim())||"?"; map[who]=(map[who]||0)+((m.type==="ingreso")?-(+m.amount||0):(+m.amount||0)); }); let t=0; Object.keys(map).forEach(k=>{ if(Math.round(map[k])>0)t+=map[k]; }); return t; }
+function totalMoney(){ return accountsTotal()+savingsTotal()+receivablesTotal(); }
 function netMoney(){ return totalMoney()-debtsTotal(); }
 function accTypeLbl(t){ return {efectivo:"Efectivo",billetera:"Billetera",banco:"Banco",otro:"Otra"}[t]||"Otra"; }
 function accIco(t){ return svgIco(t==="efectivo"?"coins":"wallet"); }
@@ -947,7 +950,7 @@ function recoTips(){
 function finSeries(){
   const m=thisMonth(), today=new Date().getDate();
   const inc=Array(today).fill(0), exp=Array(today).fill(0);
-  S.moves.filter(x=>x.date&&x.date.slice(0,7)===m).forEach(x=>{ const d=+x.date.slice(8,10); if(d>=1&&d<=today){ if(x.type==="ingreso")inc[d-1]+=(+x.amount||0); else exp[d-1]+=(+x.amount||0); } });
+  S.moves.filter(x=>x.date&&x.date.slice(0,7)===m&&x.cat!=="Prestado").forEach(x=>{ const d=+x.date.slice(8,10); if(d>=1&&d<=today){ if(x.type==="ingreso")inc[d-1]+=(+x.amount||0); else exp[d-1]+=(+x.amount||0); } });
   let ai=0,ae=0; const cinc=[],cexp=[],cbal=[];
   for(let i=0;i<today;i++){ ai+=inc[i];ae+=exp[i];cinc.push(ai);cexp.push(ae);cbal.push(ai-ae); }
   return {cinc,cexp,cbal};
@@ -1057,10 +1060,10 @@ function renderFinance(){
   renderFinTjSv();
 }
 function renderFinCuentas(){ const host=$("#fin-cuentas-wrap"); if(!host)return;
-  const tot=totalMoney(), net=netMoney(), deb=debtsTotal(), svTot=savingsTotal(), accTot=accountsTotal();
+  const tot=totalMoney(), net=netMoney(), deb=debtsTotal(), svTot=savingsTotal(), accTot=accountsTotal(), rec=receivablesTotal();
   const accHtml=S.accounts.map(a=>`<div class="acc-row"><div class="acc-main" data-act="edit-account" data-id="${a.id}" style="cursor:pointer"><span class="acc-ico">${accIco(a.type)}</span><div><div class="acc-name">${esc(a.name)}</div><div class="acc-type">${accTypeLbl(a.type)}</div></div></div><span class="acc-bal">${money(accBalance(a))}</span><button class="x-row" data-act="del-account" data-id="${a.id}">×</button></div>`).join("");
   const inner=`<div class="pat-hero"><div class="pat-lbl">Dinero total</div><div class="pat-num">${money(tot)}</div>
-      <div class="pat-sub"><span>Cuentas<b>${money(accTot)}</b></span><span>Ahorros<b>${money(svTot)}</b></span>${deb>0?`<span>Neto<b style="color:${net<0?"var(--danger)":"var(--ok)"}">${money(net)}</b></span>`:""}</div></div>
+      <div class="pat-sub"><span>Cuentas<b>${money(accTot)}</b></span><span>Ahorros<b>${money(svTot)}</b></span>${rec>0?`<span>Te deben<b>${money(rec)}</b></span>`:""}${deb>0?`<span>Neto<b style="color:${net<0?"var(--danger)":"var(--ok)"}">${money(net)}</b></span>`:""}</div></div>
     <div class="acc-list">${accHtml||`<div class="empty" style="padding:6px 0">Sin cuentas.</div>`}</div>
     <button class="btn primary block" style="margin-top:10px" data-act="add-account">+ Nueva cuenta</button>`;
   host.innerHTML=collap("Cuentas y patrimonio",inner,"fin-cuentas",true);
@@ -1075,7 +1078,7 @@ function renderFinMov(){ const host=$("#fin-mov-wrap"); if(!host)return;
   const nav=`<div class="mov-nav"><button data-mov="-1" aria-label="Mes anterior">‹</button><button class="mov-month" data-mov="0" title="Volver al mes actual">${esc(label)}</button><button data-mov="1" aria-label="Mes siguiente">›</button></div>
     <div class="mov-tot"><span>Ingresos<b class="up">${money(inc)}</b></span><span>Gastos<b class="down">${money(exp)}</b></span></div>`;
   const list=mvs.length?mvs.map(movRow).join(""):`<div class="empty" style="padding:8px 0">Sin movimientos en ${esc(label)}.</div>`;
-  const inner=nav+list+`<button class="btn primary block" style="margin-top:16px" data-act="add-mov">+ Movimiento</button>`;
+  const inner=nav+list;
   host.innerHTML=collap("Movimientos",inner,"fin-mov",true);
 }
 function renderFinTjSv(){ const host=$("#fin-tjsv-wrap"); if(!host)return;
