@@ -389,6 +389,8 @@
   .mov-tot span{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.3px;}
   .mov-tot b{display:block;font-size:14px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;}
   .mov-tot b.up{color:var(--ok);} .mov-tot b.down{color:var(--danger);}
+  #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0));transform:translateX(-50%) translateY(20px);background:rgba(20,24,40,.96);color:#fff;border:1px solid rgba(255,255,255,.14);padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;max-width:80%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .add-mov-top{width:auto;flex:0 0 auto;padding:9px 15px;font-size:13px;border-radius:12px;white-space:nowrap;box-shadow:0 6px 16px rgba(var(--acc-rgb),.3);}
   .dp-h{font-size:13px;color:var(--dim);margin-bottom:10px;}
   .debt{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;}
@@ -627,9 +629,9 @@ const SHORTCUT_URL=SUPA_URL+"/rest/v1/rpc/iris_quick_add?apikey="+SUPA_KEY;
 const DEFAULT={ name:"", tasks:[], events:[], shop:[], moves:[], savings:[], debts:[], loans:[], services:[], notes:[], chat:[], saved:[], cards:[], accounts:[], transfers:[], ai:{endpoint:""},
   catGasto:["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"],
   catIngreso:["Sueldo","Prestado","Regalo","Otros"],
-  set:{anim:true,accent:"#5b8cff",remindMin:30} };
+  set:{anim:true,accent:"#5b8cff",remindMin:30,notif:false,notifHour:"09:00"} };
 let S=load();
-function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff",remindMin:30},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.saved))s.saved=[]; if(!Array.isArray(s.chat))s.chat=[]; if(!Array.isArray(s.cards))s.cards=[]; if(!Array.isArray(s.accounts))s.accounts=[]; if(!Array.isArray(s.transfers))s.transfers=[]; if(!s.accounts.length){ s.accounts=[{id:uid(),name:"Efectivo",type:"efectivo",opening:0},{id:uid(),name:"Billetera virtual",type:"billetera",opening:0}]; } if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function load(){ try{ const s=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem(KEY))||{}); s.set=Object.assign({anim:true,accent:"#5b8cff",remindMin:30,notif:false,notifHour:"09:00"},s.set||{}); if(!Array.isArray(s.services))s.services=[]; if(!Array.isArray(s.notes))s.notes=[]; if(!Array.isArray(s.saved))s.saved=[]; if(!Array.isArray(s.chat))s.chat=[]; if(!Array.isArray(s.cards))s.cards=[]; if(!Array.isArray(s.accounts))s.accounts=[]; if(!Array.isArray(s.transfers))s.transfers=[]; if(!s.accounts.length){ s.accounts=[{id:uid(),name:"Efectivo",type:"efectivo",opening:0},{id:uid(),name:"Billetera virtual",type:"billetera",opening:0}]; } if(!Array.isArray(s.catGasto)||!s.catGasto.length)s.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(s.catIngreso)||!s.catIngreso.length)s.catIngreso=DEFAULT.catIngreso.slice(); ["Kiosco","Comida","Suscripciones","Servicios","Salidas","Transporte","Prestado","Otros"].forEach(c=>{if(!s.catGasto.includes(c))s.catGasto.push(c);}); ["Sueldo","Prestado","Regalo","Otros"].forEach(c=>{if(!s.catIngreso.includes(c))s.catIngreso.push(c);}); return s; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); } }
 function save(skipSync){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(_){} if(!skipSync && typeof loggedIn==="function" && loggedIn()) schedulePush(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -842,6 +844,8 @@ function openDay(ds){
   if(ev.length){ body+=`<div class="card-t" style="margin:4px 0 6px">Eventos</div>`+ev.map(e=>`<div class="row"><span class="dot" style="background:var(--accent)"></span><div class="row-main" data-act="edit-ev" data-id="${e.id}" style="cursor:pointer"><div class="row-title">${esc(e.title)}${(e.repeat&&e.repeat!=="none")?` <span class="svc-tag soon">↻ ${repLbl(e.repeat)}</span>`:""}</div></div><span class="row-time">${e.time||""}</span><button class="x-row" data-act="cal-ev" data-id="${e.id}" title="Recordarme" style="color:var(--accent)">${svgIco("bell")}</button></div>`).join(""); }
   if(tk.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Tareas</div>`+tk.map(t=>`<div class="row ${t.done?"done":""}"><span class="dot" style="background:var(--violet)"></span><div class="row-main"><div class="row-title">${esc(t.title)}</div></div></div>`).join(""); }
   if(mv.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Movimientos</div>`+mv.map(x=>`<div class="row" data-act="edit-mov" data-id="${x.id}" style="cursor:pointer"><span class="mv-ico">${catIco(x.cat,x.type==="ingreso")}</span><div class="row-main"><div class="row-title">${esc(x.title||x.cat||"Movimiento")}</div></div><span class="mv-amt ${x.type==="ingreso"?"up":"down"}">${x.type==="ingreso"?"+":"−"}${money(x.amount)}</span></div>`).join(""); }
+  const fin=finMarkersOn(ds);
+  if(fin.length){ body+=`<div class="card-t" style="margin:12px 0 6px">Finanzas</div>`+fin.map(f=>{ const ic=f.kind==="cierre"?"📅":f.kind==="vence"?"💳":"🧾"; const txt=f.kind==="cierre"?("Cierra "+esc(f.name)):f.kind==="vence"?("Vence "+esc(f.name)+" (pago tarjeta)"):("Pagar "+esc(f.name)); const amt=(f.kind==="servicio"&&f.amount)?`<span class="mv-amt down">−${money(f.amount)}</span>`:""; return `<div class="row"><span class="mv-ico">${ic}</span><div class="row-main"><div class="row-title">${txt}</div></div>${amt}</div>`; }).join(""); }
   if(!body) body=`<div class="empty">Nada este día. Agregá abajo 👇</div>`;
   const sm=daySummary(ds);
   const dsum=`<div class="day-summary"><div class="day-sum"><div class="lbl">Ingresos</div><div class="v" style="color:var(--ok)">${money(sm.inc)}</div></div><div class="day-sum"><div class="lbl">Gastos</div><div class="v">${money(sm.exp)}</div></div><div class="day-sum"><div class="lbl">Balance</div><div class="v" style="${sm.bal<0?"color:var(--danger)":""}">${money(sm.bal)}</div></div></div>`;
@@ -861,9 +865,9 @@ function renderCalInto(gridId,titleId){
   for(let i=0;i<startDow;i++) html+=`<div class="cal-day empty"></div>`;
   for(let d=1;d<=days;d++){
     const ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    const ev=S.events.some(e=>eventOccursOn(e,ds)), tk=S.tasks.some(t=>t.date===ds&&!t.done), mv=S.moves.some(x=>x.date===ds);
-    const dots=(ev?`<i style="color:var(--accent)"></i>`:"")+(tk?`<i style="color:var(--violet)"></i>`:"")+(mv?`<i style="color:var(--cyan)"></i>`:"");
-    const cls=["cal-day"]; if(ev||tk||mv)cls.push("has"); if(ds===todayISO())cls.push("today"); if(ds===_selDay)cls.push("sel");
+    const ev=S.events.some(e=>eventOccursOn(e,ds)), tk=S.tasks.some(t=>t.date===ds&&!t.done), mv=S.moves.some(x=>x.date===ds), fin=finMarkersOn(ds).length>0;
+    const dots=(ev?`<i style="color:var(--accent)"></i>`:"")+(tk?`<i style="color:var(--violet)"></i>`:"")+(mv?`<i style="color:var(--cyan)"></i>`:"")+(fin?`<i style="color:#fbbf24"></i>`:"");
+    const cls=["cal-day"]; if(ev||tk||mv||fin)cls.push("has"); if(ds===todayISO())cls.push("today"); if(ds===_selDay)cls.push("sel");
     html+=`<div class="${cls.join(" ")}" data-day="${ds}"><span>${d}</span><span class="cal-dots">${dots}</span></div>`;
   }
   grid.innerHTML=html;
@@ -895,6 +899,12 @@ function addDaysISO(d,n){ const x=new Date(d+"T00:00"); x.setDate(x.getDate()+n)
 function eventOccursOn(ev,ds){ if(!ev.date)return false; if(ev.date===ds)return true; const rep=ev.repeat||"none"; if(rep==="none"||ds<ev.date)return false; const a=new Date(ev.date+"T00:00:00"),b=new Date(ds+"T00:00:00"); if(rep==="daily")return true; if(rep==="weekly")return a.getDay()===b.getDay(); if(rep==="monthly")return a.getDate()===b.getDate(); return false; }
 function eventsOn(ds){ return S.events.filter(e=>eventOccursOn(e,ds)); }
 function repLbl(rep){ return {daily:"Diario",weekly:"Semanal",monthly:"Mensual"}[rep]||""; }
+function leadOpts(sel){ sel=(sel==null?1:+sel); return [[0,"El mismo día"],[1,"1 día antes"],[2,"2 días antes"],[3,"3 días antes"],[5,"5 días antes"],[7,"1 semana antes"]].map(o=>`<option value="${o[0]}" ${o[0]===sel?"selected":""}>${o[1]}</option>`).join(""); }
+function _domClamp(day,y,m){ const dim=new Date(y,m+1,0).getDate(); return Math.min(Math.max(+day||1,1),dim); }
+function finMarkersOn(ds){ if(!ds)return []; const y=+ds.slice(0,4),m=+ds.slice(5,7)-1,d=+ds.slice(8,10); const out=[];
+  (S.cards||[]).forEach(c=>{ if(+c.cierre&&_domClamp(c.cierre,y,m)===d)out.push({kind:"cierre",name:c.name}); if(+c.venc&&_domClamp(c.venc,y,m)===d)out.push({kind:"vence",name:c.name}); });
+  (S.services||[]).forEach(s=>{ if(_domClamp(s.day,y,m)===d)out.push({kind:"servicio",name:s.name,amount:s.amount,method:s.method,card:s.card}); });
+  return out; }
 function cap1(s){ return s?s.charAt(0).toUpperCase()+s.slice(1):s; }
 function renderAgenda(){
   const ti=todayISO(), map={};
@@ -1222,10 +1232,14 @@ function openForm(type,ex){ _draft={}; _editId=(ex&&ex.id)||null;
       <div class="field"><label>Día de pago (del mes)</label><input id="i-day" type="number" min="1" max="31" inputmode="numeric" placeholder="Ej: 10"></div>
       <div class="field"><label>Método</label><div class="seg-modal" id="svc-method"><button type="button" class="on" data-pick="smethod" data-v="transferencia">Transfer.</button><button type="button" data-pick="smethod" data-v="débito">Débito</button><button type="button" data-pick="smethod" data-v="tarjeta">Tarjeta</button><button type="button" data-pick="smethod" data-v="efectivo">Efectivo</button></div></div>
       <div class="field" id="svc-card-wrap" style="display:none"><label>¿Qué tarjeta?</label><select id="i-svc-card"></select></div>
+      <div class="field"><label>Avisarme del pago</label><select id="i-av">${leadOpts(1)}</select></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="service">Guardar</button></div>`,
     card:`<div class="pop-h"><div class="pop-t">Nueva tarjeta</div><button class="pop-x" data-act="close">✕</button></div>
       <div class="field"><label>Nombre de la tarjeta</label><input id="i-title" placeholder="Ej: Visa Galicia" autofocus></div>
       <div class="field"><label>Día de cierre (del mes)</label><input id="i-cierre" type="number" min="1" max="31" inputmode="numeric" placeholder="Ej: 15"></div>
+      <div class="field"><label>Día de vencimiento / pago (del mes)</label><input id="i-venc" type="number" min="1" max="31" inputmode="numeric" placeholder="Ej: 25"></div>
+      <div class="field"><label>Avisarme del cierre</label><select id="i-av-cierre">${leadOpts(1)}</select></div>
+      <div class="field"><label>Avisarme del vencimiento</label><select id="i-av-venc">${leadOpts(1)}</select></div>
       <div class="field"><label>Límite (opcional)</label><input id="i-limit" class="num" type="text" inputmode="numeric" placeholder="0"></div>
       <div class="pop-actions"><button class="btn ghost block" data-act="close">Cancelar</button><button class="btn primary block" data-save="card">Guardar</button></div>`
   };
@@ -1249,8 +1263,8 @@ function prefillForm(type,ex){
   } else if(type==="shop"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-qty"))$("#i-qty").value=ex.qty||1;
   } else if(type==="saving"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-target"))$("#i-target").value=fmtMiles(ex.target); if($("#i-saved"))$("#i-saved").value=fmtMiles(ex.saved);
   } else if(type==="debt"||type==="loan"){ if($("#i-who"))$("#i-who").value=ex.who||""; if($("#i-amount"))$("#i-amount").value=fmtMiles(ex.amount); if($("#i-note"))$("#i-note").value=ex.note||"";
-  } else if(type==="service"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-amount"))$("#i-amount").value=fmtMiles(ex.amount); if($("#i-day"))$("#i-day").value=ex.day||""; _draft.smethod=ex.method||"transferencia"; _draft.svcCard=ex.card||""; document.querySelectorAll('#svc-method [data-pick="smethod"]').forEach(b=>b.classList.toggle("on",b.dataset.v===_draft.smethod)); updateSvcExtras();
-  } else if(type==="card"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-cierre"))$("#i-cierre").value=ex.cierre||""; if($("#i-limit"))$("#i-limit").value=fmtMiles(ex.limit); }
+  } else if(type==="service"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-amount"))$("#i-amount").value=fmtMiles(ex.amount); if($("#i-day"))$("#i-day").value=ex.day||""; if($("#i-av"))$("#i-av").value=String(ex.avisar==null?1:ex.avisar); _draft.smethod=ex.method||"transferencia"; _draft.svcCard=ex.card||""; document.querySelectorAll('#svc-method [data-pick="smethod"]').forEach(b=>b.classList.toggle("on",b.dataset.v===_draft.smethod)); updateSvcExtras();
+  } else if(type==="card"){ if($("#i-title"))$("#i-title").value=ex.name||""; if($("#i-cierre"))$("#i-cierre").value=ex.cierre||""; if($("#i-venc"))$("#i-venc").value=ex.venc||""; if($("#i-av-cierre"))$("#i-av-cierre").value=String(ex.avisarCierre==null?1:ex.avisarCierre); if($("#i-av-venc"))$("#i-av-venc").value=String(ex.avisarVenc==null?1:ex.avisarVenc); if($("#i-limit"))$("#i-limit").value=fmtMiles(ex.limit); }
   const pt=document.querySelector("#pop .pop-t"); if(pt){ const T={mov:"Editar movimiento",event:"Editar evento",task:"Editar tarea",shop:"Editar artículo",saving:"Editar meta",account:"Editar cuenta",debt:"Editar deuda",loan:"Editar préstamo",service:"Editar servicio",card:"Editar tarjeta"}; if(T[type])pt.textContent=T[type]; }
 }
 function syncCats(){ const w=$("#i-cat"); if(!w)return; const cats=(_draft.type==="ingreso"?S.catIngreso:S.catGasto)||[];
@@ -1276,8 +1290,8 @@ function doSave(type){
   else if(type==="saving"){ if(!v("i-title"))return; if(_editId){ const g=S.savings.find(x=>x.id===_editId); if(g){ g.name=v("i-title"); g.target=num("i-target"); g.saved=num("i-saved"); } } else { S.savings.push({id:uid(),name:v("i-title"),target:num("i-target"),saved:num("i-saved")}); } }
   else if(type==="debt"){ if(!v("i-who"))return; if(_editId){ const d=S.debts.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.debts.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); } }
   else if(type==="loan"){ if(!v("i-who"))return; if(_editId){ const d=S.loans.find(x=>x.id===_editId); if(d){ d.who=v("i-who"); d.amount=num("i-amount"); d.note=v("i-note"); } } else { S.loans.push({id:uid(),who:v("i-who"),amount:num("i-amount"),note:v("i-note")}); } }
-  else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; const smth=_draft.smethod||"transferencia"; const scard=(smth==="tarjeta")?(_draft.svcCard||""):""; if(_editId){ const s=S.services.find(x=>x.id===_editId); if(s){ s.name=v("i-title"); s.amount=num("i-amount"); s.day=day; s.method=smth; s.card=scard; } } else { S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:smth,card:scard,lastPaid:""}); } }
-  else if(type==="card"){ if(!v("i-title"))return; let ci=parseInt(($("#i-cierre")&&$("#i-cierre").value)||"",10); if(!(ci>=1&&ci<=31))ci=0; const lim=num("i-limit"); if(_editId){ const cc=S.cards.find(x=>x.id===_editId); if(cc){ cc.name=v("i-title"); cc.cierre=ci; cc.limit=lim; } } else { S.cards.push({id:uid(),name:v("i-title"),cierre:ci,limit:lim}); } }
+  else if(type==="service"){ if(!v("i-title"))return; let day=parseInt(($("#i-day")&&$("#i-day").value)||"1",10); if(!(day>=1&&day<=31))day=1; const smth=_draft.smethod||"transferencia"; const scard=(smth==="tarjeta")?(_draft.svcCard||""):""; const av=parseInt(($("#i-av")&&$("#i-av").value)||"0",10)||0; if(_editId){ const s=S.services.find(x=>x.id===_editId); if(s){ s.name=v("i-title"); s.amount=num("i-amount"); s.day=day; s.method=smth; s.card=scard; s.avisar=av; } } else { S.services.push({id:uid(),name:v("i-title"),amount:num("i-amount"),day:day,method:smth,card:scard,avisar:av,lastPaid:""}); } }
+  else if(type==="card"){ if(!v("i-title"))return; let ci=parseInt(($("#i-cierre")&&$("#i-cierre").value)||"",10); if(!(ci>=1&&ci<=31))ci=0; let vc=parseInt(($("#i-venc")&&$("#i-venc").value)||"",10); if(!(vc>=1&&vc<=31))vc=0; const avc=parseInt(($("#i-av-cierre")&&$("#i-av-cierre").value)||"0",10)||0; const avv=parseInt(($("#i-av-venc")&&$("#i-av-venc").value)||"0",10)||0; const lim=num("i-limit"); if(_editId){ const cc=S.cards.find(x=>x.id===_editId); if(cc){ cc.name=v("i-title"); cc.cierre=ci; cc.venc=vc; cc.avisarCierre=avc; cc.avisarVenc=avv; cc.limit=lim; } } else { S.cards.push({id:uid(),name:v("i-title"),cierre:ci,venc:vc,avisarCierre:avc,avisarVenc:avv,limit:lim}); } }
   save(); closePop(); render(); _editId=null;
   if(_pendingIncome){ const p=_pendingIncome; _pendingIncome=null; suggestSaving(p.amount,p.account); }
 }
@@ -1364,7 +1378,15 @@ function renderAjustes(){
     const avInner = `<div class="field"><label>Endpoint (opcional)</label><input id="set-ai" value="${esc((S.ai&&S.ai.endpoint)||"")}" placeholder="https://...supabase.co/functions/v1/iris-chat"></div>
         <div class="muted" style="margin:10px 0;font-size:11px">Si tenés tu propia función backend, pegá la URL. La clave de Gemini tiene prioridad.</div>
         <button class="btn block" data-act="save-ai">Guardar endpoint</button>`;
-    h=collap(acctTitle,acctInner,"aj-cuenta",true)+collap("Atajos de iPhone",scInner,"aj-atajos",false)+collap("Iris IA · Google Gemini (gratis)",iaInner,"aj-ia",false)+collap("Avanzado · endpoint propio",avInner,"aj-avanzado",false);
+    const notifOn=!!(S.set&&S.set.notif); const nst=notifState(); let notifInner;
+    if(!nst.ok){ notifInner=`<div class="muted">${esc(nst.reason)}</div>`; }
+    else if(!li){ notifInner=`<div class="muted">Iniciá sesión (arriba) para activar las notificaciones: se vinculan a tu cuenta.</div>`; }
+    else { notifInner=`<div class="muted" style="margin-bottom:12px">Recibí avisos de <b>cierres y vencimientos de tarjeta</b> y de tus <b>servicios/suscripciones</b> (seguro, monotributo, etc.), aunque Iris esté cerrada.</div>
+        <button class="btn ${notifOn?"":"primary"} block" data-act="${notifOn?"notif-off":"notif-on"}">${notifOn?"Desactivar notificaciones":"Activar notificaciones"}</button>
+        <div class="field" style="margin-top:12px"><label>Hora del aviso diario</label><input id="notif-hour" type="time" value="${esc((S.set&&S.set.notifHour)||"09:00")}"></div>
+        ${notifOn?`<button class="btn block" data-act="notif-test" style="margin-top:8px">Probar notificación</button>`:""}
+        ${(_isIOS()&&!_isStandalone())?`<div class="muted" style="margin-top:12px;font-size:11px">📱 En iPhone: tocá Compartir → <b>Agregar a inicio</b>, y abrí Iris desde ese ícono para que las notificaciones funcionen.</div>`:""}`; }
+    h=collap(acctTitle,acctInner,"aj-cuenta",true)+collap("Notificaciones",notifInner,"aj-notif",true)+collap("Atajos de iPhone",scInner,"aj-atajos",false)+collap("Iris IA · Google Gemini (gratis)",iaInner,"aj-ia",false)+collap("Avanzado · endpoint propio",avInner,"aj-avanzado",false);
   } else if(_ajtab==="personalizacion"){
     h=collap("Apariencia",`<div class="aj-row"><div><div class="aj-l">Animaciones</div><div class="aj-d">Transiciones y efectos al moverte por la app.</div></div>
           <button class="toggle ${S.set.anim?"on":""}" data-act="toggle-anim" aria-label="Animaciones"></button></div>
@@ -1398,7 +1420,7 @@ function renameCat(kind,oldName,newName){
   S.moves.forEach(m=>{ if(m.cat===oldName && ((kind==="gasto"&&m.type==="gasto")||(kind==="ingreso"&&m.type==="ingreso"))) m.cat=newName; });
   save(); render();
 }
-document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } const ic=e.target.closest("#i-cat"); if(ic){ _draft.cat=ic.value; updateMovExtras(); } const icd=e.target.closest("#i-card"); if(icd){ _draft.card=icd.value; } const iac=e.target.closest("#i-account"); if(iac){ _draft.account=iac.value; } const isc=e.target.closest("#i-svc-card"); if(isc){ _draft.svcCard=isc.value; } const srm=e.target.closest("#set-remind"); if(srm){ S.set.remindMin=parseInt(srm.value,10)||0; save(); } });
+document.addEventListener("change",e=>{ const ce=e.target.closest(".cat-edit"); if(ce){ renameCat(ce.dataset.kind,ce.dataset.old,ce.value); } const ic=e.target.closest("#i-cat"); if(ic){ _draft.cat=ic.value; updateMovExtras(); } const icd=e.target.closest("#i-card"); if(icd){ _draft.card=icd.value; } const iac=e.target.closest("#i-account"); if(iac){ _draft.account=iac.value; } const isc=e.target.closest("#i-svc-card"); if(isc){ _draft.svcCard=isc.value; } const srm=e.target.closest("#set-remind"); if(srm){ S.set.remindMin=parseInt(srm.value,10)||0; save(); } const nh=e.target.closest("#notif-hour"); if(nh){ setNotifHour(nh.value); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target && e.target.id==="note-input"){ e.preventDefault(); const t=e.target.value.trim(); if(t){ S.notes.push({id:uid(),text:t}); save(); render(); } } });
 
 /* ---- formateo de miles en vivo (es-AR, punto, sin decimales) ---- */
@@ -1497,7 +1519,7 @@ function syncPayload(){ const c=JSON.parse(JSON.stringify(S)); if(c.ai)delete c.
 function schedulePush(){ if(!loggedIn())return; _syncDirty=true; clearTimeout(_syncTimer); _syncTimer=setTimeout(syncPush,800); }
 async function syncPush(){ if(!loggedIn()||_syncBusy)return; _syncBusy=true; _syncMark("Guardando…"); try{ const r=await authedFetch(SUPA_URL+"/rest/v1/iris_state",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({user_id:_sess.user.id,data:syncPayload()})}); if(r.ok){ const rows=await r.json().catch(()=>[]); if(Array.isArray(rows)&&rows[0])_lastTs=rows[0].updated_at; _syncDirty=false; _syncMark("Al día ✓"); } else _syncMark("No se pudo guardar"); }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; }
 async function syncPull(opt){ opt=opt||{}; if(!loggedIn()||_syncBusy)return; _syncBusy=true; let pushAfter=false; try{ const r=await authedFetch(SUPA_URL+"/rest/v1/iris_state?select=data,updated_at",{method:"GET"}); if(r.ok){ const rows=await r.json().catch(()=>[]); if(Array.isArray(rows)&&rows.length&&rows[0].data){ const ts=rows[0].updated_at; if((opt.force||ts!==_lastTs) && !(_syncDirty&&!opt.force)) adoptRemote(rows[0].data,ts); _syncMark("Al día ✓"); } else pushAfter=true; } }catch(_){ _syncMark("Sin conexión"); } _syncBusy=false; if(pushAfter) await syncPush(); }
-function adoptRemote(data,ts){ if(!data)return; const key=(S.ai&&S.ai.key)||""; const m=Object.assign({},DEFAULT,data); m.set=Object.assign({anim:true,accent:"#5b8cff",remindMin:30},m.set||{}); m.ai=Object.assign({endpoint:""},m.ai||{}); if(key)m.ai.key=key; if(!Array.isArray(m.catGasto)||!m.catGasto.length)m.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(m.catIngreso)||!m.catIngreso.length)m.catIngreso=DEFAULT.catIngreso.slice(); S=m; _lastTs=ts||_lastTs; _syncDirty=false; save(true); applyAccent(); applyAnim(); render(); }
+function adoptRemote(data,ts){ if(!data)return; const key=(S.ai&&S.ai.key)||""; const m=Object.assign({},DEFAULT,data); m.set=Object.assign({anim:true,accent:"#5b8cff",remindMin:30,notif:false,notifHour:"09:00"},m.set||{}); m.ai=Object.assign({endpoint:""},m.ai||{}); if(key)m.ai.key=key; if(!Array.isArray(m.catGasto)||!m.catGasto.length)m.catGasto=DEFAULT.catGasto.slice(); if(!Array.isArray(m.catIngreso)||!m.catIngreso.length)m.catIngreso=DEFAULT.catIngreso.slice(); S=m; _lastTs=ts||_lastTs; _syncDirty=false; save(true); applyAccent(); applyAnim(); render(); }
 async function syncOnLogin(){ _syncMark("Sincronizando…"); await syncPull({force:true}); startPoll(); renderAjustes(); }
 function syncNow(){ if(!loggedIn())return; if(_syncDirty)syncPush(); else syncPull({force:true}); }
 function _syncBlocked(){ const o=$("#overlay"),ir=$("#iris"),ae=document.activeElement; const typing=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName); return (o&&o.classList.contains("open"))||(ir&&ir.classList.contains("open"))||typing; }
@@ -1591,6 +1613,7 @@ document.addEventListener("click",e=>{
     "iris-unsave":()=>{ S.saved=(S.saved||[]).filter(s=>s.id!==id); save(); renderIrisSaved(); },
     "save-name":()=>saveName(),"wipe":()=>wipe(),"save-ai":()=>saveAI(),
     "auth-signin":()=>authSignIn(),"auth-signup":()=>authSignUp(),"auth-signout":()=>authSignOut(),"sync-now":()=>syncNow(),
+    "notif-on":()=>enableNotifs(),"notif-off":()=>disableNotifs(),"notif-test":()=>testNotif(),
     "shortcuts-show":()=>shortcutsShow(),"shortcuts-reset":()=>shortcutsReset(),
     "sc-copy-url":()=>scCopy(SHORTCUT_URL,"URL copiada ✓"),"sc-copy-tok":()=>scCopy(_shortcutTok||"","Token copiado ✓"),
     "sc-body-gasto":()=>scCopy(scBody("gasto"),"Cuerpo de Gasto copiado ✓"),"sc-body-ingreso":()=>scCopy(scBody("ingreso"),"Cuerpo de Ingreso copiado ✓"),
@@ -1710,18 +1733,29 @@ function buildContext(){
   const f=monthFin(), ti=todayISO();
   const recientes=S.moves.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,25)
     .map(x=>({fecha:x.date,tipo:x.type,monto:+x.amount||0,categoria:x.cat,metodo:x.method||null,desc:x.title||null}));
+  // Próximos vencimientos (cierres/vencimientos de tarjeta y pagos de servicios) en ~40 días, sin repetir
+  const seen={}, prox=[];
+  for(let i=0;i<40 && prox.length<25;i++){ const ds=addDaysISO(ti,i); finMarkersOn(ds).forEach(m=>{ const k=m.kind+"|"+m.name; if(seen[k])return; seen[k]=1; prox.push({fecha:ds, enDias:i, tipo:m.kind==="cierre"?"cierre de tarjeta":m.kind==="vence"?"vencimiento de tarjeta":"pago de servicio", nombre:m.name, monto:m.amount||null}); }); }
+  // Agenda próxima (14 días, con recurrencia expandida)
+  const agenda=[]; for(let i=0;i<14;i++){ const ds=addDaysISO(ti,i); eventsOn(ds).forEach(e=>agenda.push({fecha:ds, enDias:i, titulo:e.title, hora:e.time||null, repite:(e.repeat&&e.repeat!=="none")?e.repeat:null})); }
+  const tareasPend=S.tasks.filter(t=>!t.done).sort((a,b)=>(a.date||"").localeCompare(b.date||"")).slice(0,20).map(t=>({titulo:t.title, fecha:t.date||null}));
   return {
     fecha:ti, nombre:S.name||null,
     hoy:{ tareas:S.tasks.filter(t=>!t.done&&t.date===ti).map(t=>t.title),
           eventos:eventsOn(ti).map(e=>({titulo:e.title,hora:e.time||null})),
           compras:S.shop.filter(s=>!s.done).map(s=>s.name) },
     finanzas:{ ingresosMes:f.income, gastosMes:f.expense, balance:f.bal, tasaAhorroPct:f.rate, gastosPorCategoria:catTotals() },
-    movimientosRecientes:recientes,
+    dineroTotal:totalMoney(), neto:netMoney(), teDeben:receivablesTotal(),
     cuentas:S.accounts.map(a=>({nombre:a.name,tipo:a.type,saldo:accBalance(a)})),
-    dineroTotal:totalMoney(), neto:netMoney(),
+    ahorros:S.savings.map(g=>({meta:g.name,objetivo:+g.target||0,guardado:+g.saved||0})),
     deudas:S.debts.map(d=>({quien:d.who,monto:+d.amount||0,nota:d.note||null})),
     prestamos:S.loans.map(d=>({quien:d.who,monto:+d.amount||0})),
-    ahorros:S.savings.map(g=>({meta:g.name,objetivo:+g.target||0,guardado:+g.saved||0})),
+    tarjetas:S.cards.map(c=>({nombre:c.name,diaCierre:c.cierre||null,diaVencimiento:c.venc||null,limite:+c.limit||null})),
+    servicios:S.services.map(s=>({nombre:s.name,monto:+s.amount||0,diaDelMes:s.day,metodo:s.method||null})),
+    proximosVencimientos:prox,
+    agendaProxima:agenda,
+    tareasPendientes:tareasPend,
+    movimientosRecientes:recientes,
     categoriasGasto:S.catGasto, categoriasIngreso:S.catIngreso
   };
 }
@@ -1736,7 +1770,7 @@ async function askGemini(q){
     "VOZ: oraciones cortas, máximo 1–2 frases, alta densidad de información, claras al escuchar. No hablás más de lo necesario. "+
     "COMPORTAMIENTO. Orden directa: ejecutás sin fricción y confirmás breve (ej: 'Registrado. Gasto en comida.'). Consulta o duda: respondés con análisis, usás lógica y números si están disponibles, y das una conclusión clara (ej: 'Tu gasto variable supera el rango eficiente; reducilo esta semana.'). Acción + análisis: ejecutás y sumás una observación estratégica breve (ej: 'Listo. Este gasto eleva tu promedio semanal; conviene ajustar los próximos días.'). "+
     "CRITERIO: evitás generalidades; buscás optimización, no solo registro. Cada respuesta debe aportar valor, ser directa y maximizar claridad. "+
-    "DATOS: tenés el estado del usuario en JSON (finanzas, agenda, deudas, préstamos, ahorros, movimientos). No inventes cifras; si falta info, pedila en una sola frase. "+
+    "DATOS: tenés el estado del usuario en JSON. Respondé SIEMPRE con esos datos, no inventes cifras ni fechas; si algo no está, decilo o pedilo en una frase. Guía de campos: para \"cuánto tengo/plata/patrimonio\" usá dineroTotal, neto, teDeben y cuentas (cada una con su saldo). Para \"cuándo cierra/vence la tarjeta\" o \"qué pagos/servicios tengo\" usá proximosVencimientos (tiene fecha, enDias, tipo, nombre y monto) y tarjetas/servicios. Para la agenda (\"qué tengo hoy/mañana/esta semana\") usá hoy, agendaProxima (con fecha y enDias) y tareasPendientes. enDias=0 es hoy, 1 es mañana. Al dar una fecha, expresala clara (ej: 'el 25' o 'en 3 días'). "+
     "ACCIONES: ejecutás lo que el usuario pida devolviéndolo en \"actions\". Tipos disponibles: "+
     "add_mov (gasto/ingreso), deposit_saving (ingresar plata a un ahorro), withdraw_saving (retirar de un ahorro), add_saving (crear meta de ahorro), add_account (crear cuenta), add_loan (registrar que le prestaste a alguien), add_debt (registrar una deuda tuya). "+
     "Para depositar/retirar de un ahorro usá el NOMBRE del ahorro en \"saving\" (elegí el más parecido de la lista) y opcionalmente \"account\" con el nombre de la cuenta de donde sale/entra; si el usuario no aclara cuenta, omitila. "+
@@ -1813,6 +1847,30 @@ function pushMsg(r,t){ S.chat.push({r,t,id:"m"+Math.random().toString(36).slice(
 
 function answer(qRaw){
   const q=qRaw.toLowerCase(), ti=todayISO(); const f=monthFin(); const has=(...w)=>w.some(x=>q.includes(x));
+  const fmtd=ds=>ds.slice(8,10)+"/"+ds.slice(5,7); const inDias=n=>n===0?"hoy":n===1?"mañana":"en "+n+" días";
+  if(has("semana","mañana","manana","próxim","proxim","que viene","qué viene")){
+    const C=buildContext(); if(!C.agendaProxima.length&&!C.proximosVencimientos.length)return "No tengo eventos ni vencimientos en los próximos días.";
+    let r=""; if(C.agendaProxima.length){ r+="<b>Próximos eventos:</b>\n"+C.agendaProxima.slice(0,8).map(e=>`• ${e.enDias===0?"Hoy":e.enDias===1?"Mañana":fmtd(e.fecha)}${e.hora?" "+e.hora:""}: ${esc(e.titulo)}`).join("\n"); }
+    if(C.proximosVencimientos.length){ r+=(r?"\n\n":"")+"<b>Próximos vencimientos:</b>\n"+C.proximosVencimientos.slice(0,6).map(p=>`• ${esc(p.nombre)} — ${p.tipo} ${inDias(p.enDias)}`).join("\n"); }
+    return r;
+  }
+  if(has("cuánto tengo","cuanto tengo","cuánta plata","cuanta plata","patrimonio","dinero total","total tengo","mis cuentas","cuánto hay","cuanto hay")){
+    const tot=totalMoney(), rec=receivablesTotal(), sv=savingsTotal(), deb=debtsTotal();
+    let r=`Tenés en total <b>${money(tot)}</b>.`;
+    if(S.accounts.length)r+=`\n`+S.accounts.map(a=>`• ${esc(a.name)}: ${money(accBalance(a))}`).join("\n");
+    if(sv>0)r+=`\n• Ahorros: ${money(sv)}`;
+    if(rec>0)r+=`\n• Te deben: ${money(rec)}`;
+    if(deb>0)r+=`\nNeto (restando deudas): <b>${money(netMoney())}</b>.`;
+    return r;
+  }
+  if(has("vence","vencimiento","cierre","cierra","pago","pagos","pagar","servicio","suscrip","monotributo","seguro","factura","tarjeta")){
+    const C=buildContext(); let items=C.proximosVencimientos.slice();
+    const soloTarj=has("tarjeta","cierre","cierra")&&!has("servicio","monotributo","seguro","suscrip","factura");
+    const soloServ=has("servicio","monotributo","seguro","suscrip","factura","pago","pagos","pagar")&&!has("tarjeta","cierre","cierra");
+    if(soloTarj)items=items.filter(p=>p.tipo!=="pago de servicio"); else if(soloServ)items=items.filter(p=>p.tipo==="pago de servicio");
+    if(!items.length)return "No tengo vencimientos en los próximos 40 días para eso.";
+    return "<b>Próximo:</b>\n"+items.slice(0,8).map(p=>`• ${p.tipo==="cierre de tarjeta"?"Cierra":p.tipo==="vencimiento de tarjeta"?"Vence":"Pagar"} ${esc(p.nombre)}${p.monto?" "+money(p.monto):""}: ${inDias(p.enDias)} (${fmtd(p.fecha)})`).join("\n");
+  }
   if(has("hoy","día","dia","agenda","qué tengo","que tengo")){
     const tt=S.tasks.filter(t=>!t.done&&t.date===ti), ev=eventsOn(ti).sort((a,b)=>(a.time||"").localeCompare(b.time||"")), sh=S.shop.filter(s=>!s.done);
     let r=`<b>Tu día:</b>\n`;
@@ -1821,8 +1879,8 @@ function answer(qRaw){
     r+=sh.length?`• ${sh.length} compra${sh.length>1?"s":""} pendiente${sh.length>1?"s":""}.`:"• Compras al día.";
     return r;
   }
-  if(has("deb","deuda")&&!has("te deben")){ const tot=S.debts.reduce((a,b)=>a+(+b.amount||0),0); if(!S.debts.length)return "No tenés deudas cargadas. 🙌"; return `Debés en total <b>${money(tot)}</b>, repartido en ${S.debts.length} deuda${S.debts.length>1?"s":""}.`; }
-  if(has("prest","te deben","me deben")){ const tot=S.loans.reduce((a,b)=>a+(+b.amount||0),0); if(!S.loans.length)return "No prestaste nada cargado."; return `Te deben en total <b>${money(tot)}</b>.`; }
+  if(has("deb","deuda")&&!has("te deben","me deben","prest")){ const tot=S.debts.reduce((a,b)=>a+(+b.amount||0),0); if(!S.debts.length)return "No tenés deudas cargadas. 🙌"; return `Debés en total <b>${money(tot)}</b>, repartido en ${S.debts.length} deuda${S.debts.length>1?"s":""}.`; }
+  if(has("prest","te deben","me deben")){ const tot=receivablesTotal(); if(tot<=0)return "Nadie te debe plata cargada."; return `Te deben en total <b>${money(tot)}</b>.`; }
   if(has("ahorr")){ if(!S.savings.length)return `Tu tasa de ahorro este mes es <b>${f.rate}%</b>. Todavía no cargaste metas de ahorro — creá una en Finanzas › Ahorros.`; const tot=S.savings.reduce((a,b)=>a+(+b.saved||0),0); const obj=S.savings.reduce((a,b)=>a+(+b.target||0),0); return `Llevás guardado <b>${money(tot)}</b> de ${money(obj)} en tus metas. Tasa de ahorro del mes: ${f.rate}%.`; }
   if(has("gast")){ if(!f.mm.length)return "Todavía no cargaste movimientos este mes."; const byCat={}; f.mm.filter(x=>x.type==="gasto").forEach(x=>{byCat[x.cat]=(byCat[x.cat]||0)+(+x.amount||0);}); const top=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0]; return `Este mes gastaste <b>${money(f.expense)}</b>.`+(top?`\nDonde más se te va: <b>${top[0]}</b> (${money(top[1])}).`:""); }
   if(has("ingres")) return `Ingresos de este mes: <b>${money(f.income)}</b>.`;
@@ -1847,7 +1905,38 @@ function toggleMic(){ if(_listening){ stopMic(); return; }
 function stopMic(){ if(_rec){ try{_rec.stop();}catch(_){} } _listening=false; $("#iris").classList.remove("listening"); }
 
 /* ====================== INIT ====================== */
-function init(){ render(); if("serviceWorker" in navigator){ navigator.serviceWorker.getRegistrations().then(function(rs){ if(rs&&rs.length){ rs.forEach(function(r){r.unregister();}); if(window.caches){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});} if(!sessionStorage.getItem("_swclean")){sessionStorage.setItem("_swclean","1");location.reload();} } }).catch(function(){}); } authBoot(); }
+/* ====================== NOTIFICACIONES PUSH ====================== */
+const VAPID_PUBLIC="BGC_aGIsMoh7-DZ57fJPj268I3H6PNR3LgbQiacnpREMKqVrCpj3nLg-9GysqZcxfi9hFW3umlqMohTkI3dLt3E";
+let _swReg=null;
+function toast(msg){ let t=document.getElementById("toast"); if(!t){ t=document.createElement("div"); t.id="toast"; document.body.appendChild(t); } t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),3200); }
+function _isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+function _isStandalone(){ return (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true; }
+function notifSupported(){ return ("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window); }
+function notifState(){ if(!notifSupported()){ if(_isIOS()&&!_isStandalone())return {ok:false,reason:"En iPhone agregá Iris a la pantalla de inicio (Compartir → Agregar a inicio) y abrila desde ahí para activar notificaciones."}; return {ok:false,reason:"Este navegador no soporta notificaciones push."}; } return {ok:true,permission:Notification.permission}; }
+function _urlB64ToU8(b64){ const pad="=".repeat((4-b64.length%4)%4); const s=(b64+pad).replace(/-/g,"+").replace(/_/g,"/"); const raw=atob(s); const arr=new Uint8Array(raw.length); for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i); return arr; }
+async function _swReady(){ if(!("serviceWorker" in navigator))return null; try{ if(!_swReg)_swReg=await navigator.serviceWorker.register("./sw.js"); await navigator.serviceWorker.ready; }catch(_){} return _swReg; }
+async function enableNotifs(){
+  const st=notifState(); if(!st.ok){ toast(st.reason); renderAjustes(); return; }
+  if(!loggedIn()){ toast("Primero iniciá sesión para vincular las notificaciones."); return; }
+  let perm=Notification.permission; if(perm!=="granted")perm=await Notification.requestPermission();
+  if(perm!=="granted"){ toast("No diste permiso de notificaciones."); renderAjustes(); return; }
+  const reg=await _swReady(); if(!reg){ toast("No se pudo preparar el service worker."); return; }
+  let sub; try{ sub=await reg.pushManager.getSubscription(); if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:_urlB64ToU8(VAPID_PUBLIC)}); }catch(e){ toast("No se pudo suscribir: "+(e&&e.message||e)); return; }
+  const j=sub.toJSON();
+  const row={ user_id:_sess.user.id, endpoint:j.endpoint, p256dh:j.keys&&j.keys.p256dh, auth:j.keys&&j.keys.auth, dispositivo:(_isIOS()?"iPhone":"Otro")+(_isStandalone()?" (instalada)":""), hour:(S.set&&S.set.notifHour)||"09:00", enabled:true };
+  const r=await authedFetch(SUPA_URL+"/rest/v1/push_subs?on_conflict=endpoint",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(row)});
+  if(r&&r.ok){ S.set.notif=true; save(); toast("Notificaciones activadas ✓"); } else { toast("No se pudo guardar la suscripción."); }
+  renderAjustes();
+}
+async function disableNotifs(){
+  try{ const reg=await _swReady(); const sub=reg&&await reg.pushManager.getSubscription(); if(sub){ const ep=sub.toJSON().endpoint; await sub.unsubscribe().catch(()=>{}); if(loggedIn())await authedFetch(SUPA_URL+"/rest/v1/push_subs?endpoint=eq."+encodeURIComponent(ep),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({enabled:false})}); } }catch(_){}
+  S.set.notif=false; save(); toast("Notificaciones desactivadas."); renderAjustes();
+}
+async function testNotif(){ const st=notifState(); if(!st.ok){ toast(st.reason); return; } if(Notification.permission!=="granted"){ toast("Primero activá las notificaciones."); return; } const reg=await _swReady(); if(!reg){ toast("Service worker no listo."); return; } reg.showNotification("Iris",{body:"Si ves esto, las notificaciones andan ✅",icon:"./icon-192.png",badge:"./icon-192.png",tag:"iris-test"}); }
+async function setNotifHour(h){ S.set.notifHour=h; save(); if(loggedIn()&&S.set.notif){ try{ await authedFetch(SUPA_URL+"/rest/v1/push_subs?user_id=eq."+_sess.user.id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({hour:h})}); }catch(_){} } }
+async function notifBoot(){ if(!notifSupported()||!(S.set&&S.set.notif))return; try{ const reg=await _swReady(); if(!reg)return; const sub=await reg.pushManager.getSubscription(); if(sub&&loggedIn()){ const j=sub.toJSON(); authedFetch(SUPA_URL+"/rest/v1/push_subs?on_conflict=endpoint",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({user_id:_sess.user.id,endpoint:j.endpoint,p256dh:j.keys&&j.keys.p256dh,auth:j.keys&&j.keys.auth,dispositivo:(_isIOS()?"iPhone":"Otro")+(_isStandalone()?" (instalada)":""),hour:(S.set&&S.set.notifHour)||"09:00",enabled:true})}).catch(()=>{}); } }catch(_){} }
+
+function init(){ render(); if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").then(function(reg){ _swReg=reg; }).catch(function(){}); } authBoot(); notifBoot(); }
 init();
 
 /* ---- guías de medición: abrí la app con ?guides (o #guides) ---- */
