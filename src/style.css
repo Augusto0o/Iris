@@ -1,0 +1,61 @@
+:root{font-family:Inter,system-ui,-apple-system,sans-serif;color:#192236;background:#f6f7fb;color-scheme:light}*{box-sizing:border-box}body{margin:0;overscroll-behavior:none}iframe.module{width:100%;height:100%;border:0;position:absolute;inset:0;background:#f6f7fb}iframe.module[hidden]{display:none}#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:16px;background:#f6f7fb;z-index:5;font-size:15px}.brand{display:grid;place-items:center;width:44px;height:44px;background:#6954d8;color:white;border-radius:14px;font-size:28px}#loading[hidden],[hidden]{display:none!important}#notice{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);padding:12px 18px;border-radius:14px;background:#192236;color:white;z-index:15;font-size:13px}dialog{width:min(520px,calc(100% - 24px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid #dfe4ed;border-radius:20px;padding:0;color:#192236;background:white}dialog::backdrop{background:#10172299;backdrop-filter:blur(4px)}dialog header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e5e8ef}dialog h2{font-size:18px;margin:0}dialog header button{width:44px;height:44px;font-size:27px;background:none;border:0;padding:0;line-height:1}#accountBody{padding:22px;display:grid;gap:18px}button,input{font:inherit}button{cursor:pointer;border-radius:11px;padding:11px 14px;border:1px solid #dfe4ed;background:#f6f7fb;color:#192236;min-height:44px}button.primary{background:#6954d8;border-color:transparent;color:white}button:disabled{opacity:.55;cursor:wait}input{width:100%;min-height:44px;padding:10px;border:1px solid #dfe4ed;border-radius:10px;font-size:16px}label{display:grid;gap:7px;font-size:13px}form{display:grid;gap:14px}p{line-height:1.6;margin:0;font-size:14px}.muted{color:#5d687b;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.status{border-radius:12px;background:#eeebff;padding:12px}.danger{color:#a83447}button:focus-visible,input:focus-visible{outline:2px solid #6954d8;outline-offset:3px}#accountBody hr{width:100%;border:0;border-top:1px solid #e5e8ef}
+
+
+
+:root{--edge:#fff;--surface:#f6f7fb;background:var(--edge)}body{background:var(--edge)}iframe.module,#loading{background:var(--surface)}#loading{top:env(safe-area-inset-top,0px)}
+
+:root[data-theme=dark] dialog{background:#1b2636;color:#eef2fa;border-color:#344153}:root[data-theme=dark] dialog input,:root[data-theme=dark] dialog button{background:#101722;color:#eef2fa;border-color:#344153}:root[data-theme=dark] .muted{color:#b3bfd2}:root[data-theme=dark] .status{background:#302c54}:root[data-theme=dark] dialog header{border-color:#344153}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+#activityIsland{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 28px));z-index:12;display:flex;align-items:center;gap:4px;padding:7px 8px 7px 7px;border-radius:32px;background:#101217;color:#f8faff;box-shadow:0 8px 28px #0004;border:1px solid #ffffff25;animation:island-arrive .35s cubic-bezier(.2,.9,.25,1.2);touch-action:pan-x}
+
+#activityIsland button{background:transparent;border:0;color:inherit;min-height:44px;padding:0}#activityIsland .island-content{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;justify-content:flex-start;cursor:pointer}#activityIsland .island-content:disabled{opacity:1;cursor:default}#activityIsland .island-mark{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#a9e6d31a;color:#a9e6d3;font-size:21px;flex-shrink:0}#activityIsland[data-kind=timer] .island-mark{background:#b7a8ff22;color:#c3b7ff}#activityIsland .island-copy{display:grid;gap:3px;min-width:0;padding-block:4px}#activityIsland strong{font-size:13px}#activityIsland .island-message{font-size:12px;line-height:1.35;color:#d0d7e4;overflow-wrap:anywhere}#activityIsland .island-close{width:36px;min-width:36px;font-size:25px;border-radius:50%}#activityIsland button:focus-visible{outline:2px solid #b7a8ff;outline-offset:1px}
+
+@keyframes island-arrive{from{opacity:0;transform:translate(-50%,-12px) scale(.85)}to{opacity:1;transform:translate(-50%,0) scale(1)}}@media(prefers-reduced-motion:reduce){#activityIsland{animation:none}}
+
+
+#activityIsland .island-action{order:1;padding:7px 9px;border:1px solid #ffffff40;border-radius:16px;font-size:12px;flex-shrink:0}#activityIsland .island-close{order:2}
+
+#accountBody textarea{width:100%;max-width:100%;min-width:0;padding:12px;border:1px solid #8993a855;border-radius:12px;font:13px/1.5 monospace;overflow-wrap:anywhere;background:var(--surface);color:inherit;resize:vertical}#accountBody details{min-width:0}#accountBody summary{cursor:pointer;padding:12px 0;font-weight:650}
+
+
+
+iframe.module{display:block;height:100%;min-height:0}
+:root{--edge:#fffdfa;--surface:#F3F0EA;color:#303845}dialog{background:#fffdfa;color:#303845}button.primary{background:#303845;border-color:#303845}.status{background:#e7e3dc}:root[data-theme=dark] dialog{background:#303845;color:#F3F0EA}:root[data-theme=dark] .status{background:#414750}
+@media(max-width:720px){
+ 
+ 
+ #hostMobileNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;border-radius:11px;background:transparent;color:inherit;padding:5px 2px;min-width:0;height:54px;font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+ #hostMobileNav button.active{background:color-mix(in srgb,var(--edge) 60%,#90a9c0 40%);color:inherit;font-weight:650}
+ #hostMobileNav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+ #hostMobileNav img{width:28px;height:28px;border-radius:8px}#hostMobileNav .host-app-switch{touch-action:none;user-select:none;-webkit-touch-callout:none}
+ 
+ #hostAppPicker>div{flex:1;min-width:0;display:grid;justify-items:center;gap:9px;font-size:11px;color:#626974}
+ #hostAppPicker img,#hostAppPicker [aria-hidden]{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:30px;transition:transform .08s}
+ #hostAppPicker .selected img,#hostAppPicker .selected [aria-hidden]{transform:translateY(-8px) scale(1.35)}
+ :root[data-theme=dark] #hostMobileNav,:root[data-theme=dark] #hostAppPicker>div{color:#F3F0EA}
+}
+
+/* Shared touch controls: Safari must not select the hold-button label. */
+#hostMobileNav button,#hostMobileNav button *,#hostAppPicker,#hostAppPicker *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+#hostMobileNav .host-app-switch *{pointer-events:none}
+
+
+
+#account[open]{display:flex;flex-direction:column;overflow:hidden;max-height:calc(100dvh - 24px)}#account>header{flex-shrink:0}#accountBody{overflow:auto;min-height:0;overscroll-behavior:contain}#account header button{flex-shrink:0;display:grid;place-items:center}
+
+:root[data-theme=dark]{background:#303845;--edge:#303845;--surface:#222933;color-scheme:dark}:root[data-theme=dark] body{background:#303845}
+
+
+/* One layout owner. Insets are reserved once, and navigation remains in flow. */
+html{height:100%;overflow:hidden;background:var(--edge)}
+body{height:var(--app-height,100dvh);min-height:0;display:grid;grid-template-rows:var(--app-top,0px) minmax(0,1fr) auto;overflow:hidden;position:relative;background:var(--edge)}
+#workspace{position:relative;grid-row:2;min-height:0;width:100%;height:100%;overflow:hidden;background:var(--surface)}
+#hostMobileNav,#hostAppPicker{display:none}
+@media(max-width:720px){
+ #hostMobileNav{grid-row:3;position:relative;inset:auto;z-index:11;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:54px;gap:0;height:auto;min-height:0;padding:8px 6px max(8px,var(--host-safe-bottom,0px));border-top:1px solid #8993a833;background:var(--edge);color:#626974;box-sizing:border-box}
+ #hostAppPicker{display:flex;position:absolute;z-index:13;bottom:calc(74px + max(8px,var(--host-safe-bottom,0px)));right:12px;left:12px;padding:18px 8px 12px;border-radius:24px;background:var(--edge);border:1px solid #8993a844;box-shadow:0 10px 32px #0003;pointer-events:none}
+ :root[data-module-overlay=open] #hostMobileNav,:root[data-keyboard=open] #hostMobileNav{display:none}
+ :root[data-theme=dark] #hostMobileNav{color:#F3F0EA}
+}

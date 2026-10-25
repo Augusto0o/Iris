@@ -1,0 +1,2 @@
+export const SHORTCUTS=Object.freeze({expense:{app:'iris',view:'summary',label:'Registrar gasto'},income:{app:'iris',view:'summary',label:'Registrar ingreso'},note:{app:'journal',view:'notes',label:'Escribir nota'},task:{app:'organizador',view:'tasks',label:'Crear tarea'}});
+export function shortcutFromHash(hash){const action=new URLSearchParams(hash.split('?')[1]||'').get('action');return Object.hasOwn(SHORTCUTS,action)?{action,...SHORTCUTS[action]}:null}

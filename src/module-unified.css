@@ -1,0 +1,108 @@
+/* Shared foundations for the retained Centro/Iris screens and the newer spaces. */
+html{background:var(--ecosystem-edge,#f6f7fb);color-scheme:light}html[data-ecosystem-theme=dark]{color-scheme:dark}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html[data-module=centro] body,html[data-module=iris] body{--bg:#f6f7fb;--panel:#fff;--text:#192236;--muted:#5d687b;--line:#dfe4ed;--accent:#6954d8;--soft:#eeebff;--hero:#eeebff}
+html[data-module=centro] body.dark,html[data-module=iris] body.dark{--bg:#101722;--panel:#1b2636;--text:#eef2fa;--muted:#b3bfd2;--line:#344153;--accent:#b7a8ff;--soft:#302c54;--hero:#302c54}
+html[data-module=centro] h1{font-size:32px;line-height:1.2;letter-spacing:-1.1px}html[data-module=centro] h2{font-size:18px;letter-spacing:-.3px}html[data-module=centro] button{min-height:44px;font-size:13px;font-weight:600;border-radius:11px}
+html[data-module=centro] .brand .mark{background:#6954d8}html[data-module=centro] .card,html[data-module=centro] .widget{border-radius:16px;box-shadow:none}html[data-module=centro] .hero{border:1px solid var(--line);border-radius:18px}html[data-module=centro] .hero h2{font-size:26px;letter-spacing:-.6px}html[data-module=centro] body.dark .primary{color:#122035}
+@media(max-width:720px){html[data-module=centro] h1{font-size:28px}html[data-module=centro] .hero h2{font-size:23px}html[data-module=centro] .content{padding:24px 18px calc(104px + env(safe-area-inset-bottom))}html[data-module=centro] .heading .date{font-size:12px;margin-top:2px}html[data-module=centro] .hero{padding:20px;margin:20px 0 24px}html[data-module=centro] .board .widget{padding:14px}html[data-module=centro] .board .card{padding:18px}}
+
+@media(max-width:720px){#nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileNav{bottom:0!important;height:auto!important;min-height:0!important;align-content:start!important;padding-bottom:calc(8px + min(env(safe-area-inset-bottom,0px),34px))!important;grid-auto-rows:auto}}
+
+
+/* Nubo — Graphite & Paper. Product marks are the supplied SVG originals. */
+html[data-module] body{--bg:#F3F0EA;--panel:#fffdfa;--text:#303845;--muted:#626974;--line:#ddd9d2;--accent:#48637c;--soft:#DFEAF7;--hero:var(--soft);--brand-icon:url('/brand/numio-light.svg');font-family:Inter,system-ui,-apple-system,sans-serif}
+html[data-module=centro] body{--accent:#505b69;--soft:#e7e3dc;--hero:#e7e3dc}
+html[data-module=mi-espacio] body{--accent:#396c55;--soft:#E1EFE6;--brand-icon:url('/brand/domo-light.svg')}
+html[data-module=journal] body{--accent:#705983;--soft:#EEE4F6;--brand-icon:url('/brand/lecta-light.svg')}
+html[data-module=organizador] body{--accent:#825c32;--soft:#F5E9DB;--brand-icon:url('/brand/foco-light.svg')}
+html[data-module] body.dark{--bg:#222933;--panel:#303845;--text:#F3F0EA;--muted:#c5c8cd;--line:#4c5460;--accent:#b9ccdf;--soft:#394958;--hero:var(--soft);--brand-icon:url('/brand/numio-dark.svg')}
+html[data-module=centro] body.dark{--accent:#e1dace;--soft:#414750}
+html[data-module=mi-espacio] body.dark{--accent:#afd4bd;--soft:#344d42;--brand-icon:url('/brand/domo-dark.svg')}
+html[data-module=journal] body.dark{--accent:#d0bedf;--soft:#493f53;--brand-icon:url('/brand/lecta-dark.svg')}
+html[data-module=organizador] body.dark{--accent:#D1AF83;--soft:#504539;--brand-icon:url('/brand/foco-dark.svg')}
+html[data-module] h1{font-weight:550;letter-spacing:-.055em;line-height:1.15}html[data-module] h2,html[data-module] .hero h2{font-weight:550;letter-spacing:-.035em}html[data-module] .brand,html[data-module] .mobile-brand{font-weight:550;letter-spacing:-.055em;text-transform:lowercase}
+html[data-module] .card,html[data-module] .widget{box-shadow:none;border-color:var(--line);border-radius:20px}html[data-module] .hero{background:var(--soft);border:1px solid var(--line)}
+html[data-module] .primary{background:var(--accent);border-color:var(--accent);color:#fffdfa}html[data-module] body.dark .primary{color:#222933}
+html[data-module] .brand .mark,html[data-module] .brand-mark,html[data-module] .app-switch-mark{background:var(--soft);color:var(--accent);box-shadow:none;border-radius:22%}
+html[data-module]:not([data-module=centro]) .brand .mark,html[data-module]:not([data-module=centro]) .brand-mark,html[data-module]:not([data-module=centro]) .app-switch-mark{background-image:var(--brand-icon);background-position:center;background-size:contain;background-repeat:no-repeat;padding:0;width:42px;height:42px;flex:0 0 42px}
+html[data-module]:not([data-module=centro]) :is(.brand .mark,.brand-mark,.app-switch-mark)>svg{visibility:hidden}
+html[data-module] .app-switch-mark{width:30px!important;height:30px!important;flex-basis:30px!important}
+.quick-app[data-destination=iris] .quick-app-icon{background:center/contain no-repeat url('/brand/numio-light.svg')!important}
+.quick-app[data-destination=mi-espacio] .quick-app-icon{background:center/contain no-repeat url('/brand/domo-light.svg')!important}
+.quick-app[data-destination=journal] .quick-app-icon{background:center/contain no-repeat url('/brand/lecta-light.svg')!important}
+.quick-app[data-destination=organizador] .quick-app-icon{background:center/contain no-repeat url('/brand/foco-light.svg')!important}
+.quick-app:not([data-destination=centro]) .quick-app-icon svg{visibility:hidden}
+body.dark .quick-app[data-destination=iris] .quick-app-icon{background-image:url('/brand/numio-dark.svg')!important}body.dark .quick-app[data-destination=mi-espacio] .quick-app-icon{background-image:url('/brand/domo-dark.svg')!important}body.dark .quick-app[data-destination=journal] .quick-app-icon{background-image:url('/brand/lecta-dark.svg')!important}body.dark .quick-app[data-destination=organizador] .quick-app-icon{background-image:url('/brand/foco-dark.svg')!important}
+/* The shell owns the safe area. Never read the iframe's iOS inset here. */
+@media(max-width:720px){
+ #nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileIris,#mobileNav{
+  position:fixed!important;inset:auto 0 0!important;transform:none!important;margin:0!important;
+  width:100%!important;box-sizing:border-box!important;height:calc(70px + var(--host-safe-bottom,0px))!important;max-height:calc(70px + var(--host-safe-bottom,0px))!important;min-height:0!important;
+  padding:8px 6px calc(8px + var(--host-safe-bottom,0px))!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:54px!important;grid-auto-rows:54px!important;align-content:start!important;gap:0!important;
+  border-radius:0!important;background:var(--panel)!important;
+ }
+ #nav.centro-mobile-nav>button,#nav.ecosystem-mobile-nav>button,#mobileIris>button,#mobileNav>button{height:54px!important;min-height:54px!important;max-height:54px!important;margin:0!important;align-self:start!important}
+ html[data-module] .content,html[data-module] #content{padding-bottom:calc(116px + var(--host-safe-bottom,0px))!important}
+ html[data-keyboard=open] :is(#nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileIris,#mobileNav){display:none!important}
+}
+@media(max-width:720px){html[data-host-navigation=true] :is(#nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileIris,#mobileNav){display:none!important}}
+
+/* One dialog and navigation-menu vocabulary across the five spaces. */
+html[data-module] dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:24px;padding:0;width:min(560px,calc(100% - 24px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
+html[data-module] dialog::backdrop{background:#18212b80;backdrop-filter:blur(5px)}
+html[data-module] dialog header{padding:16px 20px;gap:12px;background:var(--panel);border-bottom:1px solid var(--line)}
+html[data-module] dialog header h2{font-size:18px;line-height:1.3;min-width:0}
+html[data-module] dialog :is(#closeModal,[aria-label="Cerrar"]){display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;min-height:40px;padding:0;line-height:1;border-radius:12px}
+html[data-module] #modalBody{padding:20px;min-width:0}
+html[data-module] #modal .section-menu-grid{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;max-height:none!important;overflow:visible!important}
+html[data-module] #modal .section-menu-card{display:flex!important;align-items:center!important;gap:12px!important;width:100%!important;max-width:100%!important;flex:auto!important;padding:12px!important;border-radius:14px!important;min-height:64px!important;background:var(--bg);border:1px solid var(--line)}
+html[data-module] #modal .section-menu-card .menu-tile{flex:0 0 36px!important;width:36px!important;height:36px!important;margin:0!important;border-radius:10px;background:var(--soft);color:var(--accent)}
+html[data-module] #modal .section-menu-card strong{font-size:14px!important}html[data-module] #modal .section-menu-card small{font-size:12px!important;margin-top:3px!important;color:var(--muted)}
+html[data-module] :is(.app-switch-trigger,.app-switch-trigger *){-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+
+/* Dialog shell: the title and close stay fixed; only the body scrolls. */
+html[data-module] #modal[open]{display:flex!important;flex-direction:column;overflow:hidden!important;max-width:calc(100% - 24px)!important;max-height:calc(100dvh - 24px)!important;margin:auto!important;inset:0!important;box-sizing:border-box}
+html[data-module] #modal>header{flex:0 0 auto;position:relative;min-width:0;padding:14px 16px!important}
+html[data-module] #modalBody{flex:1 1 auto;overflow:auto!important;overscroll-behavior:contain;min-height:0;min-width:0;padding:18px!important;overflow-wrap:anywhere}
+html[data-module] #modalBody :is(input,select,textarea){max-width:100%;min-width:0;box-sizing:border-box}
+html[data-module] #modalBody .form{min-width:0}
+html[data-module] #modal header button{flex-shrink:0;display:grid!important;place-items:center!important;width:40px!important;height:40px!important;min-height:40px!important;padding:0!important}
+.settings-identity{display:flex;gap:12px;align-items:center;padding:4px 0 20px}.settings-identity strong{font-size:17px}.settings-identity p{font-size:12px;margin-top:3px}
+.settings-symbol{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:var(--soft);color:var(--accent)}
+.settings-links{display:grid;gap:1px;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:24px;background:var(--line)}
+html[data-module] .settings-row{display:flex;align-items:center;justify-content:flex-start;gap:12px;border:0;border-radius:0;padding:14px;background:var(--panel);text-align:left;width:100%}
+.settings-row strong,.settings-row small{display:block}.settings-row strong{font-size:14px;font-weight:600}.settings-row small{font-size:12px;line-height:1.4;color:var(--muted);margin-top:3px}
+.settings-preferences> .form{gap:20px}.settings-preferences h3{font-size:13px;font-weight:650;color:var(--muted)}
+.settings-choice,.settings-preferences .density-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.settings-choice [aria-pressed=true],.settings-preferences [aria-pressed=true]{background:var(--soft);border-color:var(--accent);color:var(--accent)}
+.settings-preferences .density-preview{height:30px!important}.settings-preferences .density-card{min-height:70px!important;padding:10px!important}
+.settings-preferences .density-options{border:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.settings-preferences .density-option{padding:10px;min-height:70px}.settings-preferences .density-mini{height:24px}
+html[data-module=centro] .hero h2{font-size:24px}html[data-module=centro] h1{font-size:30px}html[data-module=centro] .hero{padding:24px;border-radius:20px}
+html[data-module] .section-menu-grid{min-width:0}html[data-module] .section-menu-card>span{min-width:0}
+
+html[data-module] #modal>.modalhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;position:relative;padding:14px 18px!important;margin:0!important;border-bottom:1px solid var(--line);background:var(--panel)}
+html[data-module] #modal>.modalhead h2{font-size:18px;margin:0;min-width:0;line-height:1.3}
+html[data-module] #modal>.modalhead button{flex:0 0 40px;display:grid!important;place-items:center;width:40px!important;height:40px!important;min-height:40px!important;padding:0!important}
+.settings-preferences .density-option{position:relative}.settings-preferences .density-option input{position:absolute!important;right:10px;top:10px;width:16px!important;height:16px!important;min-height:0!important;margin:0!important}.settings-preferences .density-option strong{padding-right:24px}
+html[data-module] #modal>.modalhead{min-height:68px!important}html[data-module] #modal>.modalhead button{position:static!important;inset:auto!important;transform:none!important;margin:0!important;align-self:center!important}
+
+/* Reset inherited sticky offsets: these caused clipped Nubo titles and close buttons. */
+html[data-module] #modal>.modalhead,html[data-module] #modal>header{top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;position:relative!important}
+html[data-module] #modal{padding:0!important;scrollbar-gutter:auto!important;min-height:0!important}
+html[data-module] #modal .section-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+html[data-module] #modal .section-menu-card{flex-direction:row!important;min-height:64px!important;padding:10px!important;gap:8px!important}
+html[data-module] #modal .section-menu-card small{display:none!important}
+html[data-module] #modal .section-menu-card strong{font-size:13px!important;line-height:1.3!important}
+html[data-module] #modal .section-menu-card .menu-tile{flex-basis:28px!important;width:28px!important;height:28px!important}
+html[data-module] #modal .menu-intro{font-size:12px;margin-bottom:12px}
+/* Real miniature list layouts, rather than abstract density bars. */
+.settings-preferences :is(.density-preview,.density-mini){display:grid!important;gap:6px!important;height:auto!important;min-height:48px;padding:8px!important;background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:0 0 8px!important;width:100%!important}
+.settings-preferences :is(.density-preview,.density-mini) i{display:block!important;height:10px!important;margin:0!important;border:0!important;border-radius:3px!important;background:linear-gradient(to right,var(--soft) 0 10px,transparent 10px 16px,var(--line) 16px 85%,transparent 85%)!important;width:100%!important}
+.settings-preferences :is(.density-preview.tight,.dense .density-mini){gap:3px!important;padding:5px 8px!important}
+.settings-preferences :is(.density-preview.tight,.dense .density-mini) i{height:7px!important}
+.settings-preferences .density-card{display:flex!important;flex-direction:column!important;gap:0!important;min-height:0!important}
+.settings-preferences .density-option{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important}
+
+@media(max-width:720px){html[data-host-navigation=true] :is(.content,#content){padding-bottom:24px!important}}

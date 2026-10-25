@@ -1,122 +1,81 @@
-# Personal OS — PWA
+# Ecosistema Personal 0.4
 
-Journal, notas y biblioteca, tareas, recordatorios, hábitos, Pomodoro, búsqueda, agenda, contraseñas cifradas e IA gratuita. Se instala en el iPhone desde Safari. No hace falta cuenta de Apple Developer ni reinstalar cada 7 días.
+Centro, Iris, Mi espacio, Journal y Organizador dentro de una única PWA. La ventana principal no navega a otros dominios al cambiar de espacio. Se cargan las herramientas al usarlas y se conservan en memoria para volver sin reiniciarlas.
 
-- **Local-first:** todo se guarda en IndexedDB y funciona sin conexión.
-- **Tu Supabase (opcional):** respaldo, sincronización entre dispositivos, IA y Atajos.
-- **Contraseñas:** AES-256-GCM con clave PBKDF2 (310.000 iteraciones). Nunca salen del dispositivo.
+## Desarrollo
 
-## 1. Correr y publicar
+Requiere Node.js 22 o superior.
 
-```bash
+```sh
 npm install
-npm run dev        # desarrollo
-npm run build      # genera dist/ (incluye el service worker)
+npm run build
+npm test
+npm run dev
 ```
 
-Publicación en Vercel: importá la carpeta; `vercel.json` ya resuelve las rutas de la SPA. Opcionalmente definí `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Si no las definís, se cargan desde la app en **Más → Sincronización**.
+El servidor local se abre en `http://127.0.0.1:4174`. La compilación produce `dist/`. Los módulos anteriores están en `legacy/`; `src/module-bridge.js` conecta sus datos y navegación a la entrada común. Los scripts y estilos se minifican, usan nombres con hash y se comparten desde caché. La PWA mantiene el documento principal y carga cada espacio en un contexto interno retenido para preservar las funciones existentes. Esto es una migración incremental, no una reescritura de todas las herramientas.
 
-En el iPhone: abrí la URL en Safari → **Compartir** → **Agregar a inicio**.
+## GitHub → Vercel
 
-## 2. Supabase
+1. Publicar este directorio como raíz del repositorio privado `ecosistema-personal`.
+2. En Vercel: Add New → Project → importar ese repositorio desde GitHub.
+3. Seleccionar el directorio raíz del repositorio. El archivo `vercel.json` define `npm run build` y la salida `dist`.
+4. Elegir el despliegue automático desde la rama principal. Los próximos commits activan una compilación y publicación.
 
-1. **SQL Editor** → pegá y ejecutá `supabase/migrations/001_personal_os.sql`. Crea `pos_items` y `pos_tokens` con RLS.
-2. **Edge Functions**:
-   - Con la CLI:
-     ```bash
-     supabase functions deploy ai
-     supabase functions deploy capture --no-verify-jwt
-     ```
-   - Desde el panel web: creá `ai` pegando `supabase/functions/ai/index.ts` (con **Verify JWT** desactivado: la función valida la sesión por su cuenta, y así funciona con las claves nuevas de Supabase) y `capture`, `push` y `youtube` también con **Verify JWT desactivado**. Las que importan otros archivos se pegan en un solo archivo generado con `npx esbuild supabase/functions/<nombre>/index.ts --bundle --format=esm --platform=neutral --external:'npm:*'`.
-3. **Edge Functions → Secrets**:
-   | Secreto | Para qué | Dónde se saca |
-   |---|---|---|
-   | `GEMINI_API_KEY` | IA gratis (principal) | aistudio.google.com → Get API key |
-   | `GROQ_API_KEY` | IA gratis de respaldo + dictado (Whisper) | console.groq.com → API Keys |
-   | `ANTHROPIC_API_KEY` | Claude (opcional, pago) | console.anthropic.com |
-   | `TMDB_API_KEY` | Películas: portadas, sinopsis y plataformas (opcional, gratis) | themoviedb.org → Ajustes → API |
-   | `VAPID_JWK` | Avisos push: clave privada EC P-256 en JSON (`{"kty":"EC","crv":"P-256","x","y","d"}`) | se genera una vez (ver `supabase/migrations/002_push.sql`) |
-   | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | YouTube Music: agregar canciones a tu lista (función `youtube`, tabla de `003_youtube.sql`) | Google Cloud → cliente OAuth «Aplicación web», con redirección `https://<proyecto>.supabase.co/functions/v1/youtube/callback` y la API «YouTube Data API v3» habilitada |
-   | `CRON_SECRET` | Avisos push: el mismo texto que usa el job de pg_cron | cualquier texto largo al azar |
-   | `GEMINI_MODEL` / `GROQ_MODEL` | opcional, para cambiar de modelo | por defecto `gemini-flash-latest` / `openai/gpt-oss-120b` |
-4. **Authentication → Providers → Email**: activo. Creá tu cuenta desde la app (Ajustes → Sincronización).
+`api/trailer-search.js` es una función de Vercel que mantiene la búsqueda de tráilers. La búsqueda pública de YouTube puede verse limitada por el proveedor; el resto del ecosistema no depende de ella.
 
-### Sobre la IA gratuita
-- Gemini (nivel gratuito): tiene límites diarios, y Google puede usar lo enviado para mejorar sus modelos. Groq: gratis con límite de pedidos por día.
-- En «Automático» se usa Gemini y, si falla o se agota el cupo, Groq.
-- Solo se envía el texto de cada acción que pedís. Las claves de la IA viven en Supabase, nunca en el teléfono.
+## Supabase
 
-## 3. Inglés
+El cliente usa exclusivamente la URL y la clave **publishable** del proyecto (visibles por diseño en el navegador). Nunca se deben usar claves secret, service_role ni contraseñas de la base de datos en estos archivos.
 
-Está como tarjeta en **Hoy** (tocala para abrir la sección) y también se encuentra desde la lupa.
+La configuración pública se entrega en `src/public-config.json`; Vercel puede reemplazarla con `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Si ambas faltan, la app funciona localmente y muestra que la nube no está configurada.
 
-- **Niveles:** MCER, de A1 a B2. Vienen 13 lecciones incluidas que funcionan sin conexión. Con la IA activa se pueden crear lecciones sobre cualquier tema.
-- **Cada sesión:** Learn (vocabulario y gramática) → Practice (ejercicios) → Listen (diálogo con la voz del iPhone y preguntas) → Speak (repetís y la app compara palabra por palabra) → Review.
-- **Repaso:** repetición espaciada (SM-2) con las palabras de cada lección y las que agregues a mano.
-- **Practice your day in English:** toma una entrada del journal, la adapta a tu nivel, la contás en voz alta y la IA te devuelve gramática, vocabulario y fluidez.
-- **Write in English:** la IA corrige gramática, vocabulario, ortografía y naturalidad. Tu texto original se conserva y podés guardar las dos versiones en el journal.
-- **Reconocimiento de voz:** usa el del sistema cuando existe. Si no, graba y transcribe con Whisper (Groq) o Gemini.
-- **Hábito:** podés vincular la práctica a un hábito, por ejemplo «Study English».
+La migración de `supabase/migrations/` crea `ecosystem_documents`, con aislamiento por usuario mediante RLS y una función que comprueba versiones antes de guardar. No reemplaza datos de aplicaciones anteriores. La sincronización actual conserva un documento por espacio; no constituye todavía el modelo relacional final para informes financieros, inventario y relaciones entre registros.
 
-## 4. Dónde está cada cosa
+En Ajustes → Cuenta, sincronización y copia de seguridad se puede crear una cuenta, iniciar sesión, sincronizar y exportar/importar todos los espacios. La confirmación por correo depende de la configuración de Supabase Auth. Configure la URL del sitio y las redirecciones autorizadas en Supabase al obtener el dominio final de Vercel.
 
-- **Barra inferior:** tres pestañas — **Hoy**, **Cuaderno** y **Biblioteca** —, la **lupa** y el botón **+** de captura rápida.
-- **Hoy:** la semana (deslizá para cambiar), las tareas del día, lo hecho y lo sin fecha plegados, hábitos, journal, inglés, foco, frase y obra del día. Los recordatorios ahora son **tareas con alarma** (campana): se agendan en iOS vía Atajos. La agenda es la tira de la semana.
-- **Cuaderno:** una sola lista por mes con journal, notas, ideas, enlaces, mapas y PDFs. Sin filtros: se busca escribiendo. Deslizá una nota a la izquierda para **anclar, archivar o eliminar** (un deslizamiento largo elimina, con confirmación). El **+** elige el tipo (incluye «Mapa de un texto» e importar PDF). Carpetas y Archivo, al pie.
-- **Biblioteca:** un estante ordenado por estado (Leyendo, Para leer, Para ver, Para escuchar; lo terminado plegado), más Descubrir (música, libros y temas) y la Obra del día.
-- **Lupa · Buscar o preguntar:** busca solo en tu contenido y le pregunta a la IA. Las secciones no están ahí: cada una vive en su pestaña (Hábitos, Inglés, Foco y Frase en Hoy; Mapas, PDFs y Grafo en Cuaderno; Descubrir y Obra del día en Biblioteca; Contraseñas en Ajustes).
-- **Compartir desde YouTube / YouTube Music:** con el atajo «Guardar en Personal OS» (Ajustes → Atajos de iOS) aparece en la hoja de Compartir. Un video va a Biblioteca · Para ver y una canción o playlist a Para escuchar, con título, canal y portada. En Android/Chrome la app aparece directo en Compartir.
-- **Búsqueda:** una barra fija arriba de Hoy, Cuaderno y Biblioteca abre «Buscar o preguntar».
-- **Contraseñas:** botón de llave en Hoy. Se desbloquean con **Face ID** (iOS 18+, WebAuthn con PRF: la contraseña maestra queda cifrada con una llave que solo se libera con tu cara).
-- **Avisos con la app cerrada** (Ajustes → Notificaciones): Web Push con la función `push` y un job de pg_cron por minuto (`002_push.sql`). Avisa las tareas con hora y el fin de cada bloque del Pomodoro. En iPhone, con la app en la pantalla de inicio (iOS 16.4+).
-- **Películas** (Biblioteca → Películas): buscar, recomendaciones por género hechas por tu IA, portada y sinopsis, «dónde verla» y un diario con puntaje de media estrella. Sin clave usa Wikipedia; con `TMDB_API_KEY` en los secretos de Supabase (gratis en themoviedb.org) muestra las plataformas de Argentina.
-- **Frases:** más de 150, con búsqueda y lista de escritores.
-- **Dibujo:** mantené el dedo al terminar un trazo para una forma perfecta (línea, círculo, elipse, triángulo, rectángulo, polígono) y seguí moviendo para ajustar; dos dedos deshacen, tres rehacen.
-- **Ajustes:** una sola pantalla con secciones plegables (Apariencia, Hoy, General, IA, Sincronización, Atajos, Datos). Se abre con el ícono de arriba a la derecha en Hoy.
-- **Lector:** píldora «Índice · %» con los títulos del texto, y **Aa** abre el panel de lectura: tema, voz, texto (fuentes y tipografía), buscar, y deslizadores de tamaño y brillo.
-- **IA contextual:** al seleccionar texto en el editor aparece «Preguntar a la IA» con resumir, explicar, corregir, reformular, traducir, mapa mental, mapa conceptual, diagrama de sistema, flujo y crear tarea. Se puede comparar el original con la versión nueva.
-- **Relacionado:** al pie de cada entrada o nota aparece el contenido conectado (grafo de conocimiento), y se puede vincular a mano.
+Los cambios se guardan primero en el dispositivo. Un conflicto entre dispositivos requiere elegir qué versión conservar. Los datos locales se separan por usuario. Al iniciar sesión no se suben automáticamente los datos de invitado: la importación se hace desde la cuenta.
 
-## 5. Secciones
+## Llevar datos del prototipo
 
-| Sección | Qué hace |
-|---|---|
-| Mapas y diagramas | Mapa mental, conceptual, de sistema y flujo. Se crean a mano o con IA desde un texto, nota o PDF; los nodos se mueven, conectan y colorean; se exportan como imagen |
-| Dibujo | Lápiz, marcador, borrador, grosores, colores, rectángulos, elipses, líneas, flechas, texto, seleccionar y mover, deshacer y rehacer. También sirve para dibujar sobre una imagen |
-| Imágenes | Cámara, fotos, escanear documento, dibujar encima y describir con IA |
-| Voz | Dictado → transcripción → resumen, ideas, tareas, fechas, personas, lugares y decisiones, convertibles en nota, tarea o recordatorio |
-| PDF | Importar, leer, buscar, resumir, explicar, extraer conceptos, crear notas y mapas, hacerle preguntas. El Journal y las notas se exportan a PDF desde Compartir → Imprimir |
-| Libros | Estados Quiero leer, Leyendo y Terminado, con progreso, notas y portada automática (Open Library) |
-| Videos | Enlaces de YouTube y playlists, con portada, título y canal automáticos. Categorías: Ver más tarde, Aprender, Entretenimiento, Ideas |
-| Música | Canciones, discos, artistas y playlists con portada y vista previa de 30 s (iTunes). Se abren en YouTube Music. Solo se guardan enlaces y metadatos |
-| Descubrir música / Para vos | Recomendaciones con IA que aprenden de lo que guardás, marcás como favorito, descartás o escuchás repetido |
-| Obra del día | Obras de dominio público del Cleveland Museum of Art, con historia y contexto traducidos al español, y favoritas |
-| Grafo de conocimiento | Conexiones automáticas por enlaces, etiquetas y temas en común, navegables |
-| Asistente IA | Chat que opera sobre tu contenido: resumir, crear tareas o recordatorios, buscar, armar mapas, traducir |
+El navegador separa el almacenamiento por dominio. Antes de cambiar de dominio, descargue la copia desde la versión unificada anterior y luego impórtela en Vercel. Los datos que estaban en el dominio independiente del Centro anterior permanecen allí; no pueden leerse automáticamente desde otro dominio.
 
-Portadas y metadatos se piden directo desde el teléfono. Si un servicio lo bloquea, se piden a través de tu función `ai` (acción `lookup`, limitada a esos servicios públicos).
+El funcionamiento sin conexión cubre la interfaz ya almacenada. Búsquedas, tráilers y sincronización requieren conexión. No se guardan en el service worker respuestas privadas de Supabase ni llamadas a la API.
 
-## 6. Atajos de iOS
+## Validación
 
-En la app: **Más → Atajos** genera un token personal, muestra la dirección de `capture` y trae las recetas paso a paso:
+`npm test` verifica compilación de los cinco espacios, alcance de la PWA, copias, separación de cuentas, revisión esperada en la nube y conflictos. Las pruebas contra Supabase real y el dispositivo instalado deben repetirse después del despliegue y el inicio de sesión.
 
-- **POS Capturar**: POST `{"text": "..."}` con `Authorization: Bearer pos_…`. Sirve desde Siri, el botón de Acción o la hoja de Compartir.
-- **POS Hoy**: GET, devuelve el resumen del día en texto.
-- **POS Recordatorio iOS**: la app lo abre para crear el recordatorio nativo con alarma. Entrada: `título|AAAA-MM-DD HH:mm`.
-- **POS Temporizador**: la app lo abre al empezar un Pomodoro. Entrada: minutos.
 
-Una PWA no puede programar notificaciones locales en iOS ni tener widgets propios; los recordatorios con alarma y el temporizador van por Atajos.
+## iPhone y actividades
 
-## 7. Estructura
+Ajustes > Atajos de iPhone muestra enlaces para la acción Abrir URL de Atajos: gasto, ingreso, nota y tarea. Abren formularios existentes; vos revisás y guardás. No llevan credenciales y no reemplazan aún los atajos antiguos que registraban datos en segundo plano.
 
-```
-src/
-  database/     IndexedDB + almacén en memoria con outbox
-  services/     acciones, consultas, sync, IA, pomodoro, bóveda, atajos, exportación
-  pages/        pantallas (Hoy, Cuaderno, Biblioteca, Buscar, Ajustes, Editor, Lector, …)
-  components/   UI, editor (tablas, dibujo, voz, IA), captura, tareas, hábitos
-  styles/       tokens, base, componentes, pantallas
-supabase/
-  migrations/   esquema
-  functions/    ai (Gemini/Groq/Claude) · capture (Atajos) · push (avisos) · youtube (listas) · _shared
-```
+La cápsula web confirma cambios y permite volver al Pomodoro en curso. Implementación propia en CSS/JavaScript inspirada en expo-dynamic-notifications; no incluye el paquete React Native ni controla ActivityKit. Funciona con la app abierta. iOS puede suspender JavaScript con la pantalla bloqueada.
+
+Para la isla real: cliente nativo iOS con extensión WidgetKit y ActivityKit, App Intents para Siri/Atajos y APNs para actualizaciones remotas. Casos: Pomodoro, descanso y temporizador de recetas. No se ha creado ni publicado una app nativa.
+
+Para recordatorios con la PWA cerrada: Web Push con permiso explícito desde la app instalada, suscripciones por usuario, claves VAPID de servidor y envío programado. No está conectado en esta entrega.
+
+La zona superior usa black-translucent, viewport-fit=cover, área segura y el color del panel activo. Verificar en iPhone físico; iOS puede conservar metadatos de instalaciones anteriores.
+
+
+
+## Integraciones móviles (24 de octubre de 2026)
+
+Ajustes → Notificaciones y atajos permite activar/desactivar Web Push por dispositivo, enviar una prueba y crear/revocar claves de atajos. En iPhone se necesita instalar la PWA en la pantalla de inicio y conceder permiso. Una petición aceptada por el proveedor no demuestra que iOS haya mostrado el aviso: verificarlo en el teléfono.
+
+La función Supabase `mobile` verifica sesiones con Auth o claves aleatorias de creación de registros (hash SHA-256 en servidor, caducidad de un año, revocación). El endpoint `record` exige `requestId` estable al reintentar y guarda documento + comprobante atómicamente, con control de revisión. Solo admite gastos/ingresos ordinarios con cuenta, categoría y método válidos, notas de texto y tareas. Los préstamos, las transferencias y las compras con crédito conservan sus formularios específicos. No hay claves privadas en el frontend.
+
+Cron ejecuta el envío cada minuto. Tareas/eventos con recordatorio, servicios pendientes de Iris y temporizadores registrados se envían con una ventana de recuperación de cinco minutos, claves de deduplicación y eliminación de suscripciones caducadas. Horario de tareas y servicios: Argentina. Un aviso puede tardar aproximadamente un minuto y depende de la conexión y de los ajustes de iOS. Los cambios sin sincronizar todavía no pueden programar recordatorios de tareas/servicios en el servidor. Los temporizadores cancelados sin conexión pueden conservar su aviso pendiente.
+
+Las tablas móviles tienen RLS, ningún permiso para anon/authenticated y acceso exclusivo del servidor. El aviso informativo del asesor `rls_enabled_no_policy` es intencional: el cliente no debe consultarlas. VAPID y el secreto del programador se generan en el servidor. El asesor también informa una configuración previa de Auth: protección de contraseñas filtradas desactivada; ver https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection.
+
+La isla es una cápsula web, no ActivityKit de iOS. Tiene cola de avisos, pausa durante modales/toasts, Pomodoro con pausa/reanudación, temporizador de cocina, próximo evento a 15 minutos y confirmación de sincronización. Las acciones de deshacer anteriores se conservan y ocultan temporalmente la cápsula. Las notificaciones del sistema son independientes de esta cápsula.
+
+
+## Identidad Nubo y navegación móvil
+
+La identidad Graphite & Paper proviene de la presentación suministrada por el usuario: Iris → numio, Mi espacio → domo, Journal → lecta, Organizador → foco, panel Centro → nubo. Los SVG claros y oscuros se conservan en public/brand. Las rutas y claves internas continúan iguales para conservar los datos y los atajos.
+
+La ventana principal mide el viewport visible y las áreas seguras de iOS; cada módulo recibe solo el margen inferior calculado, limitado a 34 px. La barra móvil tiene una fila de 54 px y 16 px de padding, más ese margen, sin filas implícitas ni altura mínima heredada. Al abrir el teclado se oculta la barra. Verificado en navegador a 390 × 844: las cinco barras terminan en y=844 y miden 70 px sin área segura simulada; la validación física de iPhone queda a cargo de la prueba en el dispositivo.

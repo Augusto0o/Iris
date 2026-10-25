@@ -1,0 +1,2 @@
+import router from './trailer-core.mjs';
+export default async function handler(req,res){const headers=new Headers();for(const [key,value]of Object.entries(req.headers))if(value)headers.set(key,Array.isArray(value)?value.join(','):value);headers.set('CF-Connecting-IP',String(req.headers['x-forwarded-for']||'site').split(',')[0]);const response=await router.fetch(new Request('https://ecosystem.local'+req.url,{method:req.method,headers}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()))}
