@@ -15,3 +15,6 @@ self.addEventListener('notificationclick',event=>{
   await self.clients.openWindow(target.href);
  })());
 });
+
+// iOS can renew the subscription by itself: subscribe again with the same key; the app re-registers it on the server when it opens.
+self.addEventListener('pushsubscriptionchange',event=>{event.waitUntil((async()=>{const key=event.oldSubscription?.options?.applicationServerKey;if(!key)return;try{await self.registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key})}catch{}})())});

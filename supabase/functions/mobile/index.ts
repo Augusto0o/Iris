@@ -70,7 +70,7 @@ Deno.serve(async req=>{
   if(input.action==='unsubscribe'){check(await db.from('ecosystem_push_subscriptions').delete().eq('user_id',uid).eq('endpoint',String(input.endpoint)));return reply({saved:true})}
   if(input.action==='test'){
    const subs=check(await db.from('ecosystem_push_subscriptions').select('*').eq('user_id',uid).eq('endpoint',String(input.endpoint))),keys=await vapid();let sent=0;
-   for(const sub of subs)if(await send(sub,{key:'test:'+Math.floor(Date.now()/30000),title:'Ecosistema Personal',body:'Las notificaciones están conectadas.',url:'/#/centro/home'},keys))sent++;
+   for(const sub of subs)if(await send(sub,{key:'test:'+Math.floor(Date.now()/30000),title:'nubo',body:'Listo. Te voy a avisar de vencimientos, cierres de tarjeta, suscripciones y tu agenda.',url:'/#/centro/home'},keys))sent++;
    return reply({sent});
   }
   if(input.action==='timer'){

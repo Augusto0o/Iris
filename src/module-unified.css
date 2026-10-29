@@ -1,23 +1,26 @@
-/* Shared foundations for the retained Centro/Iris screens and the newer spaces. */
+/* Styles injected into the five apps (nubo, numio, domo, lecta, foco) on top of their own CSS.
+   Order matters: later blocks refine earlier ones. Sections: foundations · Nubo palette · navigation ·
+   dialogs and menus · settings · touch and zoom. The !important rules override the apps' inline styles. */
+
+/* ---- Foundations for the retained Centro/Iris screens ----------------------------------------------- */
 html{background:var(--ecosystem-edge,#f6f7fb);color-scheme:light}html[data-ecosystem-theme=dark]{color-scheme:dark}
 body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 html[data-module=centro] body,html[data-module=iris] body{--bg:#f6f7fb;--panel:#fff;--text:#192236;--muted:#5d687b;--line:#dfe4ed;--accent:#6954d8;--soft:#eeebff;--hero:#eeebff}
 html[data-module=centro] body.dark,html[data-module=iris] body.dark{--bg:#101722;--panel:#1b2636;--text:#eef2fa;--muted:#b3bfd2;--line:#344153;--accent:#b7a8ff;--soft:#302c54;--hero:#302c54}
 html[data-module=centro] h1{font-size:32px;line-height:1.2;letter-spacing:-1.1px}html[data-module=centro] h2{font-size:18px;letter-spacing:-.3px}html[data-module=centro] button{min-height:44px;font-size:13px;font-weight:600;border-radius:11px}
-html[data-module=centro] .brand .mark{background:#6954d8}html[data-module=centro] .card,html[data-module=centro] .widget{border-radius:16px;box-shadow:none}html[data-module=centro] .hero{border:1px solid var(--line);border-radius:18px}html[data-module=centro] .hero h2{font-size:26px;letter-spacing:-.6px}html[data-module=centro] body.dark .primary{color:#122035}
+html[data-module=centro] .brand .mark{background-color:transparent}html[data-module=centro] .card,html[data-module=centro] .widget{border-radius:16px;box-shadow:none}html[data-module=centro] .hero{border:1px solid var(--line);border-radius:18px}html[data-module=centro] .hero h2{font-size:26px;letter-spacing:-.6px}html[data-module=centro] body.dark .primary{color:#122035}
 @media(max-width:720px){html[data-module=centro] h1{font-size:28px}html[data-module=centro] .hero h2{font-size:23px}html[data-module=centro] .content{padding:24px 18px calc(104px + env(safe-area-inset-bottom))}html[data-module=centro] .heading .date{font-size:12px;margin-top:2px}html[data-module=centro] .hero{padding:20px;margin:20px 0 24px}html[data-module=centro] .board .widget{padding:14px}html[data-module=centro] .board .card{padding:18px}}
 
-@media(max-width:720px){#nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileNav{bottom:0!important;height:auto!important;min-height:0!important;align-content:start!important;padding-bottom:calc(8px + min(env(safe-area-inset-bottom,0px),34px))!important;grid-auto-rows:auto}}
 
 
-/* Nubo — Graphite & Paper. Product marks are the supplied SVG originals. */
+/* ---- Nubo palette — Graphite & Paper. Product marks are the supplied SVG originals. ------------------- */
 html[data-module] body{--bg:#F3F0EA;--panel:#fffdfa;--text:#303845;--muted:#626974;--line:#ddd9d2;--accent:#48637c;--soft:#DFEAF7;--hero:var(--soft);--brand-icon:url('/brand/numio-light.svg');font-family:Inter,system-ui,-apple-system,sans-serif}
-html[data-module=centro] body{--accent:#505b69;--soft:#e7e3dc;--hero:#e7e3dc}
+html[data-module=centro] body{--accent:#505b69;--soft:#e7e3dc;--hero:#e7e3dc;--brand-icon:url('/brand/nubo-light.svg')}
 html[data-module=mi-espacio] body{--accent:#396c55;--soft:#E1EFE6;--brand-icon:url('/brand/domo-light.svg')}
 html[data-module=journal] body{--accent:#705983;--soft:#EEE4F6;--brand-icon:url('/brand/lecta-light.svg')}
 html[data-module=organizador] body{--accent:#825c32;--soft:#F5E9DB;--brand-icon:url('/brand/foco-light.svg')}
 html[data-module] body.dark{--bg:#222933;--panel:#303845;--text:#F3F0EA;--muted:#c5c8cd;--line:#4c5460;--accent:#b9ccdf;--soft:#394958;--hero:var(--soft);--brand-icon:url('/brand/numio-dark.svg')}
-html[data-module=centro] body.dark{--accent:#e1dace;--soft:#414750}
+html[data-module=centro] body.dark{--accent:#e1dace;--soft:#414750;--brand-icon:url('/brand/nubo-dark.svg')}
 html[data-module=mi-espacio] body.dark{--accent:#afd4bd;--soft:#344d42;--brand-icon:url('/brand/domo-dark.svg')}
 html[data-module=journal] body.dark{--accent:#d0bedf;--soft:#493f53;--brand-icon:url('/brand/lecta-dark.svg')}
 html[data-module=organizador] body.dark{--accent:#D1AF83;--soft:#504539;--brand-icon:url('/brand/foco-dark.svg')}
@@ -25,8 +28,8 @@ html[data-module] h1{font-weight:550;letter-spacing:-.055em;line-height:1.15}htm
 html[data-module] .card,html[data-module] .widget{box-shadow:none;border-color:var(--line);border-radius:20px}html[data-module] .hero{background:var(--soft);border:1px solid var(--line)}
 html[data-module] .primary{background:var(--accent);border-color:var(--accent);color:#fffdfa}html[data-module] body.dark .primary{color:#222933}
 html[data-module] .brand .mark,html[data-module] .brand-mark,html[data-module] .app-switch-mark{background:var(--soft);color:var(--accent);box-shadow:none;border-radius:22%}
-html[data-module]:not([data-module=centro]) .brand .mark,html[data-module]:not([data-module=centro]) .brand-mark,html[data-module]:not([data-module=centro]) .app-switch-mark{background-image:var(--brand-icon);background-position:center;background-size:contain;background-repeat:no-repeat;padding:0;width:42px;height:42px;flex:0 0 42px}
-html[data-module]:not([data-module=centro]) :is(.brand .mark,.brand-mark,.app-switch-mark)>svg{visibility:hidden}
+html[data-module] .brand .mark,html[data-module] .brand-mark,html[data-module] .app-switch-mark{background-image:var(--brand-icon);background-position:center;background-size:contain;background-repeat:no-repeat;padding:0;width:42px;height:42px;flex:0 0 42px}
+html[data-module] :is(.brand .mark,.brand-mark,.app-switch-mark)>svg{visibility:hidden}
 html[data-module] .app-switch-mark{width:30px!important;height:30px!important;flex-basis:30px!important}
 .quick-app[data-destination=iris] .quick-app-icon{background:center/contain no-repeat url('/brand/numio-light.svg')!important}
 .quick-app[data-destination=mi-espacio] .quick-app-icon{background:center/contain no-repeat url('/brand/domo-light.svg')!important}
@@ -34,24 +37,12 @@ html[data-module] .app-switch-mark{width:30px!important;height:30px!important;fl
 .quick-app[data-destination=organizador] .quick-app-icon{background:center/contain no-repeat url('/brand/foco-light.svg')!important}
 .quick-app:not([data-destination=centro]) .quick-app-icon svg{visibility:hidden}
 body.dark .quick-app[data-destination=iris] .quick-app-icon{background-image:url('/brand/numio-dark.svg')!important}body.dark .quick-app[data-destination=mi-espacio] .quick-app-icon{background-image:url('/brand/domo-dark.svg')!important}body.dark .quick-app[data-destination=journal] .quick-app-icon{background-image:url('/brand/lecta-dark.svg')!important}body.dark .quick-app[data-destination=organizador] .quick-app-icon{background-image:url('/brand/foco-dark.svg')!important}
-/* The shell owns the safe area. Never read the iframe's iOS inset here. */
-@media(max-width:720px){
- #nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileIris,#mobileNav{
-  position:fixed!important;inset:auto 0 0!important;transform:none!important;margin:0!important;
-  width:100%!important;box-sizing:border-box!important;height:calc(70px + var(--host-safe-bottom,0px))!important;max-height:calc(70px + var(--host-safe-bottom,0px))!important;min-height:0!important;
-  padding:8px 6px calc(8px + var(--host-safe-bottom,0px))!important;
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:54px!important;grid-auto-rows:54px!important;align-content:start!important;gap:0!important;
-  border-radius:0!important;background:var(--panel)!important;
- }
- #nav.centro-mobile-nav>button,#nav.ecosystem-mobile-nav>button,#mobileIris>button,#mobileNav>button{height:54px!important;min-height:54px!important;max-height:54px!important;margin:0!important;align-self:start!important}
- html[data-module] .content,html[data-module] #content{padding-bottom:calc(116px + var(--host-safe-bottom,0px))!important}
- html[data-keyboard=open] :is(#nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileIris,#mobileNav){display:none!important}
-}
+/* ---- Navigation: Nubo draws the bottom bar; each app's own bar is only a source for its buttons. ---- */
 @media(max-width:720px){html[data-host-navigation=true] :is(#nav.centro-mobile-nav,#nav.ecosystem-mobile-nav,#mobileIris,#mobileNav){display:none!important}}
 
-/* One dialog and navigation-menu vocabulary across the five spaces. */
+/* ---- Dialogs and menus: one vocabulary across the five spaces ----------------------------------------- */
 html[data-module] dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:24px;padding:0;width:min(560px,calc(100% - 24px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
-html[data-module] dialog::backdrop{background:#18212b80;backdrop-filter:blur(5px)}
+html[data-module] dialog::backdrop{background:#18212b80}
 html[data-module] dialog header{padding:16px 20px;gap:12px;background:var(--panel);border-bottom:1px solid var(--line)}
 html[data-module] dialog header h2{font-size:18px;line-height:1.3;min-width:0}
 html[data-module] dialog :is(#closeModal,[aria-label="Cerrar"]){display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;min-height:40px;padding:0;line-height:1;border-radius:12px}
@@ -106,3 +97,723 @@ html[data-module] #modal .menu-intro{font-size:12px;margin-bottom:12px}
 .settings-preferences .density-option{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important}
 
 @media(max-width:720px){html[data-host-navigation=true] :is(.content,#content){padding-bottom:24px!important}}
+
+/* ---- Touch and zoom: no pinch or double-tap zoom; 16px fields so iOS never zooms on focus ------------- */
+html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html[data-module] :is(input,select,textarea){font-size:16px!important}
+/* While a window is open only that window scrolls. */
+html[data-module]:has(dialog[open],#focusStage),html[data-module]:has(dialog[open],#focusStage) body{overflow:hidden!important;overscroll-behavior:none!important}
+html[data-module]:has(dialog[open]) :is(.content,#content,main){overflow:hidden!important}
+html[data-module] dialog,html[data-module] #modalBody{overscroll-behavior:contain}
+
+/* ---- Ecosystem search results (nubo) ----------------------------------------------------------------- */
+html[data-module=centro] .search-mark{background-color:transparent!important;border-radius:10px}
+html[data-module=centro] .search-result .search-mark{flex:0 0 36px;width:36px!important;height:36px!important;min-width:36px;padding:0!important}
+
+
+/* ---- foco · immersive Concentración stage (src/focus-stage.js) ------------------------------------------
+   Full-bleed scene, the time inside a progress ring, round glass controls, scenes picked as swatches. */
+html[data-module=organizador] .nubo-stage{--ns-accent:#c8bcff;color:#fff!important;background:#05060d!important}
+html[data-module=organizador] .nubo-stage[data-scene=forest]{--ns-accent:#bdeccb}
+html[data-module=organizador] .nubo-stage[data-scene=ocean]{--ns-accent:#ffd0a6}
+html[data-module=organizador] .nubo-stage[data-scene=rain]{--ns-accent:#addcff}
+html[data-module=organizador] .nubo-stage[data-scene=fire]{--ns-accent:#ffc07e}
+html[data-module=organizador] .nubo-stage>header{position:absolute!important;top:0;left:0;right:0;z-index:3;display:flex!important;align-items:center;gap:8px;padding:14px 16px!important;background:none!important;border:0!important;box-shadow:none!important}
+html[data-module=organizador] .nubo-stage #stageMode{flex:1;min-width:0;font-size:11.5px!important;font-weight:650;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.78)!important}
+html[data-module=organizador] .nubo-stage .stage-theme-control,html[data-module=organizador] .nubo-stage .stage-clock{display:none!important}
+html[data-module=organizador] .nubo-stage>header button{width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;display:grid!important;place-items:center;border-radius:50%!important;background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.15)!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+html[data-module=organizador] .nubo-stage>header button svg{width:18px;height:18px}
+html[data-module=organizador] .nubo-stage .ns-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;max-width:420px;padding-bottom:118px}
+html[data-module=organizador] .nubo-stage .ns-task{margin:0;max-width:82%;text-align:center;font-size:15px;font-weight:550;line-height:1.35;color:rgba(255,255,255,.86);text-shadow:0 1px 12px rgba(0,0,0,.4)}
+html[data-module=organizador] .nubo-stage .ns-ring{position:relative;width:min(300px,74vw,46vh);aspect-ratio:1}
+html[data-module=organizador] .nubo-stage .ns-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible;filter:drop-shadow(0 0 7px color-mix(in srgb,var(--ns-accent) 55%,transparent))}
+html[data-module=organizador] .nubo-stage .ns-track{fill:rgba(0,0,0,.2);stroke:rgba(255,255,255,.13);stroke-width:3.2}
+html[data-module=organizador] .nubo-stage .ns-bar{fill:none;stroke:var(--ns-accent);stroke-width:3.4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1s linear,opacity .3s}
+html[data-module=organizador] .nubo-stage .ns-face{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:10px}
+html[data-module=organizador] .nubo-stage .ns-time{font-size:clamp(56px,19vw,86px);font-weight:300;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 2px 28px rgba(0,0,0,.35);transition:opacity .3s}
+html[data-module=organizador] .nubo-stage .ns-status{padding:5px 11px;border-radius:999px;font-size:11px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12)}
+html[data-module=organizador] .nubo-stage.stage-paused .ns-bar{opacity:.5}
+html[data-module=organizador] .nubo-stage.stage-paused .ns-time{opacity:.82}
+html[data-module=organizador] .nubo-stage .ns-controls{display:flex;align-items:center;gap:24px}
+html[data-module=organizador] .nubo-stage .ns-round{width:56px!important;height:56px!important;min-height:0!important;padding:0!important;display:grid!important;place-items:center;border-radius:50%!important;background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.16)!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);transition:transform .15s}
+html[data-module=organizador] .nubo-stage .ns-round:active{transform:scale(.94)}
+html[data-module=organizador] .nubo-stage .ns-round[hidden]{display:grid!important;visibility:hidden}
+html[data-module=organizador] .nubo-stage .ns-round svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+html[data-module=organizador] .nubo-stage .ns-primary{width:80px!important;height:80px!important;background:var(--ns-accent)!important;color:#0b0c14!important;border:0!important;box-shadow:0 12px 40px color-mix(in srgb,var(--ns-accent) 40%,transparent)}
+html[data-module=organizador] .nubo-stage .ns-primary svg{width:30px;height:30px;fill:currentColor;stroke:none}
+html[data-module=organizador] .nubo-stage .ns-dock{position:absolute;left:0;right:0;bottom:0;z-index:3;display:grid;justify-items:center;gap:12px;padding:28px 16px calc(16px + var(--host-safe-bottom,0px));background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,0))}
+html[data-module=organizador] .nubo-stage .ns-scenes{display:flex;gap:12px}
+html[data-module=organizador] .nubo-stage .ns-scene{display:grid;justify-items:center;gap:6px;min-height:0!important;padding:0!important;background:none!important;border:0!important;color:rgba(255,255,255,.62)!important;font-size:10.5px;font-weight:650;letter-spacing:.02em}
+html[data-module=organizador] .nubo-stage .ns-scene i{display:block;width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.2);transition:box-shadow .2s,transform .2s}
+html[data-module=organizador] .nubo-stage .ns-scene.selected{color:#fff!important}
+html[data-module=organizador] .nubo-stage .ns-scene.selected i{box-shadow:0 0 0 2px #fff,0 0 0 6px rgba(255,255,255,.16);transform:scale(1.06)}
+html[data-module=organizador] .nubo-stage .ns-scene[data-scene=space] i{background:radial-gradient(circle at 72% 30%,#7c4dc4,transparent 55%),radial-gradient(circle at 25% 72%,#208c96,transparent 60%),#0a0e28}
+html[data-module=organizador] .nubo-stage .ns-scene[data-scene=forest] i{background:radial-gradient(circle at 68% 34%,#ffe8b0,transparent 40%),linear-gradient(#1d4337,#6a9b80 58%,#16352c 60%,#0b201b)}
+html[data-module=organizador] .nubo-stage .ns-scene[data-scene=ocean] i{background:radial-gradient(circle at 50% 62%,#fff1d0 0 9%,transparent 30%),linear-gradient(#4d4472,#c9796a 52%,#f4bd86 64%,#2f4467 65%,#060f1c)}
+html[data-module=organizador] .nubo-stage .ns-scene[data-scene=rain] i{background:radial-gradient(circle at 30% 60%,#ffb86c 0 12%,transparent 13%),radial-gradient(circle at 68% 45%,#76a8ff 0 10%,transparent 11%),radial-gradient(circle at 58% 75%,#ff7676 0 8%,transparent 9%),linear-gradient(#060a12,#1a283c)}
+html[data-module=organizador] .nubo-stage .ns-scene[data-scene=fire] i{background:radial-gradient(circle at 50% 78%,#ffe0a0 0 10%,#ff8a3c 28%,transparent 60%),linear-gradient(#06050a,#26110a)}
+html[data-module=organizador] .nubo-stage .focus-ambience-controls{position:static!important;display:none!important;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:0!important;padding:0!important;background:none!important;border:0!important}
+html[data-module=organizador] .nubo-stage .focus-ambience-controls button{min-height:32px!important;padding:6px 13px!important;border-radius:999px!important;font-size:12px!important;font-weight:600;background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.15)!important}
+html[data-module=organizador] .nubo-stage .focus-ambience-controls button[aria-pressed=true]{background:color-mix(in srgb,var(--ns-accent) 30%,transparent)!important;border-color:color-mix(in srgb,var(--ns-accent) 60%,transparent)!important}
+html[data-module=organizador] .nubo-stage #focusVolumeField{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.8);font-size:12px}
+html[data-module=organizador] .nubo-stage #focusVolumeField[hidden]{display:none!important}
+html[data-module=organizador] .nubo-stage #focusVolume{width:110px;min-height:0;accent-color:var(--ns-accent)}
+@media(orientation:landscape) and (max-height:520px){
+ html[data-module=organizador] .nubo-stage .ns-center{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:none;gap:14px 34px;padding-bottom:64px}
+ html[data-module=organizador] .nubo-stage .ns-task{flex-basis:100%}
+ html[data-module=organizador] .nubo-stage .ns-ring{width:min(220px,52vh)}
+ html[data-module=organizador] .nubo-stage .ns-controls{flex-direction:column;gap:14px}
+ html[data-module=organizador] .nubo-stage .ns-dock{grid-auto-flow:column;justify-content:center;padding-top:14px}
+}
+/* Concentración screen: the clock sits inside a progress ring. */
+html[data-module=organizador] .focus-card .timer-face{width:min(236px,66vw);aspect-ratio:1;margin:16px auto 6px!important;display:grid;place-items:center;border-radius:50%;font-size:clamp(44px,13vw,58px)!important;font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+ background:radial-gradient(closest-side,var(--panel) calc(100% - 9px),transparent calc(100% - 8px)),conic-gradient(var(--accent) calc(var(--p,0)*1turn),color-mix(in srgb,var(--accent) 16%,transparent) 0)}
+html[data-module=organizador] .nubo-stage #stageMode{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:none!important}
+/* The time always fits its ring (size follows the ring, not the screen). */
+html[data-module=organizador] .nubo-stage .ns-ring{container-type:size}
+html[data-module=organizador] .nubo-stage .ns-time{font-size:clamp(34px,27cqw,86px)}
+@media(orientation:landscape) and (max-height:520px){
+ html[data-module=organizador] .nubo-stage .ns-center{padding:16px 0 58px}
+ html[data-module=organizador] .nubo-stage .ns-ring{width:min(200px,46vh)}
+ html[data-module=organizador] .nubo-stage .ns-dock{grid-auto-flow:column;align-items:center;gap:18px;padding:10px 16px 12px}
+ html[data-module=organizador] .nubo-stage .ns-scene span{display:none}
+ html[data-module=organizador] .nubo-stage .ns-scene i{width:30px;height:30px}
+}
+@media(orientation:landscape) and (max-height:520px){
+ html[data-module=organizador] .nubo-stage .ns-dock{display:flex!important;flex-direction:row;align-items:center;justify-content:center}
+}
+
+/* ---- Fields: no highlight ring or dark border when they get focus (the caret is enough) --------------- */
+html[data-module] :is(input,textarea,select):is(:focus,:focus-visible){outline:none!important;box-shadow:none!important;border-color:var(--line)!important}
+html[data-module] :is(.search,.searchbox,.search-field):focus-within{outline:none!important;box-shadow:none!important}
+
+/* ---- Form fields: compact sizes. Long-text fields start at two lines and grow while you type. ------------ */
+html[data-module] #modalBody :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select){min-height:44px!important;height:44px;padding:9px 12px!important}
+html[data-module] #modalBody label>textarea{min-height:64px!important;height:64px;max-height:240px;padding:10px 12px!important;resize:none;overflow-y:auto;line-height:1.4}
+
+/* ---- foco: aligned cards ------------------------------------------------------------------------------- */
+html[data-module=organizador] .metrics>*{display:flex!important;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;gap:10px}
+html[data-module=organizador] .metrics>* :is(p,span,small,h3){justify-content:center;text-align:center}
+html[data-module=organizador] .metrics .metric{margin:0!important;text-align:center}
+html[data-module=organizador] .actions:has(>button[onclick="openFocusStage()"]){display:flex;justify-content:center}
+html[data-module=organizador] .actions>button[onclick="openFocusStage()"]{width:100%;justify-content:center}
+html[data-module=organizador] .actions:has(>button[onclick="openFocusStage()"])~:is(p,.small,.checklabel){text-align:center;justify-content:center}
+html[data-module=organizador] .habit-trackers>.empty{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 20px;grid-column:1/-1}
+
+/* ---- nubo: Digitalizar button beside the search bar ------------------------------------------------------ */
+html[data-module=centro] header:has(#scanLaunch){display:flex;align-items:center;gap:8px}
+html[data-module=centro] header:has(#scanLaunch) .search{flex:1;min-width:0}
+html[data-module=centro] #scanLaunch{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;display:grid;place-items:center;border-radius:12px;background:var(--soft);color:var(--text);border:1px solid var(--line)}
+html[data-module=centro] #scanLaunch svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* Buttons in windows get focus when the window opens: no ring for that either. */
+html[data-module] dialog :is(button,a,[tabindex]):focus{outline:none!important;box-shadow:none!important}
+
+/* ---- Dictation (module-after.js): microphone inside the focused text field -------------------------------- */
+html[data-module] #dictate{position:fixed;z-index:2147482000;width:34px;height:34px;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;border-radius:50%!important;display:grid;place-items:center;background:var(--soft)!important;color:var(--text)!important;box-shadow:0 2px 8px rgba(0,0,0,.12)!important;-webkit-tap-highlight-color:transparent}
+html[data-module] #dictate[hidden]{display:none}
+html[data-module] #dictate svg{width:18px;height:18px;margin:0}
+html[data-module] #dictate.on{background:#c8453f!important;color:#fff!important;animation:dictate-pulse 1.5s ease-in-out infinite}
+html[data-module] #dictateLive{position:fixed;z-index:2147482000;max-width:min(320px,calc(100vw - 16px));padding:7px 11px;border-radius:12px;background:#303845;color:#F3F0EA;font-size:14px;line-height:1.35;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+html[data-module] #dictateLive[hidden]{display:none}
+html[data-module] .has-dictation{padding-right:46px!important}
+@keyframes dictate-pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,69,63,.45)}50%{box-shadow:0 0 0 8px rgba(200,69,63,0)}}
+@media(prefers-reduced-motion:reduce){html[data-module] #dictate.on{animation:none}}
+
+/* ---- Keyboard open: windows fit the visible area above the keyboard (module-after.js revealFocused) --------- */
+html[data-module][data-keyboard=open] :is(dialog,#modal)[open]{inset:auto 0 auto 0!important;top:calc(var(--kb-top,0px) + 8px)!important;bottom:auto!important;margin:0 auto!important;max-height:calc(var(--kb-visible,100dvh) - 16px)!important}
+
+/* ---- Digitize from each app (module-after.js #scanApp) -------------------------------------------------- */
+html[data-module] #scanApp{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;display:grid;place-items:center;border-radius:12px;background:var(--soft);color:var(--text);border:1px solid var(--line)}
+html[data-module] #scanApp svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-module] .top-actions:has(#scanApp){display:flex;align-items:center;gap:8px}
+html[data-module] .scan-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html[data-module] .scan-row #scanApp{margin-left:auto}
+
+/* ---- AI (Claude via /api/ai): nubo search answer and lecta recommendations ------------------------------- */
+html[data-module] .ai-spark{width:18px;height:18px;fill:currentColor;flex:0 0 18px;vertical-align:-3px;margin-right:6px;color:var(--accent)}
+html[data-module=centro] .ai-ask{display:flex;align-items:center;gap:4px;width:100%;margin:0 0 12px;padding:12px 14px;border-radius:16px;border:1px dashed var(--line);background:var(--panel);color:var(--text);text-align:left;font-weight:600}
+html[data-module=centro] .ai-ask span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-module] .ai-answer{margin-bottom:12px}html[data-module] .ai-answer h2{display:flex;align-items:center;font-size:15px;margin:0 0 8px}html[data-module] .ai-answer p{margin:0 0 8px;line-height:1.5}
+html[data-module] .ai-card .sectionhead h2{display:flex;align-items:center}
+html[data-module] .ai-wish{display:flex;gap:8px;margin:10px 0 4px}html[data-module] .ai-wish input{flex:1;min-width:0}html[data-module] .ai-wish button{flex:0 0 auto}
+html[data-module] .ai-list{display:grid;gap:8px;margin-top:10px}
+html[data-module] .ai-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px}
+html[data-module] .ai-item .grow{min-width:0;display:grid;gap:2px}html[data-module] .ai-item p{margin:2px 0 0}html[data-module] .ai-item button{flex:0 0 auto}
+html[data-module] .ai-error{color:#b3443d}
+
+/* ---- foco stage: sound, volume and background controls (focus-stage.js paintAudio) ------------------- */
+html[data-module=organizador] .nubo-stage .ns-audio{display:flex;align-items:flex-start;justify-content:center;gap:16px;width:min(360px,100%)}
+html[data-module=organizador] .nubo-stage .ns-chip{display:grid!important;justify-items:center;gap:5px;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;background:none!important;color:#fff!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
+html[data-module=organizador] .nubo-stage .ns-chip-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);transition:background .2s,transform .15s,color .2s}
+html[data-module=organizador] .nubo-stage .ns-chip:active .ns-chip-icon{transform:scale(.92)}
+html[data-module=organizador] .nubo-stage .ns-chip-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-module=organizador] .nubo-stage .ns-chip[aria-pressed=true] .ns-chip-icon{background:var(--ns-accent,#a8c8ff);border-color:transparent;color:#10131a}
+html[data-module=organizador] .nubo-stage .ns-chip-label{font-size:11px;font-weight:600;letter-spacing:.01em;color:rgba(255,255,255,.72);line-height:1}
+html[data-module=organizador] .nubo-stage .ns-volume{flex:1;min-width:0;display:grid;justify-items:center;gap:5px;padding-top:12px;transition:opacity .2s}
+html[data-module=organizador] .nubo-stage .ns-volume.off{opacity:.45}
+html[data-module=organizador] .nubo-stage .ns-volume input{-webkit-appearance:none;appearance:none;width:100%;height:22px;margin:0;padding:0;background:none;border:0;touch-action:none}
+html[data-module=organizador] .nubo-stage .ns-volume input::-webkit-slider-runnable-track{height:8px;border-radius:999px;background:linear-gradient(to right,var(--ns-accent,#a8c8ff) calc(var(--v,.4)*100%),rgba(255,255,255,.2) calc(var(--v,.4)*100%))}
+html[data-module=organizador] .nubo-stage .ns-volume input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-7px;border-radius:50%;background:#fff;border:0;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+html[data-module=organizador] .nubo-stage .ns-volume input::-moz-range-track{height:8px;border-radius:999px;background:rgba(255,255,255,.2)}
+html[data-module=organizador] .nubo-stage .ns-volume input::-moz-range-progress{height:8px;border-radius:999px;background:var(--ns-accent,#a8c8ff)}
+html[data-module=organizador] .nubo-stage .ns-volume input::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:0}
+
+/* ---- Scanned pages in lecta notes ---------------------------------------------------------------------------- */
+html[data-module=journal] img.note-scan{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line);margin:8px 0;background:#fff}
+
+/* ---- lecta · graph, related, ideas, AI on notes (src/lecta-plus.js) --------------------------------------- */
+html[data-module=journal] .lk-tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+html[data-module=journal] .lk-tools button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:13px}
+html[data-module=journal] .lk-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+html[data-module=journal] .lk-graph-card{padding:12px!important}
+html[data-module=journal] .lk-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted);margin:2px 2px 10px}
+html[data-module=journal] .lk-legend i,html[data-module=journal] .lk-row i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;flex:0 0 9px}
+html[data-module=journal] .lk-graph{position:relative;height:min(62vh,460px);border-radius:16px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+html[data-module=journal] .lk-graph svg{width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+html[data-module=journal] .lk-edge{stroke:var(--muted);stroke-opacity:.28;stroke-linecap:round}
+html[data-module=journal] .lk-edge.on{stroke:var(--accent);stroke-opacity:.9}
+
+
+
+
+html[data-module=journal] .lk-zoom{position:absolute;right:8px;bottom:8px;display:grid;gap:6px}
+html[data-module=journal] .lk-zoom button{width:36px!important;height:36px!important;min-height:36px!important;padding:0!important;border-radius:50%!important;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:18px;line-height:1}
+html[data-module=journal] .lk-panel{margin-top:12px}
+html[data-module=journal] .lk-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}html[data-module=journal] .lk-head h3{flex:1;min-width:0;margin:0;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-module=journal] .lk-related{display:grid;gap:6px}
+html[data-module=journal] .lk-row{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:10px 12px!important;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);min-height:0!important}
+html[data-module=journal] .lk-row span{display:grid;gap:2px;min-width:0}html[data-module=journal] .lk-row strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-module=journal] .lk-row small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-module=journal] .lk-related-box{border-top:1px solid var(--line);padding-top:12px}html[data-module=journal] .lk-related-box h3{font-size:14px;margin:0 0 8px}
+html[data-module=journal] .lk-ai-tool{display:inline-flex!important;align-items:center;gap:2px;color:var(--accent)!important;font-weight:700}
+html[data-module=journal] .lk-ai-tool .ai-spark{margin-right:2px}
+html[data-module=journal] .lk-ai-menu{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 10px}html[data-module=journal] .lk-ai-menu[hidden]{display:none}
+html[data-module=journal] .lk-ai-menu button{min-height:34px!important;padding:6px 12px!important;border-radius:999px!important;font-size:13px;background:var(--soft);color:var(--text);border:0}
+html[data-module=journal] .lk-ai-box{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px;display:grid;gap:8px;background:var(--bg)}
+html[data-module=journal] .lk-ai-text p{margin:0 0 6px;line-height:1.5}
+
+/* ---- Keyboard open: a long editor fits the window, which scrolls to the caret -------------------------- */
+html[data-module][data-keyboard=open] dialog[open] .editor{max-height:calc(var(--kb-visible,60dvh) - 190px)!important;min-height:120px!important}
+
+/* ---- lecta · Música/Películas/Libros: the recommendations card keeps its distance from the tabs below --- */
+html[data-module=journal] .ai-card{margin:0 0 18px!important;position:relative;z-index:0}
+html[data-module=journal] .ai-card+.discovery-tabs,html[data-module=journal] .ai-card+.filters{margin-top:0!important}
+html[data-module=journal] .discovery-poster img{color:transparent}
+
+/* ---- lecta · notes list (lecta-notes.js), Personal OS style ------------------------------------------------ */
+html[data-module=journal] .nt-bar{display:flex;gap:8px;margin:0 0 10px}
+html[data-module=journal] .nt-search{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel);min-height:44px}
+html[data-module=journal] .nt-search span svg{width:18px;height:18px;color:var(--muted)}
+html[data-module=journal] .nt-search input{flex:1;min-width:0;border:0!important;background:none!important;padding:0!important;min-height:42px;box-shadow:none!important}
+html[data-module=journal] .nt-bar select{flex:0 0 auto;width:auto;min-height:44px;border-radius:14px}
+html[data-module=journal] .nt-chips{display:flex;gap:6px;overflow-x:auto;margin:0 -2px 14px;padding:2px;scrollbar-width:none}html[data-module=journal] .nt-chips::-webkit-scrollbar{display:none}
+html[data-module=journal] .nt-chips button{flex:0 0 auto;min-height:34px!important;padding:6px 12px!important;border-radius:999px!important;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:13px;font-weight:600;white-space:nowrap}
+html[data-module=journal] .nt-chips button span{color:var(--muted);font-weight:500;margin-left:2px}
+html[data-module=journal] .nt-chips button[aria-selected=true]{background:var(--text);color:var(--panel);border-color:transparent}html[data-module=journal] .nt-chips button[aria-selected=true] span{color:inherit;opacity:.7}
+html[data-module=journal] .nt-list,html[data-module=journal] .lnk-list{display:grid;gap:10px}
+html[data-module=journal] .nt-card{position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px 44px 14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--panel);cursor:pointer}
+html[data-module=journal] .nt-card.idea{background:color-mix(in srgb,#c9973d 9%,var(--panel));border-color:color-mix(in srgb,#c9973d 28%,var(--line))}
+html[data-module=journal] .nt-copy{flex:1;min-width:0;display:grid;gap:4px}
+html[data-module=journal] .nt-meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted)}html[data-module=journal] .nt-meta span:first-child{color:var(--accent);font-weight:600}
+html[data-module=journal] .nt-card h3{margin:0;font-size:16px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+html[data-module=journal] .nt-card p{margin:0;font-size:14px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+html[data-module=journal] .nt-tags{display:flex;flex-wrap:wrap;gap:6px}
+html[data-module=journal] .nt-tags span,html[data-module=journal] .nt-tags button{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--text);border:0;min-height:0!important}
+html[data-module=journal] .nt-thumb{flex:0 0 64px;width:64px;height:64px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#fff}
+html[data-module=journal] .nt-star{position:absolute;top:10px;right:8px;width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:0!important;background:none!important;color:var(--muted)}
+html[data-module=journal] .nt-star svg{width:18px;height:18px}html[data-module=journal] .nt-star.on{color:#d39b2a}html[data-module=journal] .nt-star.on svg{fill:currentColor}
+html[data-module=journal] .nt-foot{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-top:6px}
+html[data-module=journal] #noteEditor img{max-width:100%;border-radius:12px}
+/* ---- lecta · links ---------------------------------------------------------------------------------------------- */
+html[data-module=journal] .lnk-card{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:12px 12px 8px}
+html[data-module=journal] .lnk-main{display:flex;gap:12px;align-items:flex-start;color:inherit;text-decoration:none}
+html[data-module=journal] .lnk-tile{flex:0 0 42px;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--soft);color:var(--accent);font-weight:800;font-size:18px}
+html[data-module=journal] .lnk-copy{display:grid;gap:2px;min-width:0}html[data-module=journal] .lnk-copy strong{font-size:15px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+html[data-module=journal] .lnk-copy small{font-size:12px;color:var(--muted)}html[data-module=journal] .lnk-copy em{font-style:normal;font-size:13px;color:var(--muted);margin-top:2px}
+html[data-module=journal] .lnk-foot{display:flex;align-items:center;gap:4px;margin-top:8px}html[data-module=journal] .lnk-foot .nt-tags{flex:1;min-width:0}
+html[data-module=journal] .lnk-url{display:flex;gap:8px}html[data-module=journal] .lnk-url input{flex:1;min-width:0}html[data-module=journal] .lnk-url button{flex:0 0 auto}
+html[data-module=journal] .lnk-suggest{margin:-4px 0 4px}
+/* ---- lecta · recordings ------------------------------------------------------------------------------------------ */
+html[data-module=journal] .rec-box{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--bg)}
+html[data-module=journal] .rec-main{flex:0 0 68px;width:68px!important;height:68px!important;min-height:68px!important;padding:0!important;border-radius:50%!important;border:3px solid var(--line)!important;background:var(--panel)!important;display:grid!important;place-items:center}
+html[data-module=journal] .rec-main i{width:30px;height:30px;border-radius:50%;background:#d6443c;transition:border-radius .2s,width .2s,height .2s}
+html[data-module=journal] .rec-main[data-state=rec] i,html[data-module=journal] .rec-main[data-state=paused] i{width:24px;height:24px;border-radius:6px}
+html[data-module=journal] .rec-main[data-state=rec]{animation:rec-pulse 1.6s ease-in-out infinite}
+@keyframes rec-pulse{0%,100%{box-shadow:0 0 0 0 rgba(214,68,60,.35)}50%{box-shadow:0 0 0 10px rgba(214,68,60,0)}}
+html[data-module=journal] .rec-info{flex:1;min-width:0;display:grid;gap:6px}html[data-module=journal] .rec-info strong{font-size:28px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+html[data-module=journal] .rec-level{display:block;height:6px;border-radius:999px;background:var(--line);overflow:hidden}html[data-module=journal] .rec-level i{display:block;height:100%;width:calc(var(--l,0)*100%);background:#d6443c;transition:width .08s}
+html[data-module=journal] .rec-preview audio,html[data-module=journal] .record-card audio{width:100%;margin:8px 0}
+/* ---- lecta · drawing --------------------------------------------------------------------------------------------- */
+html[data-module=journal] .dw-tools{display:flex;gap:4px;overflow-x:auto;padding:2px;margin:0 -2px;scrollbar-width:none}html[data-module=journal] .dw-tools::-webkit-scrollbar{display:none}
+html[data-module=journal] .dw-tools button{flex:0 0 58px;display:grid!important;justify-items:center;gap:3px;min-height:56px!important;padding:6px 2px!important;border-radius:14px!important;border:1px solid transparent;background:none;color:var(--text);font-size:10.5px}
+html[data-module=journal] .dw-tools button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-module=journal] .dw-tools button[aria-pressed=true]{background:var(--soft);border-color:var(--line);color:var(--accent)}
+html[data-module=journal] .dw-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+html[data-module=journal] .dw-row>button,html[data-module=journal] .dw-bg button,html[data-module=journal] .dw-photo{min-height:34px!important;padding:5px 11px!important;border-radius:999px!important;font-size:12.5px;border:1px solid var(--line);background:var(--panel);color:var(--text)}
+html[data-module=journal] .dw-bg{display:inline-flex;flex-wrap:wrap;gap:6px}html[data-module=journal] .dw-bg [aria-pressed=true]{background:var(--text);color:var(--panel)}
+html[data-module=journal] .dw-photo{position:relative;display:inline-flex;align-items:center;overflow:hidden}html[data-module=journal] .dw-photo input{position:absolute;inset:0;opacity:0}
+html[data-module=journal] .dw-colors{display:flex;align-items:center;gap:6px}
+html[data-module=journal] .dw-colors button{width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;border-radius:50%!important;background:var(--c)!important;border:2px solid var(--line)!important}
+html[data-module=journal] .dw-colors button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:1px}
+html[data-module=journal] .dw-custom{position:relative;width:28px;height:28px;border-radius:50%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);overflow:hidden}html[data-module=journal] .dw-custom input{position:absolute;inset:0;opacity:0}
+html[data-module=journal] .dw-size{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);flex:1;min-width:120px}html[data-module=journal] .dw-size input{flex:1}
+html[data-module=journal] .dw-stage{position:relative;display:grid;place-items:center;background:var(--bg);border-radius:16px;padding:6px}
+html[data-module=journal] .dw-stage canvas{display:block;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.12);touch-action:none;background:#fff}
+html[data-module=journal] .dw-text{position:absolute;min-width:120px;max-width:70%;border:1px dashed #3e7bfa!important;background:rgba(255,255,255,.9)!important;padding:4px 6px!important;font-weight:600;line-height:1.25;resize:none;z-index:2}
+
+html[data-module=journal] .ai-card .sectionhead{align-items:center}html[data-module=journal] .ai-close{margin-left:auto;width:36px!important;height:36px!important;min-height:36px!important;padding:0!important}
+html[data-module=journal] .ai-why{color:var(--accent)!important}
+html[data-module=journal] .rec-text summary{cursor:pointer;font-weight:600;font-size:14px;margin:4px 0}html[data-module=journal] .rec-text p{font-size:14px;line-height:1.55;max-height:220px;overflow:auto;margin:6px 0 0;white-space:pre-wrap}
+html[data-module=journal] .rec-busy{color:var(--accent);font-weight:600}
+
+/* lecta · compact AI recommendations bar + results like the rest (books shelf, film sheet extras) */
+html[data-module=journal] .ai-reco{margin:0 0 16px;position:relative;z-index:0}
+html[data-module=journal] .ai-ask{display:flex;align-items:center;gap:8px;height:42px;padding:0 4px 0 12px;border-radius:21px;background:var(--panel);border:1px solid var(--line)}
+html[data-module=journal] .ai-ask .ai-spark{margin:0;width:16px;height:16px;flex:0 0 16px}
+html[data-module=journal] .ai-ask input{flex:1;min-width:0;border:0!important;background:none!important;box-shadow:none!important;padding:0!important;min-height:38px!important;height:38px;font-size:14px!important;outline:0}
+html[data-module=journal] .ai-ask input::placeholder{color:var(--muted)}
+html[data-module=journal] .ai-go{width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;border-radius:50%!important;flex:0 0 34px;display:grid;place-items:center;background:var(--text)!important;color:var(--bg)!important;border:0!important}
+html[data-module=journal] .ai-go svg{width:16px;height:16px}html[data-module=journal] .ai-go:disabled{opacity:.75}
+html[data-module=journal] .ai-dots{display:flex;gap:3px}html[data-module=journal] .ai-dots i{width:4px;height:4px;border-radius:50%;background:currentColor;animation:aiDot 1s infinite ease-in-out}
+html[data-module=journal] .ai-dots i:nth-child(2){animation-delay:.15s}html[data-module=journal] .ai-dots i:nth-child(3){animation-delay:.3s}
+@keyframes aiDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+html[data-module=journal] .ai-status{display:flex;align-items:center;gap:10px;margin:7px 4px 0;font-size:12.5px;color:var(--muted)}
+html[data-module=journal] .ai-clear{margin-left:auto;background:none!important;border:0!important;padding:0!important;min-height:0!important;color:var(--muted)!important;font-size:12.5px;text-decoration:underline}
+html[data-module=journal] .ai-shelf{display:flex;gap:12px;overflow-x:auto;padding:12px 2px 4px;scroll-snap-type:x proximity;scrollbar-width:none}
+html[data-module=journal] .ai-shelf::-webkit-scrollbar{display:none}
+html[data-module=journal] .ai-book{flex:0 0 104px;display:grid;gap:3px;text-align:left;background:none!important;border:0!important;padding:0!important;min-height:0!important;scroll-snap-align:start;color:var(--text)}
+html[data-module=journal] .ai-book-cover{position:relative;display:grid;place-items:center;aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:var(--soft);padding:8px;text-align:center;font-size:11px;color:var(--muted)}
+html[data-module=journal] .ai-book-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+html[data-module=journal] .ai-book strong{font-size:12.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px}
+html[data-module=journal] .ai-book small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-module=journal] .ai-book-detail .cinema-cover img{width:100%;height:100%;object-fit:cover}
+html[data-module=journal] .cinema-detail .ai-why{display:flex;gap:6px;align-items:flex-start;margin:0;font-size:13.5px;color:var(--accent)}
+html[data-module=journal] .cinema-detail .ai-why .ai-spark{margin:1px 0 0}
+html[data-module=journal] .ai-about-btn{display:inline-flex!important;align-items:center;gap:6px;height:38px;min-height:38px!important;padding:0 14px!important;border-radius:19px!important;background:var(--soft)!important;border:1px solid var(--line)!important;color:var(--text)!important;font-size:13.5px;font-weight:600}
+html[data-module=journal] .ai-about-btn .ai-spark{margin:0}
+html[data-module=journal] .ai-about-body p{margin:0 0 8px;line-height:1.5}
+html[data-module=journal] .ai-forwho{font-size:13.5px;color:var(--muted)}
+html[data-module=journal] .ai-mood{display:flex;flex-wrap:wrap;gap:6px}html[data-module=journal] .ai-mood span{padding:3px 9px;border-radius:999px;background:var(--soft);font-size:12px;color:var(--muted)}
+html[data-module=journal] .ai-provider-label{margin:12px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+html[data-module=journal] .ai-providers{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;padding:2px 0 4px}html[data-module=journal] .ai-providers::-webkit-scrollbar{display:none}
+html[data-module=journal] .ai-provider{flex:0 0 62px;display:grid;justify-items:center;gap:6px;text-align:center}
+html[data-module=journal] .ai-provider-logo{width:52px;height:52px;border-radius:14px;overflow:hidden;display:grid;place-items:center;background:var(--soft);font-weight:700;box-shadow:0 0 0 1px var(--line)}
+html[data-module=journal] .ai-provider-logo img{width:100%;height:100%;object-fit:cover;display:block}
+html[data-module=journal] .ai-provider small{font-size:11px;line-height:1.2;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:62px}
+html[data-module=journal] .ai-jw{display:inline-block;margin-top:10px;font-size:13px;color:var(--accent);font-weight:600}
+html[data-module=journal] .ai-credit{margin:6px 0 0;font-size:11px;color:var(--muted)}
+
+/* lecta · full-screen note editor (Personal OS) */
+html[data-module=journal] #modal.nt-full[open]{inset:0!important;width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;margin:0!important;border:0!important;border-radius:0!important;background:var(--bg)!important;box-shadow:none!important}
+html[data-module=journal] #modal.nt-full>.dialoghead,html[data-module=journal] #modal.nt-full>.modalhead,html[data-module=journal] #modal.nt-full>header{display:none!important}
+html[data-module=journal][data-keyboard=open] #modal.nt-full[open]{top:var(--kb-top,0px)!important;height:var(--kb-visible,100%)!important;max-height:var(--kb-visible,100%)!important}
+html[data-module=journal] #modal.nt-full #modalBody{padding:0!important;display:flex;flex-direction:column;overflow:hidden!important}
+html[data-module=journal] .nt-editor{position:relative;display:flex!important;flex-direction:column;gap:0!important;flex:1;min-height:0;height:100%}
+html[data-module=journal] .nte-hidden{display:none!important}
+html[data-module=journal] .nte-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;flex:0 0 auto}
+html[data-module=journal] .nte-top-right{display:flex;gap:8px}
+html[data-module=journal] .nte-round{width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center;background:var(--panel)!important;border:1px solid var(--line)!important;color:var(--text)!important;box-shadow:none!important}
+html[data-module=journal] .nte-round.small{width:34px!important;height:34px!important;min-height:34px!important}
+html[data-module=journal] .nte-round.ok{background:var(--text)!important;color:var(--bg)!important;border-color:var(--text)!important}
+html[data-module=journal] :is(.nte-round,.nte-tool,.nte-style,.nte-pill) svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-module=journal] .nte-page{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:10px 22px 120px;-webkit-overflow-scrolling:touch}
+html[data-module=journal] .nte-date{display:block;background:none!important;border:0!important;padding:0!important;min-height:0!important;margin:6px 0 10px;color:var(--muted)!important;font-size:13px;font-weight:500}
+html[data-module=journal] .nt-editor [name=title]{display:block;width:100%;border:0!important;background:none!important;box-shadow:none!important;padding:0!important;min-height:0!important;margin:0 0 10px;font-size:30px!important;line-height:1.15;font-weight:650;letter-spacing:-.03em;color:var(--text);outline:0}
+html[data-module=journal] .nt-editor [name=title]::placeholder{color:var(--muted);opacity:.55}
+html[data-module=journal] .nt-editor #noteEditor{border:0!important;background:none!important;box-shadow:none!important;padding:0!important;position:relative;min-height:50vh!important;max-height:none!important;overflow:visible!important;font-size:17px;line-height:1.55;color:var(--text);outline:0}
+html[data-module=journal][data-keyboard=open] dialog[open].nt-full .editor{max-height:none!important;min-height:30vh!important}
+html[data-module=journal] .nt-editor #noteEditor.is-empty::before{content:attr(data-placeholder);color:var(--muted);opacity:.6;pointer-events:none;position:absolute}
+html[data-module=journal] .nt-editor #noteEditor h2{font-size:23px;margin:18px 0 6px;letter-spacing:-.02em}html[data-module=journal] .nt-editor #noteEditor h3{font-size:19px;margin:14px 0 4px}
+html[data-module=journal] .nt-editor #noteEditor blockquote{margin:10px 0;padding:2px 0 2px 14px;border-left:3px solid var(--accent);color:var(--muted)}
+html[data-module=journal] .nt-editor #noteEditor pre{font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);padding:10px 12px;border-radius:10px;white-space:pre-wrap}
+html[data-module=journal] .nt-editor #noteEditor img{max-width:100%;border-radius:12px}
+html[data-module=journal] .nt-editor .nt-foot{margin-top:18px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;border:0!important}
+/* the capsule */
+html[data-module=journal] .nte-dock{position:absolute;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;z-index:3}
+html[data-module=journal][data-keyboard=open] .nte-dock{bottom:10px}
+html[data-module=journal] .nte-cap{flex:1;min-width:0;display:flex;align-items:center;gap:2px;height:54px;padding:0 8px;border-radius:27px;background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.18);overflow-x:auto;scrollbar-width:none}
+html[data-module=journal] .nte-cap::-webkit-scrollbar{display:none}
+html[data-module=journal] .nte-style{display:inline-flex!important;align-items:center;gap:2px;height:40px;min-height:40px!important;padding:0 8px!important;border:0!important;background:none!important;color:var(--text)!important;font-size:15px;font-weight:600;flex:0 0 auto;white-space:nowrap}
+html[data-module=journal] .nte-style svg{width:15px;height:15px}
+html[data-module=journal] .nte-tool{width:40px!important;height:40px!important;min-height:40px!important;flex:0 0 40px;padding:0!important;border-radius:50%!important;border:0!important;background:none!important;color:var(--text)!important;display:grid!important;place-items:center;font-size:17px}
+html[data-module=journal] .nte-tool.on{background:var(--soft)!important}
+html[data-module=journal] .nte-sep{flex:0 0 1px;height:22px;background:var(--line);margin:0 4px}
+html[data-module=journal] .nte-ai{flex:0 0 54px;width:54px!important;height:54px!important;min-height:54px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center;background:var(--text)!important;color:var(--bg)!important;border:0!important;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+html[data-module=journal] .nte-ai svg{width:24px;height:24px;fill:currentColor;stroke:none}
+html[data-module=journal] .nte-fill{fill:currentColor}
+html[data-module=journal] :is(.nte-styles,.nte-ai-menu){position:absolute;bottom:64px;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.22);max-height:52vh;overflow:auto}
+html[data-module=journal] .nte-styles{left:0;min-width:210px}html[data-module=journal] .nte-ai-menu{right:0;min-width:220px}
+html[data-module=journal] :is(.nte-styles,.nte-ai-menu)[hidden]{display:none!important}
+html[data-module=journal] :is(.nte-styles,.nte-ai-menu) button{justify-content:flex-start!important;text-align:left;min-height:42px!important;padding:8px 12px!important;border-radius:12px!important;border:0!important;background:none!important;color:var(--text)!important;font-size:15px;font-weight:500}
+html[data-module=journal] :is(.nte-styles,.nte-ai-menu) button:active{background:var(--soft)!important}
+html[data-module=journal] .nte-styles .nte-s-h2{font-size:20px!important;font-weight:700}html[data-module=journal] .nte-styles .nte-s-h3{font-size:17px!important;font-weight:650}
+html[data-module=journal] .nte-styles .nte-s-quote{border-left:3px solid var(--accent)!important;border-radius:4px 12px 12px 4px!important}html[data-module=journal] .nte-styles .nte-s-mono{font-family:ui-monospace,Menlo,monospace!important}
+/* dictation */
+html[data-module=journal] .nte-rec{flex:1;display:flex;align-items:center;gap:10px;height:54px;padding:0 8px 0 18px;border-radius:27px;background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+html[data-module=journal] .nte-rec-time{font-variant-numeric:tabular-nums;font-weight:600;font-size:15px}
+html[data-module=journal] .nte-rec-dots{flex:1;display:flex;align-items:center;justify-content:center;gap:6px}
+html[data-module=journal] .nte-rec-dots i{width:4px;height:4px;border-radius:2px;background:var(--text);opacity:.7;transition:transform .12s}
+/* "…" sheet */
+html[data-module=journal] .nte-sheet{position:absolute;left:0;right:0;bottom:0;z-index:4;max-height:78%;overflow:auto;display:grid;gap:14px;padding:16px 18px calc(18px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line);border-radius:22px 22px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.18)}
+html[data-module=journal] .nte-sheet[hidden]{display:none!important}
+html[data-module=journal] .nte-sheet-head{display:flex;align-items:center;justify-content:space-between}
+html[data-module=journal] .nte-sheet-actions{display:flex;gap:10px;justify-content:space-between}
+html[data-module=journal] .nte-pill{display:inline-flex!important;align-items:center;gap:6px;height:40px;min-height:40px!important;padding:0 16px!important;border-radius:20px!important;background:var(--soft)!important;border:0!important;color:var(--text)!important;font-weight:600}
+html[data-module=journal] .nte-pill.primary{background:var(--text)!important;color:var(--bg)!important}html[data-module=journal] .nte-pill.danger{color:#c2413a!important}
+/* drawing */
+html[data-module=journal] .nte-sketch{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;background:var(--bg)}
+html[data-module=journal] .nte-sketch-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:10px 12px}
+html[data-module=journal] .nte-sketch-tools{display:flex;align-items:center;gap:4px}
+html[data-module=journal] .nte-dot{width:26px!important;height:26px!important;min-height:26px!important;padding:0!important;border-radius:50%!important;background:var(--c)!important;border:2px solid var(--bg)!important;box-shadow:0 0 0 1px var(--line)}
+html[data-module=journal] .nte-dot.on{box-shadow:0 0 0 2px var(--text)}
+html[data-module=journal] .nte-sketch canvas{flex:1;margin:0 12px 12px;border-radius:16px;background:#fff;border:1px solid var(--line);touch-action:none}
+html[data-module=journal] #modal #modalBody .nt-editor input[name=title]{padding:0!important;text-indent:0!important;border-radius:0!important}
+html[data-module=journal] .nte-cap .nte-tool{width:36px!important;height:36px!important;min-height:36px!important;flex:0 0 36px}
+html[data-module=journal] .nte-cap .nte-style{padding:0 6px!important}html[data-module=journal] .nte-sep{margin:0 2px}
+
+/* domo · kitchen timers */
+html[data-module=mi-espacio] .kt-card{margin-bottom:16px!important;display:grid;gap:10px}
+html[data-module=mi-espacio] .kt-head{display:flex;align-items:center;justify-content:space-between}html[data-module=mi-espacio] .kt-head h2{margin:0;font-size:18px}
+html[data-module=mi-espacio] .kt-new{display:inline-flex!important;align-items:center;gap:6px;min-height:38px!important;padding:0 14px!important;border-radius:19px!important}
+html[data-module=mi-espacio] .kt-row{--p:0;display:flex;align-items:center;gap:10px;padding:12px 12px 14px;border-radius:16px;background:var(--soft);position:relative;overflow:hidden}
+html[data-module=mi-espacio] .kt-copy{flex:1;min-width:0;display:grid;gap:2px}html[data-module=mi-espacio] .kt-copy strong{font-size:13px;color:var(--muted);font-weight:600}
+html[data-module=mi-espacio] .kt-time{font-size:30px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+html[data-module=mi-espacio] .kt-bar{position:absolute;left:0;bottom:0;height:4px;width:calc(var(--p)*100%);background:var(--accent);transition:width 1s linear}
+html[data-module=mi-espacio] .kt-row.paused .kt-time{opacity:.55}
+html[data-module=mi-espacio] .kt-row.done{background:var(--accent);color:var(--bg);animation:ktPulse 1s ease-in-out infinite alternate}html[data-module=mi-espacio] .kt-row.done .kt-copy strong{color:inherit}
+@keyframes ktPulse{to{filter:brightness(1.12)}}
+html[data-module=mi-espacio] .kt-actions{display:flex;gap:6px}
+html[data-module=mi-espacio] .kt-actions button{min-width:42px;min-height:42px!important;padding:0 10px!important;border-radius:21px!important;font-weight:700}
+html[data-module=mi-espacio] .kt-cancel{color:#c2413a!important}
+html[data-module=mi-espacio] .kt-presets{display:flex;flex-wrap:wrap;gap:8px}html[data-module=mi-espacio] .kt-presets button{min-height:38px!important;padding:0 13px!important;border-radius:19px!important;font-weight:600}
+html[data-module=mi-espacio] .kt-presets button.on{background:var(--text)!important;color:var(--bg)!important;border-color:transparent!important}
+html[data-module=mi-espacio] .kt-custom{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+html[data-module=organizador] .nubo-stage .ns-end{margin-top:14px;min-height:36px!important;padding:6px 16px!important;border-radius:18px!important;background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.18)!important;color:rgba(255,255,255,.85)!important;font-size:13px!important;font-weight:600}
+
+/* lecta · Documentos */
+html[data-module=journal] .doc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+html[data-module=journal] .doc-card{display:grid!important;gap:4px;text-align:left;padding:0!important;background:none!important;border:0!important;min-height:0!important;color:var(--text)}
+html[data-module=journal] .doc-thumb{position:relative;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--line);display:block}
+html[data-module=journal] .doc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+html[data-module=journal] .doc-thumb b{position:absolute;right:8px;bottom:8px;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;display:grid;place-items:center}
+html[data-module=journal] .doc-card strong{font-size:14px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html[data-module=journal] .doc-card small{font-size:12px;color:var(--muted)}
+html[data-module=journal] .doc-view{display:grid;gap:14px}
+html[data-module=journal] .doc-pages{display:grid;gap:12px}html[data-module=journal] .doc-pages figure{margin:0;display:grid;gap:4px;justify-items:center}
+html[data-module=journal] .doc-pages img{width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}html[data-module=journal] .doc-pages figcaption{font-size:12px;color:var(--muted)}
+html[data-module=journal] .doc-text summary{font-weight:600;cursor:pointer}html[data-module=journal] .doc-text p{font-size:13px;line-height:1.5;color:var(--muted);white-space:normal}
+html[data-module=journal] .doc-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+/* nubo · Mi inicio (widgets with real data) */
+html[data-module=centro] .nw-heading{display:flex;align-items:center;justify-content:space-between;margin:26px 2px 12px}html[data-module=centro] .nw-heading h2{margin:0;font-size:20px}
+html[data-module=centro] .nw-editbtn{min-height:34px!important;padding:0 14px!important;border-radius:17px!important;font-weight:650;background:var(--soft)!important;border:0!important;color:var(--text)!important}
+html[data-module=centro] .nw-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;grid-auto-flow:dense}
+html[data-module=centro] .nw{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:156px;padding:14px!important;border-radius:22px!important;background:var(--panel)!important;border:1px solid var(--line)!important;color:var(--text)!important;text-align:left;box-shadow:none!important;font:inherit;overflow:hidden}
+html[data-module=centro] .nw-wide{grid-column:span 2;min-height:0}
+html[data-module=centro] .nw-head{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:650;color:var(--muted)}
+html[data-module=centro] .nw-mark{width:20px;height:20px;border-radius:6px;flex:0 0 20px}
+html[data-module=centro] .nw-body{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+html[data-module=centro] .nw-small .nw-body{justify-content:flex-end}
+html[data-module=centro] .nw-big{font-size:34px;font-weight:650;letter-spacing:-.04em;line-height:1.05;font-variant-numeric:tabular-nums}html[data-module=centro] .nw-big small{font-size:16px;letter-spacing:0;font-weight:600;color:var(--muted)}
+html[data-module=centro] .nw-money{font-size:26px}html[data-module=centro] .nw-soft{color:var(--muted)}
+html[data-module=centro] .nw-sub{margin:0;font-size:12.5px;line-height:1.35;color:var(--muted)}html[data-module=centro] .nw-sub b{color:#c2413a;font-weight:650}
+html[data-module=centro] .nw-title{font-size:16px;font-weight:650;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html[data-module=centro] .nw-when{font-size:12px;font-weight:700;color:var(--accent);text-transform:capitalize}
+html[data-module=centro] .nw-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+html[data-module=centro] .nw-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}html[data-module=centro] .nw-list li{display:flex;align-items:center;gap:8px;font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-module=centro] .nw-list li span{margin-left:auto;font-size:12px;color:var(--muted)}
+html[data-module=centro] .nw-dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:var(--accent);opacity:.6}html[data-module=centro] .nw-dot.hi{background:#c2413a;opacity:1}
+html[data-module=centro] .nw-events{list-style:none;margin:0;padding:0;display:grid;gap:8px}html[data-module=centro] .nw-events li{display:flex;align-items:center;gap:12px;min-width:0}
+html[data-module=centro] .nw-events li span{flex:0 0 72px;display:grid;font-size:12px;color:var(--muted);text-transform:capitalize}html[data-module=centro] .nw-events li span b{font-size:13px;color:var(--text)}
+html[data-module=centro] .nw-events li strong{font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+html[data-module=centro] .nw-ring{--p:0;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*360deg),var(--soft) 0);display:grid;place-items:center}
+html[data-module=centro] .nw-ring span{width:50px;height:50px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-weight:700;font-size:15px}
+html[data-module=centro] .nw-chips{display:flex;flex-wrap:wrap;gap:6px}html[data-module=centro] .nw-chips span{padding:3px 9px;border-radius:999px;background:var(--soft);font-size:12px}html[data-module=centro] .nw-chips span.on{background:var(--accent);color:var(--bg)}
+html[data-module=centro] .nw-bars{display:grid;gap:6px;margin-top:6px}html[data-module=centro] .nw-bars div{display:grid;grid-template-columns:86px 1fr auto;align-items:center;gap:8px;font-size:12.5px}
+html[data-module=centro] .nw-bars span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}html[data-module=centro] .nw-bars i{--w:0;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) calc(var(--w)*100%),var(--soft) 0)}
+html[data-module=centro] .nw-posters{display:flex;gap:8px;overflow:hidden}html[data-module=centro] .nw-posters span{position:relative;flex:0 0 calc((100% - 32px)/5);aspect-ratio:2/3;border-radius:9px;background:var(--soft);overflow:hidden;display:grid;place-items:end start}
+html[data-module=centro] .nw-posters img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}html[data-module=centro] .nw-posters small{position:relative;padding:4px;font-size:9.5px;line-height:1.15;color:var(--muted)}
+html[data-module=centro] .nw-actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+html[data-module=centro] .nw-actions button{display:grid!important;justify-items:center;gap:5px;min-height:62px!important;padding:8px 2px!important;border-radius:16px!important;background:var(--soft)!important;border:0!important;color:var(--text)!important;font-size:11.5px;font-weight:650}
+html[data-module=centro] .nw-actions svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+html[data-module=centro] .nw-k-actions{min-height:0}
+html[data-module=centro] .nw-add{grid-column:span 2;min-height:52px!important;border-radius:18px!important;border:1.5px dashed var(--line)!important;background:none!important;color:var(--muted)!important;font-weight:650}
+html[data-module=centro] .nw-board.editing .nw{animation:nwJiggle .28s ease-in-out infinite alternate;touch-action:none;user-select:none;-webkit-user-select:none}
+html[data-module=centro] .nw-board.editing .nw:nth-child(2n){animation-delay:.14s}
+html[data-module=centro] .nw.dragging{animation:none!important;z-index:5;box-shadow:0 18px 40px rgba(0,0,0,.25)!important;opacity:.95}
+@keyframes nwJiggle{from{transform:rotate(-.6deg)}to{transform:rotate(.6deg)}}
+html[data-module=centro] .nw-edit{position:absolute;top:8px;right:8px;left:8px;display:flex;justify-content:space-between;z-index:2;pointer-events:none}
+html[data-module=centro] .nw-edit button{pointer-events:auto;min-height:26px!important;height:26px;padding:0 10px!important;border-radius:13px!important;font-size:12px;font-weight:700;background:var(--text)!important;color:var(--bg)!important;border:0!important}
+html[data-module=centro] .nw-remove{width:26px;padding:0!important;font-size:18px!important;line-height:1;background:#c2413a!important;color:#fff!important}
+html[data-module=centro] .nw-gallery{display:grid;gap:14px}html[data-module=centro] .nw-option{display:grid;grid-template-columns:1fr;gap:8px;padding:12px;border-radius:18px;background:var(--soft)}
+html[data-module=centro] .nw-preview{display:block;pointer-events:none}html[data-module=centro] .nw-preview .nw{min-height:120px}
+html[data-module=centro] .nw-option-copy strong{display:block;font-size:15px}html[data-module=centro] .nw-option-copy small{font-size:12.5px;color:var(--muted)}
+html[data-module=centro] .nw-option .primary{min-height:40px!important;border-radius:14px!important}
+html[data-module=centro] .nw-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);margin-top:20px;padding-top:18px}html[data-module=centro] .nw-setting p{margin:6px 0 0}
+html[data-module=centro] .nw{align-items:stretch!important;justify-content:flex-start!important;text-align:left!important}
+html[data-module=centro] .nw-head,html[data-module=centro] .nw-body{justify-content:flex-start;text-align:left;align-items:flex-start;width:100%}
+html[data-module=centro] .nw-head{align-items:center!important}html[data-module=centro] .nw-small .nw-body{justify-content:flex-end!important}
+html[data-module=centro] .nw-events,html[data-module=centro] .nw-list,html[data-module=centro] .nw-bars,html[data-module=centro] .nw-actions,html[data-module=centro] .nw-posters{width:100%}
+html[data-module=centro] .nw-board.editing .nw{padding-top:42px!important}
+/* lecta · graph hubs and reasons */
+
+
+
+html[data-module=journal] .lk-edge.to-hub{stroke-dasharray:3 4;stroke-opacity:.35}
+html[data-module=journal] .lk-labels text{font-size:9px;font-weight:600;fill:var(--accent);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3px;pointer-events:none}
+html[data-module=journal] .lk-why{display:block;font-style:normal;font-size:12px;color:var(--accent);margin-top:2px;white-space:normal}
+html[data-module=journal] .lk-row span{white-space:normal}
+html[data-module=journal] .lk-why-intro{margin:4px 0 6px!important}
+/* lecta · English */
+html[data-module=journal] .en-ai{display:grid;gap:10px;margin:0 0 16px!important}html[data-module=journal] .en-ai strong{display:flex;align-items:center;gap:6px}
+html[data-module=journal] .en-input{display:flex;gap:8px;align-items:center}html[data-module=journal] .en-input input{flex:1;min-width:0}
+html[data-module=journal] .en-chat{display:grid;gap:12px}
+html[data-module=journal] .en-scenes{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}html[data-module=journal] .en-scenes::-webkit-scrollbar{display:none}
+html[data-module=journal] .en-scenes button{flex:0 0 auto;min-height:34px!important;padding:0 13px!important;border-radius:17px!important;font-size:13px}html[data-module=journal] .en-scenes button.active{background:var(--text)!important;color:var(--bg)!important}
+html[data-module=journal] .en-thread{display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow:auto;padding:4px 2px}
+html[data-module=journal] .en-msg{position:relative;max-width:86%;padding:10px 12px;border-radius:18px;font-size:15px;line-height:1.4}
+html[data-module=journal] .en-msg p{margin:0}html[data-module=journal] .en-msg.tutor{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px;padding-right:40px}
+html[data-module=journal] .en-msg.me{align-self:flex-end;background:var(--accent);color:var(--bg);border-bottom-right-radius:6px}
+html[data-module=journal] .en-msg details{margin-top:6px;font-size:13px;color:var(--muted)}
+html[data-module=journal] .en-say{position:absolute;right:6px;top:6px;width:30px!important;height:30px!important;min-height:30px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center;background:var(--panel)!important;border:0!important}
+html[data-module=journal] .en-say svg,html[data-module=journal] .en-mic svg,html[data-module=journal] .en-correct .ghost svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-module=journal] .en-fix{margin-top:6px!important;font-size:13px;opacity:.92}
+html[data-module=journal] .en-mic{width:42px!important;height:42px!important;min-height:42px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center;flex:0 0 42px}
+html[data-module=journal] .en-mic.on{background:#c2413a!important;color:#fff!important}
+html[data-module=journal] .en-fixbtn{display:inline-flex!important;align-items:center;gap:6px;margin-top:8px}
+html[data-module=journal] .en-correct{display:grid;gap:14px}html[data-module=journal] .en-correct h3{font-size:14px;margin:0 0 6px}
+html[data-module=journal] .en-praise{padding:10px 12px;border-radius:14px;background:var(--soft);margin:0}
+html[data-module=journal] .en-corrected{font-size:15px;line-height:1.5}
+html[data-module=journal] .en-mistakes,html[data-module=journal] .en-words{margin:0;padding-left:18px;display:grid;gap:8px}html[data-module=journal] .en-mistakes small{display:block;color:var(--muted)}
+/* lecta · books: reading now, free books, reader */
+html[data-module=journal] .rd-now{margin:0 0 18px}html[data-module=journal] .rd-now h2{font-size:18px;margin:0 0 10px}
+html[data-module=journal] .rd-strip{display:grid;gap:10px}
+html[data-module=journal] .rd-card{display:flex;gap:12px;padding:12px;border-radius:18px;background:var(--panel);border:1px solid var(--line)}
+html[data-module=journal] .rd-cover{flex:0 0 64px;width:64px;aspect-ratio:2/3;padding:0!important;min-height:0!important;border-radius:9px!important;overflow:hidden;background:var(--soft)!important;border:0!important;display:grid!important;place-items:center;font-size:10px;color:var(--muted);text-align:center}
+html[data-module=journal] .rd-cover img{width:100%;height:100%;object-fit:cover}
+html[data-module=journal] .rd-copy{flex:1;min-width:0;display:grid;gap:5px;align-content:start}html[data-module=journal] .rd-copy strong{font-size:15px}html[data-module=journal] .rd-copy small{color:var(--muted);font-size:12.5px}
+html[data-module=journal] .rd-actions{display:flex;flex-wrap:wrap;gap:6px}html[data-module=journal] .rd-actions button{min-height:34px!important;padding:0 12px!important;border-radius:17px!important;font-size:13px}
+html[data-module=journal] .rd-card-actions{margin-top:10px}
+html[data-module=journal] .rd-free{margin:0 0 18px!important;display:grid;gap:10px}html[data-module=journal] .rd-free h2{display:flex;align-items:center;gap:8px;margin:0}
+html[data-module=journal] .rd-free h2 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
+html[data-module=journal] .rd-search{display:flex;gap:8px}html[data-module=journal] .rd-search input{flex:1;min-width:0}
+html[data-module=journal] .rd-langs{display:flex;gap:6px}html[data-module=journal] .rd-langs button{min-height:32px!important;padding:0 12px!important;border-radius:16px!important;font-size:12.5px}html[data-module=journal] .rd-langs button.active{background:var(--text)!important;color:var(--bg)!important}
+html[data-module=journal] .rd-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+html[data-module=journal] .rd-result{display:grid;gap:4px;align-content:start}html[data-module=journal] .rd-result .rd-cover{width:100%;flex:none;font-size:12px;padding:6px!important}
+html[data-module=journal] .rd-result strong{font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}html[data-module=journal] .rd-result small{font-size:12px;color:var(--muted)}
+html[data-module=journal] .rd-progress .rd-book{display:flex;gap:12px;align-items:center}html[data-module=journal] .rd-progress .rd-book img{width:48px;border-radius:7px}html[data-module=journal] .rd-progress small{display:block;color:var(--muted)}
+html[data-module=journal] .rd-progress input[type=range]{width:100%}html[data-module=journal] .rd-quick{display:flex;gap:8px}html[data-module=journal] .rd-quick button{flex:1}
+html[data-module=journal] .rd-pct{font-size:30px;margin:0;text-align:center}
+html[data-module=journal] #modal.rd-full[open]{inset:0!important;width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;margin:0!important;border:0!important;border-radius:0!important;background:var(--bg)!important}
+html[data-module=journal] #modal.rd-full>.dialoghead{display:none!important}html[data-module=journal] #modal.rd-full #modalBody{padding:0!important}
+html[data-module=journal] .rd-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--line)}
+html[data-module=journal] .rd-title{flex:1;min-width:0;display:grid}html[data-module=journal] .rd-title strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html[data-module=journal] .rd-title small{font-size:12px;color:var(--muted)}
+html[data-module=journal] .rd-round{width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center;font-weight:700;font-size:15px}
+html[data-module=journal] .rd-text{padding:18px 22px 10px;font-family:Georgia,'Iowan Old Style','Times New Roman',serif;line-height:1.65;color:var(--text);max-width:680px;margin:0 auto}
+html[data-module=journal] .rd-text p{margin:0 0 1em}html[data-module=journal] .rd-more{height:40px}
+html[data-module=journal] .rd-foot{padding:0 22px 40px;max-width:680px;margin:0 auto}
+/* numio · Balance, ¿puedo gastar?, suscripciones */
+html[data-module=iris] .np-hero{display:grid;gap:8px;border-radius:22px!important}html[data-module=iris] .np-big{font-size:38px;font-weight:650;letter-spacing:-.04em;line-height:1.05}
+html[data-module=iris] .np-ok .np-big{color:#2f8f5b}html[data-module=iris] .np-warn .np-big{color:#c08a1e}html[data-module=iris] .np-bad .np-big{color:#c2413a}
+html[data-module=iris] .np-day{margin:0;font-size:14px}html[data-module=iris] .np-flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}
+html[data-module=iris] .np-flow span{display:grid;gap:2px;padding:10px 12px;border-radius:14px;background:var(--soft);font-size:12px;color:var(--muted)}html[data-module=iris] .np-flow b{font-size:15px;color:var(--text)}
+html[data-module=iris] .np-rate{display:flex!important;align-items:center;justify-content:space-between;gap:10px;font-size:13px}html[data-module=iris] .np-rate select{width:auto}
+html[data-module=iris] .np-ask{display:grid;gap:10px}html[data-module=iris] .np-ask h2{margin:0}
+html[data-module=iris] .np-verdict{padding:12px 14px;border-radius:16px;background:var(--soft);display:grid;gap:6px}html[data-module=iris] .np-verdict strong{font-size:17px}html[data-module=iris] .np-verdict p{margin:0;font-size:14px}
+html[data-module=iris] .np-verdict.np-ok strong{color:#2f8f5b}html[data-module=iris] .np-verdict.np-warn strong{color:#c08a1e}html[data-module=iris] .np-verdict.np-bad strong{color:#c2413a}
+html[data-module=iris] .np-ai{display:flex;gap:6px;align-items:flex-start}html[data-module=iris] .ai-spark{width:16px;height:16px;fill:var(--accent);flex:0 0 16px;margin-top:2px}
+html[data-module=iris] .np-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}html[data-module=iris] .np-list li{display:flex;justify-content:space-between;align-items:center;gap:10px}
+html[data-module=iris] .np-list small{display:block;font-size:12px;color:var(--muted)}html[data-module=iris] .np-list b{white-space:nowrap}
+html[data-module=iris] .np-cats{display:grid;gap:10px;margin-top:10px}html[data-module=iris] .np-cat{display:grid;grid-template-columns:96px 1fr auto;gap:10px;align-items:center;font-size:13px}
+html[data-module=iris] .np-cat span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html[data-module=iris] .np-cat i{font-style:normal;font-size:10.5px;color:var(--muted)}
+html[data-module=iris] .np-bar{position:relative;height:8px;border-radius:4px;background:var(--soft)}html[data-module=iris] .np-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--accent)}
+html[data-module=iris] .np-bar>em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.5}html[data-module=iris] .np-cat.over .np-bar>i{background:#c2413a}
+html[data-module=iris] .np-503020{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}html[data-module=iris] .np-503020 span{display:grid;padding:10px;border-radius:14px;background:var(--soft);font-size:12px}html[data-module=iris] .np-503020 b{font-size:17px}html[data-module=iris] .np-503020 small{color:var(--muted)}
+html[data-module=iris] .np-tips{margin:8px 0 12px;padding-left:18px;display:grid;gap:8px;font-size:14px}
+html[data-module=iris] .np-ai-box{display:flex;gap:8px;padding:12px;border-radius:16px;background:var(--soft);font-size:14px}html[data-module=iris] .np-ai-box p{margin:0 0 6px}html[data-module=iris] .np-ai-box ul{margin:0;padding-left:18px;display:grid;gap:6px}
+html[data-module=iris] .np-subs{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+html[data-module=iris] .np-subs li{display:grid;grid-template-columns:40px 1fr auto;gap:4px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}html[data-module=iris] .np-subs li.off{opacity:.55}
+html[data-module=iris] .np-sub-mark{grid-row:span 2;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:var(--bg);font-weight:700}
+html[data-module=iris] .np-sub-copy{display:grid;min-width:0}html[data-module=iris] .np-sub-copy small{font-size:12px;color:var(--muted)}
+html[data-module=iris] .np-sub-actions{grid-column:2/4;display:flex;gap:6px}html[data-module=iris] .np-sub-actions button{min-height:32px!important;padding:0 12px!important;border-radius:16px!important;font-size:12.5px}
+html[data-module=iris] .np-presets{display:flex;flex-wrap:wrap;gap:6px}html[data-module=iris] .np-presets button{min-height:32px!important;padding:0 11px!important;border-radius:16px!important;font-size:12.5px}
+html[data-module=iris] .np-statement{display:grid;gap:10px;margin-bottom:16px}html[data-module=iris] .np-statement h2{margin:0}
+html[data-module=journal] .en-msg.me p,html[data-module=journal] .en-msg.me span,html[data-module=journal] .en-msg.me b{color:var(--bg)!important;opacity:1}
+html[data-module=journal] .lk-row{align-items:flex-start!important}html[data-module=journal] .lk-row>i{margin-top:6px;flex:0 0 10px}
+html[data-module=iris] .np-auto{display:grid;gap:12px}html[data-module=iris] .np-auto-state{margin:0;font-size:13px;font-weight:600}html[data-module=iris] .np-auto-state.ok{color:#2f8f5b}html[data-module=iris] .np-auto-state.bad{color:#c2413a}
+html[data-module=iris] .np-howto ol{margin:8px 0;padding-left:20px;display:grid;gap:10px;font-size:14px;line-height:1.45}html[data-module=iris] .np-howto code{font-size:12.5px;background:var(--soft);padding:1px 5px;border-radius:5px}
+html[data-module=iris] .np-two{display:flex;flex-wrap:wrap;gap:8px}
+html[data-module=iris] .np-list li .np-sub-actions{flex:0 0 100%}html[data-module=iris] .np-list li{flex-wrap:wrap}
+
+/* numio · Vaquitas — listas agrupadas de iOS, una sola tinta de acento, montos tabulares */
+.vq-screen{--vq-in:#2f9e55;--vq-out:#d0453a;--vq-fill:color-mix(in srgb,var(--text) 6%,transparent);--vq-fill-2:color-mix(in srgb,var(--text) 10%,transparent);padding-bottom:88px}
+body.dark .vq-screen{--vq-in:#5fd087;--vq-out:#ff7b70}
+.vq-screen h1{letter-spacing:-.025em}
+.vq-screen h2{font-size:17px;margin:0 0 4px;letter-spacing:-.01em}
+.vq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+.vq-head h1,.vq-title{font-size:32px;line-height:1.08;margin:0}
+.vq-sub{color:var(--muted);margin:6px 0 0;max-width:42ch;font-size:15px;line-height:1.4}
+.vq-head-actions{display:flex;gap:8px}
+.vq-screen button{transition:transform 140ms ease-out,background-color 140ms ease-out}
+.vq-screen button:active{transform:scale(.97)}
+.vq-cta{border-radius:999px!important;padding:10px 16px!important;font-weight:650}
+.vq-ghost{background:var(--vq-fill)!important;border:0!important;border-radius:999px!important;padding:9px 14px!important;font-weight:600;color:var(--text)}
+.vq-ghost.sm,.vq-screen .primary.sm,.modal .primary.sm{padding:6px 12px!important;font-size:14px;min-height:34px!important}
+.vq-ghost svg{width:17px;height:17px}
+.vq-link{background:none!important;border:0!important;color:var(--accent);font-weight:600;padding:8px!important}
+.vq-join{margin:8px auto 0;display:flex!important}
+.vq-caption{margin:22px 6px 7px;font-size:12px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.vq-list,.vq-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.vq-card{padding:14px 16px;margin:0 0 12px}
+.vq-list.flat{background:none;border:0;border-radius:0;margin:6px -16px 0}
+.vq-row{display:flex!important;align-items:center;gap:12px;width:100%;padding:12px 16px!important;border:0!important;border-radius:0!important;background:none!important;text-align:left;justify-content:flex-start!important;color:var(--text);min-height:64px}
+.vq-row+.vq-row{box-shadow:inset 0 1px 0 var(--line)}
+.vq-row:active{background:var(--vq-fill)!important;transform:none!important}
+.vq-chev{color:var(--muted);display:flex;margin-left:2px}.vq-chev svg{width:16px;height:16px}
+.vq-row-copy{display:grid;min-width:0;flex:1;gap:1px}
+.vq-row-copy strong{font-weight:600;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vq-row-copy small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vq-row-copy i,.vq-t-copy i{font-style:normal;font-size:11px;font-weight:650;color:var(--muted);background:var(--vq-fill-2);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.vq-row-copy i.acc{color:var(--accent);background:var(--soft)}
+.vq-row-end{display:flex;gap:6px;align-items:center;margin-left:auto}
+.vq-closed .vq-row{opacity:.72}
+.vq-tile{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:var(--soft);color:var(--accent);font-weight:700}
+.vq-tile svg{width:20px;height:20px}
+.vq-tile.sm{width:34px;height:34px;border-radius:10px;font-size:14px;background:color-mix(in srgb,var(--t,var(--accent)) 16%,transparent);color:var(--t,var(--accent))}
+.vq-av{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;flex-shrink:0;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:var(--t);background:color-mix(in srgb,var(--t) 18%,var(--panel))}
+.vq-av.lg{width:52px;height:52px;font-size:18px}
+.vq-stack{display:inline-flex}
+.vq-stack .vq-av{width:28px;height:28px;font-size:11px;box-shadow:0 0 0 2px var(--bg)}
+.vq-stack .vq-av+.vq-av{margin-left:-8px}
+.vq-more{--t:var(--muted)}
+.vq-people-line{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;margin:10px 0 14px;min-width:0}
+.vq-people-line>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vq-pill{flex-shrink:0;font-size:12.5px;font-weight:650;padding:4px 10px;border-radius:999px;background:var(--vq-fill);color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.vq-pill.in{color:var(--vq-in);background:color-mix(in srgb,var(--vq-in) 14%,transparent)}
+.vq-pill.out{color:var(--vq-out);background:color-mix(in srgb,var(--vq-out) 13%,transparent)}
+.vq-pill.ok{color:var(--accent);background:var(--soft)}
+.vq-balance{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border:1px solid var(--line);border-radius:18px;margin:0 0 4px}
+.vq-balance div{padding:14px 16px;display:grid;gap:2px}
+.vq-balance div+div{box-shadow:inset 1px 0 0 var(--line)}
+.vq-balance span{font-size:13px;color:var(--muted)}
+.vq-balance b{font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.vq-balance b.in{color:var(--vq-in)}.vq-balance b.out{color:var(--vq-out)}
+.vq-remind{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;margin:0 0 10px;background:color-mix(in srgb,#e0a32e 14%,var(--panel));border:1px solid color-mix(in srgb,#e0a32e 30%,transparent)}
+.vq-remind-ic{color:#c98a12;display:flex}.vq-remind-ic svg{width:22px;height:22px}
+.vq-remind div{flex:1;display:grid}.vq-remind small{color:var(--muted)}
+.vq-remind button{border-radius:999px!important;padding:7px 14px!important;font-weight:600}
+.vq-empty{text-align:center;display:grid;gap:10px;justify-items:center;padding:30px 22px 24px;background:var(--panel);border:1px solid var(--line);border-radius:22px}
+.vq-empty h2{font-size:20px;margin:6px 0 0}.vq-empty p{margin:0 0 6px;color:var(--muted);max-width:34ch;line-height:1.45}
+.vq-empty-art .vq-av{width:44px;height:44px;font-size:15px;box-shadow:0 0 0 3px var(--panel)}
+.vq-empty-art .vq-av+.vq-av{margin-left:-12px}
+.vq-foot{color:var(--muted);font-size:13px;margin:14px 6px;line-height:1.45}
+.vq-note{color:var(--muted);background:var(--vq-fill);border-radius:14px;padding:12px 14px;margin:0 0 12px;font-size:14px}
+.vq-note.bad{color:var(--vq-out);background:color-mix(in srgb,var(--vq-out) 10%,transparent)}
+.vq-muted{color:var(--muted);font-size:14px;margin:6px 0 2px;line-height:1.45}
+.vq-nav{display:flex;align-items:center;justify-content:space-between;margin:4px -6px 6px;min-height:40px}
+.vq-back{display:inline-flex!important;align-items:center;gap:2px;background:none!important;border:0!important;color:var(--accent);font-weight:600;padding:6px!important;max-width:75%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.vq-back svg{width:20px;height:20px}
+.vq-icon{width:38px;height:38px;border-radius:50%!important;padding:0!important;display:grid!important;place-items:center;background:var(--vq-fill)!important;border:0!important;color:var(--text)}
+.vq-icon svg{width:20px;height:20px}
+.vq-kind{color:var(--accent);font-weight:650;font-size:13.5px;margin:4px 0 2px}
+.vq-hero{display:grid;gap:2px;padding:18px 18px 14px;border-radius:22px;margin:0 0 12px;background:var(--panel);border:1px solid var(--line)}
+.vq-hero>span{font-size:14px;font-weight:600;color:var(--muted)}
+.vq-hero>b{font-size:38px;line-height:1.1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;font-weight:750}
+.vq-hero.in{background:color-mix(in srgb,var(--vq-in) 10%,var(--panel));border-color:color-mix(in srgb,var(--vq-in) 22%,transparent)}.vq-hero.in>b,.vq-hero.in>span{color:var(--vq-in)}
+.vq-hero.out{background:color-mix(in srgb,var(--vq-out) 9%,var(--panel));border-color:color-mix(in srgb,var(--vq-out) 22%,transparent)}.vq-hero.out>b,.vq-hero.out>span{color:var(--vq-out)}
+.vq-hero-row{display:flex;gap:22px;margin-top:10px;padding-top:12px;box-shadow:inset 0 1px 0 var(--line)}
+.vq-hero-row span{display:grid;font-size:12.5px;color:var(--muted)}
+.vq-hero-row strong{font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.vq-h2row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}.vq-h2row h2{margin:0}
+.vq-done{display:flex;gap:12px;align-items:center;padding:6px 0}.vq-done>svg{color:var(--vq-in);width:26px;height:26px}.vq-done strong{display:block}.vq-done small{color:var(--muted)}
+.vq-transfers,.vq-expenses,.vq-people,.vq-paid-list{list-style:none;margin:6px 0 0;padding:0;display:grid}
+.vq-transfers li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 12px;padding:12px 0}
+.vq-transfers li+li,.vq-expenses li+li,.vq-paid-list li+li,.vq-people li+li{box-shadow:inset 0 1px 0 var(--line)}
+.vq-t-copy{display:grid;min-width:0}.vq-t-copy strong{font-size:15px;font-weight:600}.vq-t-copy small{color:var(--muted);font-size:13px}
+.vq-to svg{width:14px;height:14px;vertical-align:-2px;color:var(--muted)}
+.vq-amt{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:650}
+.vq-t-actions{grid-column:2/4;display:flex;gap:8px;justify-content:flex-end}
+.vq-t-actions svg{width:15px;height:15px}
+.vq-alias{display:inline!important;padding:0!important;border:0!important;background:none!important;color:var(--accent);font-size:13px;min-height:0!important}
+.vq-paid{border-radius:999px!important;padding:6px 14px!important;min-height:34px!important;background:var(--accent)!important;color:var(--panel)!important;border:0!important;font-weight:650;font-size:14px}
+.vq-expenses li,.vq-paid-list li{display:flex;align-items:center;gap:12px;padding:11px 0;min-height:56px}
+.vq-x{padding:6px!important;border:0!important;background:none!important;color:var(--muted);min-height:34px!important}.vq-x svg{width:18px;height:18px}
+.vq-people li>button{display:flex!important;width:100%;align-items:center;gap:12px;padding:10px 0!important;border:0!important;background:none!important;text-align:left;justify-content:flex-start!important;color:inherit}
+.vq-people li>button:disabled{opacity:1;cursor:default}
+.vq-people li{display:flex;align-items:center;gap:12px;padding:10px 0}
+.vq-card.vq-people{padding:4px 16px}
+.vq-people li:has(>button){padding:0}
+.vq-state{font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.vq-state.in{color:var(--vq-in)}.vq-state.out{color:var(--vq-out)}
+.vq-loose{box-shadow:inset 0 1px 0 var(--line)}
+.vq-share{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin:16px 0 0}
+.vq-share button{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:14px!important;font-weight:650}
+.vq-share svg{width:18px;height:18px}
+.vq-wa{background:#25d366!important;color:#04361b!important;border:0!important}
+.vq-share>:only-child{grid-column:1/-1}
+.vq-fab{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:20;display:inline-flex!important;align-items:center;gap:6px;border-radius:999px!important;padding:13px 22px!important;font-weight:650;box-shadow:0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
+.vq-fab:active{transform:translateX(-50%) scale(.97)!important}
+.vq-me-card{display:flex;align-items:center;gap:14px}
+.vq-search{display:flex;gap:8px;margin:12px 0}
+.vq-at{position:relative;display:block;flex:1}
+.vq-at i{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);font-weight:600;pointer-events:none}
+.vq-screen .vq-at input,.modal .vq-at input{padding-left:30px!important;width:100%}
+.vq-form{display:grid;gap:12px}
+.vq-form label small{color:var(--muted);font-weight:400}
+.vq-muted-card{color:var(--muted);font-size:14px}
+/* forms inside the modal */
+.vq-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:2px;border-radius:10px;background:var(--soft)}
+.vq-seg label{position:relative;display:block;margin:0}.vq-seg input{position:absolute;opacity:0;pointer-events:none}
+.vq-seg span{display:block;text-align:center;padding:7px 4px;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:background-color 160ms ease-out,color 160ms ease-out}
+.vq-seg input:checked+span{background:var(--panel);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.vq-seg input:focus-visible+span{outline:2px solid var(--accent)}
+.vq-split,.vq-pick{border:1px solid var(--line);border-radius:14px;padding:4px 12px 10px;margin:0;min-width:0}
+.vq-split legend,.vq-pick legend{font-size:14px;color:var(--muted);padding:0 4px}
+.vq-split-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px}.vq-split-row+.vq-split-row{box-shadow:inset 0 1px 0 var(--line)}
+.vq-split-row .checklabel{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;margin:0;font-weight:500;min-width:0}
+.vq-split-row .vq-av{width:28px;height:28px;font-size:11px}
+.vq-split-row input[data-number-editor]{width:110px;text-align:right}
+.vq-split-row input[type=checkbox],.vq-mine input,.vq-check input{width:20px;height:20px;margin:0;flex-shrink:0;accent-color:var(--accent)}
+.vq-each{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.vq-split-hint{margin:6px 0 0!important}
+.vq-mine,.vq-check{display:flex!important;flex-direction:row!important;align-items:center;gap:10px}
+.vq-mine small{color:var(--muted)}
+.vq-pick-chips{display:flex;flex-wrap:wrap;gap:8px;padding-top:6px}
+.vq-pick-chips label{margin:0;position:relative}.vq-pick-chips input{position:absolute;opacity:0}
+.vq-pick-chips span,.vq-pick-chips button{display:inline-flex!important;align-items:center;gap:8px;padding:4px 12px 4px 4px!important;border-radius:999px!important;border:1px solid var(--line)!important;background:var(--panel)!important;font-weight:600;font-size:14px;color:var(--text);cursor:pointer;min-height:38px}
+.vq-pick-chips .vq-av{width:28px;height:28px;font-size:11px}
+.vq-pick-chips input:checked+span{border-color:var(--accent)!important;background:var(--soft)!important}
+.vq-pick-chips input:focus-visible+span{outline:2px solid var(--accent)}
+.vq-receipt{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;padding:12px;border-radius:14px;background:var(--soft)}
+.vq-receipt-ic{grid-row:span 2;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--panel);color:var(--accent)}.vq-receipt-ic svg{width:20px;height:20px}
+.vq-receipt-copy{display:grid}.vq-receipt-copy small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.vq-receipt-btns{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.vq-chip-btn{display:inline-flex!important;align-items:center;gap:6px;padding:7px 12px!important;border-radius:999px!important;background:var(--panel)!important;border:0!important;font-weight:600;font-size:14px;cursor:pointer;color:var(--text);min-height:36px}
+.vq-chip-btn svg{width:16px;height:16px}
+.vq-chip-btn:focus-within{outline:2px solid var(--accent)}
+.vq-receipt-state{grid-column:1/-1;margin:6px 0 0;font-size:13.5px;color:var(--text)}.vq-receipt-state.bad{color:var(--vq-out,#d0453a)}
+.vq-menu{gap:10px}
+@media (prefers-reduced-motion:reduce){.vq-screen button,.vq-seg span{transition:none}}
+
+/* lecta · knowledge graph: dots and labels keep their size on screen; labels that would collide stay hidden until you zoom */
+html[data-module=journal] .lk-node .lk-hit{fill:transparent;stroke:none}
+html[data-module=journal] .lk-node .lk-dot{stroke:var(--bg);stroke-width:1.5}
+html[data-module=journal] .lk-node text{font-size:11px;font-weight:600;letter-spacing:-.01em;fill:var(--text);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
+html[data-module=journal] .lk-node.hub rect{fill:var(--bg);stroke:var(--muted);stroke-width:1.4}
+html[data-module=journal] .lk-node.hub text{font-size:10px;font-weight:600;fill:var(--muted)}
+html[data-module=journal] .lk-node.sel .lk-dot{stroke:var(--text);stroke-width:2.5}
+html[data-module=journal] .lk-node.hub.sel rect{stroke:var(--accent);fill:var(--accent)}
+html[data-module=journal] .lk-node.dim{opacity:.18}
+html[data-module=journal] .lk-node{transition:opacity .18s ease-out}
+html[data-module=journal] .lk-edge{stroke-width:1px}
+html[data-module=journal] .lk-edge.on{stroke-width:1.6px}
+
+.vq-list .vq-row-copy strong{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
+.vq-balance b.zero{color:var(--muted)!important}
+body.dark .vq-av{background:color-mix(in srgb,var(--t) 26%,var(--panel));color:color-mix(in srgb,var(--t) 70%,#fff)}
+body.dark .vq-tile.sm{background:color-mix(in srgb,var(--t,var(--accent)) 24%,transparent);color:color-mix(in srgb,var(--t,var(--accent)) 70%,#fff)}
+
+/* Design review 28/10 · fechas en castellano: solo la primera letra en mayúscula ("Octubre de 2026", "Miércoles, 28 de octubre") */
+.date,.day-label,h2[style*="capitalize"],.nw-when{text-transform:none!important}
+.date::first-letter,.day-label::first-letter,h2[style*="capitalize"]::first-letter,.nw-when::first-letter{text-transform:uppercase}
+/* Design review · sin etiquetas en mayúsculas encima de los títulos: el título se sostiene solo */
+.hero .eyebrow,html[data-module=centro] .hero>div>.badge:first-child{display:none!important}
+html[data-module=journal] .lk-zoom button{display:grid!important;place-items:center;transition:transform 140ms ease-out}html[data-module=journal] .lk-zoom button:active{transform:scale(.94)}html[data-module=journal] .lk-zoom svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

@@ -10,7 +10,9 @@ export function createMobile({cloud,config,dialog,body,vault}){
   try{const status=await call({action:'status'});if(!dialog.open||dialog.dataset.view!=='mobile')return;paint(status)}catch(e){feedback(e.message)}
  }
  function paint(status){
-  body.replaceChildren(node('h3','Notificaciones en este dispositivo'),node('p','En iPhone, abrí la app desde el icono agregado a la pantalla de inicio. Los avisos de tareas, eventos y servicios usan horario de Argentina. El envío se revisa cada minuto.'));
+  body.replaceChildren(node('h3','Notificaciones en este dispositivo'),node('p','Te aviso solo de lo importante: tareas con recordatorio, eventos de tu agenda (30 minutos antes), vencimientos de servicios, cierres y vencimientos de tarjetas, y renovaciones de suscripciones. Horario de Argentina.'));
+  {const state=node('p','');state.className='mobile-state';body.append(state);(async()=>{try{const sub='serviceWorker'in navigator?await(await navigator.serviceWorker.ready).pushManager.getSubscription():null,on=('Notification'in window)&&Notification.permission==='granted'&&!!sub;
+   state.textContent=on?'● Activadas en este iPhone. Se vuelven a registrar solas cada vez que abrís la app.':('Notification'in window)&&Notification.permission==='denied'?'● Bloqueadas en los ajustes del iPhone (Ajustes › Notificaciones › nubo).':'● Todavía no están activadas en este iPhone.';state.dataset.on=String(on);if(on)heal(true)}catch{}})()}
   const supported='serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
   if(supported){body.append(button('Activar notificaciones',async()=>{
    const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('No se concedió permiso. Podés cambiarlo en los ajustes del iPhone.');
@@ -26,7 +28,7 @@ export function createMobile({cloud,config,dialog,body,vault}){
   body.append(node('p','En Atajos: “Generar UUID” → “Obtener contenido de URL” (POST). Agregá los encabezados Content-Type: application/json y Authorization: Bearer TU_CLAVE. Cuerpo JSON: elegí un ejemplo de abajo y reemplazá sus valores por las respuestas de “Solicitar entrada”. Usá un UUID nuevo por registro, y el mismo si reintentás una petición fallida.'),field('URL',endpoint));
   let iris={};try{iris=JSON.parse(vault.getItem('iris03')||'{}')}catch{}
   const accounts=iris.accounts?.filter(a=>!a.archived)||[];
-  if(accounts.length)body.append(field('Cuentas de Iris (usá el id en accountId)',accounts.map(a=>a.name+' · '+a.currency+': '+a.id).join('\n')));
+  if(accounts.length)body.append(field('Cuentas de numio (usá el id en accountId)',accounts.map(a=>a.name+' · '+a.currency+': '+a.id).join('\n')));
   const common={action:'record',requestId:'VARIABLE_UUID'};
   for(const [label,data]of [
    ['Gasto',{...common,type:'expense',text:'Compra',amount:'1.500,50',accountId:accounts[0]?.id||'ID_DE_LA_CUENTA',category:iris.expenseCategories?.find(x=>x!=='Prestado')||'Comida',method:'Efectivo'}],
@@ -44,6 +46,13 @@ export function createMobile({cloud,config,dialog,body,vault}){
   entry.pending=Promise.resolve(old?.pending).catch(()=>{}).then(async()=>{if(timerStates.get(key)!==entry)return;try{await call({action:'timer',...value})}catch{if(timerStates.get(key)===entry)timerStates.delete(key)}});
   await entry.pending;
  }
+ // iOS sometimes renews or drops the push subscription (an update, a reinstall). On every start the phone
+ // re-registers itself, so notifications never switch off silently.
+ async function heal(force=false){try{if(!cloud.user||!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)||Notification.permission!=='granted')return false;
+  let last=0;try{last=+localStorage.getItem('nubo-push-heal')||0}catch{}if(!force&&Date.now()-last<6*3600000)return true;
+  const registration=await navigator.serviceWorker.ready;let sub=await registration.pushManager.getSubscription();
+  if(!sub){const status=await call({action:'status'});sub=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:status.publicKey})}
+  await call({action:'subscribe',subscription:sub.toJSON()});try{localStorage.setItem('nubo-push-heal',String(Date.now()))}catch{}return true}catch{return false}}
  async function detach(){if(!cloud.user||!('serviceWorker'in navigator))return;const sub=await(await navigator.serviceWorker.ready).pushManager.getSubscription();if(sub){await call({action:'unsubscribe',endpoint:sub.endpoint});await sub.unsubscribe()}}
- return {open,timer,detach,call};
+ return {open,timer,detach,call,heal};
 }

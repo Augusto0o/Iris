@@ -1,61 +1,365 @@
-:root{font-family:Inter,system-ui,-apple-system,sans-serif;color:#192236;background:#f6f7fb;color-scheme:light}*{box-sizing:border-box}body{margin:0;overscroll-behavior:none}iframe.module{width:100%;height:100%;border:0;position:absolute;inset:0;background:#f6f7fb}iframe.module[hidden]{display:none}#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:16px;background:#f6f7fb;z-index:5;font-size:15px}.brand{display:grid;place-items:center;width:44px;height:44px;background:#6954d8;color:white;border-radius:14px;font-size:28px}#loading[hidden],[hidden]{display:none!important}#notice{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);padding:12px 18px;border-radius:14px;background:#192236;color:white;z-index:15;font-size:13px}dialog{width:min(520px,calc(100% - 24px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid #dfe4ed;border-radius:20px;padding:0;color:#192236;background:white}dialog::backdrop{background:#10172299;backdrop-filter:blur(4px)}dialog header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e5e8ef}dialog h2{font-size:18px;margin:0}dialog header button{width:44px;height:44px;font-size:27px;background:none;border:0;padding:0;line-height:1}#accountBody{padding:22px;display:grid;gap:18px}button,input{font:inherit}button{cursor:pointer;border-radius:11px;padding:11px 14px;border:1px solid #dfe4ed;background:#f6f7fb;color:#192236;min-height:44px}button.primary{background:#6954d8;border-color:transparent;color:white}button:disabled{opacity:.55;cursor:wait}input{width:100%;min-height:44px;padding:10px;border:1px solid #dfe4ed;border-radius:10px;font-size:16px}label{display:grid;gap:7px;font-size:13px}form{display:grid;gap:14px}p{line-height:1.6;margin:0;font-size:14px}.muted{color:#5d687b;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.status{border-radius:12px;background:#eeebff;padding:12px}.danger{color:#a83447}button:focus-visible,input:focus-visible{outline:2px solid #6954d8;outline-offset:3px}#accountBody hr{width:100%;border:0;border-top:1px solid #e5e8ef}
+/* Nubo shell styles. One block per component; each property is set once, in the place that owns it.
+   Sections: tokens · base · frames · controls · dialogs · bottom bar · app switcher · island · drop & veil.
+   Layout checks live in tests/ui (npm run test:ui); run them after any change here. */
 
+/* ---- Tokens ------------------------------------------------------------------------------------------- */
+:root{--edge:#fffdfa;--surface:#F3F0EA;font-family:Inter,system-ui,-apple-system,sans-serif;color:#303845;background:var(--edge);color-scheme:light}
+:root[data-theme=dark]{--edge:#303845;--surface:#222933;background:#303845;color-scheme:dark}
 
-
-:root{--edge:#fff;--surface:#f6f7fb;background:var(--edge)}body{background:var(--edge)}iframe.module,#loading{background:var(--surface)}#loading{top:env(safe-area-inset-top,0px)}
-
-:root[data-theme=dark] dialog{background:#1b2636;color:#eef2fa;border-color:#344153}:root[data-theme=dark] dialog input,:root[data-theme=dark] dialog button{background:#101722;color:#eef2fa;border-color:#344153}:root[data-theme=dark] .muted{color:#b3bfd2}:root[data-theme=dark] .status{background:#302c54}:root[data-theme=dark] dialog header{border-color:#344153}
-
+/* ---- Base: one layout owner. Insets are reserved once and the bottom bar stays in flow. ------------------ */
+*{box-sizing:border-box}
+/* No pinch or double-tap zoom (text size lives in Configuración). */
+html{height:100%;overflow:hidden;background:var(--edge);touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;overscroll-behavior:none;height:var(--app-height,100dvh);min-height:0;display:grid;grid-template-rows:calc(var(--app-top,0px) + var(--top-gap,0px)) minmax(0,1fr) auto;overflow:hidden;position:relative;background:var(--edge)}
+[hidden]{display:none!important}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
-#activityIsland{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 28px));z-index:12;display:flex;align-items:center;gap:4px;padding:7px 8px 7px 7px;border-radius:32px;background:#101217;color:#f8faff;box-shadow:0 8px 28px #0004;border:1px solid #ffffff25;animation:island-arrive .35s cubic-bezier(.2,.9,.25,1.2);touch-action:pan-x}
+/* ---- Frames, loading and notices ---------------------------------------------------------------------- */
+#workspace{position:relative;grid-row:2;min-height:0;width:100%;height:100%;overflow:hidden;background:var(--surface)}
+iframe.module{display:block;position:absolute;inset:0;width:100%;height:100%;min-height:0;border:0;background:var(--surface)}
+:root:has(dialog[open]) iframe.module{pointer-events:none} /* while a window is open only that window takes touches */
+#loading{position:fixed;inset:0;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;justify-content:center;gap:16px;background:var(--surface);font-size:15px}
+.brand{display:grid;place-items:center;width:44px;height:44px;background:#6954d8;color:white;border-radius:14px;font-size:28px}
+#notice{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);padding:12px 18px;border-radius:14px;background:#192236;color:white;z-index:15;font-size:13px}
 
-#activityIsland button{background:transparent;border:0;color:inherit;min-height:44px;padding:0}#activityIsland .island-content{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;justify-content:flex-start;cursor:pointer}#activityIsland .island-content:disabled{opacity:1;cursor:default}#activityIsland .island-mark{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#a9e6d31a;color:#a9e6d3;font-size:21px;flex-shrink:0}#activityIsland[data-kind=timer] .island-mark{background:#b7a8ff22;color:#c3b7ff}#activityIsland .island-copy{display:grid;gap:3px;min-width:0;padding-block:4px}#activityIsland strong{font-size:13px}#activityIsland .island-message{font-size:12px;line-height:1.35;color:#d0d7e4;overflow-wrap:anywhere}#activityIsland .island-close{width:36px;min-width:36px;font-size:25px;border-radius:50%}#activityIsland button:focus-visible{outline:2px solid #b7a8ff;outline-offset:1px}
+/* ---- Controls ------------------------------------------------------------------------------------------- */
+button,input{font:inherit}
+button{cursor:pointer;border-radius:11px;padding:11px 14px;border:1px solid #dfe4ed;background:#f6f7fb;color:#192236;min-height:44px}
+button.primary{background:#303845;border-color:#303845;color:white}
+button:disabled{opacity:.55;cursor:wait}
+input{width:100%;min-height:44px;padding:10px;border:1px solid #dfe4ed;border-radius:10px}
+input,select,textarea{font-size:max(16px,1em)} /* 16 px or more: iOS never zooms on focus */
+button:focus-visible{outline:2px solid #6954d8;outline-offset:3px}
+:is(input,textarea,select):is(:focus,:focus-visible){outline:none;box-shadow:none} /* no highlight on fields */
+dialog :is(button,a):focus{outline:none;box-shadow:none} /* the window's first button gets focus when it opens */
+label{display:grid;gap:7px;font-size:13px}
+form{display:grid;gap:14px}
+p{line-height:1.6;margin:0;font-size:14px}
+.muted{color:#5d687b;font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
+.status{border-radius:12px;background:#e7e3dc;padding:12px}
+.danger{color:#a83447}
+:root[data-theme=dark] .muted{color:#b3bfd2}
+:root[data-theme=dark] .status{background:#414750}
 
-@keyframes island-arrive{from{opacity:0;transform:translate(-50%,-12px) scale(.85)}to{opacity:1;transform:translate(-50%,0) scale(1)}}@media(prefers-reduced-motion:reduce){#activityIsland{animation:none}}
+/* ---- Dialogs (shell windows: account, notifications, shortcuts) --------------------------------------- */
+dialog{width:min(520px,calc(100% - 24px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;padding:0;border:1px solid #dfe4ed;border-radius:20px;background:#fffdfa;color:#303845}
+dialog::backdrop{background:#10172299}
+dialog header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e5e8ef}
+dialog h2{font-size:18px;margin:0}
+dialog header button{width:44px;height:44px;font-size:27px;background:none;border:0;padding:0;line-height:1}
+:root[data-theme=dark] dialog{background:#303845;color:#F3F0EA;border-color:#344153}
+:root[data-theme=dark] dialog header{border-color:#344153}
+:root[data-theme=dark] dialog input,:root[data-theme=dark] dialog button{background:#101722;color:#eef2fa;border-color:#344153}
+/* The shell's viewport starts under the status bar: centre the window in the area below it. */
+#account{inset:var(--app-top,0px) 0 0;margin:auto;max-height:calc(var(--app-height,100dvh) - var(--app-top,0px) - 24px)}
+#account[open]{display:flex;flex-direction:column;overflow:hidden}
+#account>header{flex-shrink:0}
+#account header button{flex-shrink:0;display:grid;place-items:center}
+#accountBody{padding:22px;display:grid;gap:18px;overflow:auto;min-height:0;overscroll-behavior:contain}
+#accountBody hr{width:100%;border:0;border-top:1px solid #e5e8ef}
+#accountBody textarea{width:100%;max-width:100%;min-width:0;padding:12px;border:1px solid #8993a855;border-radius:12px;font:13px/1.5 monospace;overflow-wrap:anywhere;background:var(--surface);color:inherit;resize:vertical}
+#accountBody details{min-width:0}
+#accountBody summary{cursor:pointer;padding:12px 0;font-weight:650}
 
-
-#activityIsland .island-action{order:1;padding:7px 9px;border:1px solid #ffffff40;border-radius:16px;font-size:12px;flex-shrink:0}#activityIsland .island-close{order:2}
-
-#accountBody textarea{width:100%;max-width:100%;min-width:0;padding:12px;border:1px solid #8993a855;border-radius:12px;font:13px/1.5 monospace;overflow-wrap:anywhere;background:var(--surface);color:inherit;resize:vertical}#accountBody details{min-width:0}#accountBody summary{cursor:pointer;padding:12px 0;font-weight:650}
-
-
-
-iframe.module{display:block;height:100%;min-height:0}
-:root{--edge:#fffdfa;--surface:#F3F0EA;color:#303845}dialog{background:#fffdfa;color:#303845}button.primary{background:#303845;border-color:#303845}.status{background:#e7e3dc}:root[data-theme=dark] dialog{background:#303845;color:#F3F0EA}:root[data-theme=dark] .status{background:#414750}
+/* ---- Bottom bar (phone) ------------------------------------------------------------------------------- */
+#hostMobileNav,#hostAppPicker{display:none}
 @media(max-width:720px){
- 
- 
- #hostMobileNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;border-radius:11px;background:transparent;color:inherit;padding:5px 2px;min-width:0;height:54px;font-size:10px;line-height:1.2;overflow-wrap:anywhere}
- #hostMobileNav button.active{background:color-mix(in srgb,var(--edge) 60%,#90a9c0 40%);color:inherit;font-weight:650}
+ #hostMobileNav{grid-row:3;position:relative;z-index:11;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:54px;gap:0;
+  /* Home-indicator clearance comes from src/viewport.js (bottomClearance), never added twice. */
+  padding:8px 6px max(8px,var(--host-safe-bottom,0px));border-top:1px solid #8993a833;background:var(--edge);color:#626974}
+ :root[data-theme=dark] #hostMobileNav{color:#F3F0EA}
+ :root[data-module-overlay=open] #hostMobileNav,:root[data-keyboard=open] #hostMobileNav{display:none}
+ #hostMobileNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:54px;min-width:0;padding:5px 2px;border:0;border-radius:11px;background:transparent;color:inherit;font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+ #hostMobileNav button.active{background:color-mix(in srgb,var(--edge) 60%,#90a9c0 40%);font-weight:650}
  #hostMobileNav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
- #hostMobileNav img{width:28px;height:28px;border-radius:8px}#hostMobileNav .host-app-switch{touch-action:none;user-select:none;-webkit-touch-callout:none}
- 
- #hostAppPicker>div{flex:1;min-width:0;display:grid;justify-items:center;gap:9px;font-size:11px;color:#626974}
- #hostAppPicker img,#hostAppPicker [aria-hidden]{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:30px;transition:transform .08s}
- #hostAppPicker .selected img,#hostAppPicker .selected [aria-hidden]{transform:translateY(-8px) scale(1.35)}
- :root[data-theme=dark] #hostMobileNav,:root[data-theme=dark] #hostAppPicker>div{color:#F3F0EA}
+ #hostMobileNav img{width:28px;height:28px;border-radius:8px}
+ #hostMobileNav .host-app-switch{touch-action:none}
 }
-
-/* Shared touch controls: Safari must not select the hold-button label. */
+/* Safari must not select the hold-button label. */
 #hostMobileNav button,#hostMobileNav button *,#hostAppPicker,#hostAppPicker *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 #hostMobileNav .host-app-switch *{pointer-events:none}
 
-
-
-#account[open]{display:flex;flex-direction:column;overflow:hidden;max-height:calc(100dvh - 24px)}#account>header{flex-shrink:0}#accountBody{overflow:auto;min-height:0;overscroll-behavior:contain}#account header button{flex-shrink:0;display:grid;place-items:center}
-
-:root[data-theme=dark]{background:#303845;--edge:#303845;--surface:#222933;color-scheme:dark}:root[data-theme=dark] body{background:#303845}
-
-
-/* One layout owner. Insets are reserved once, and navigation remains in flow. */
-html{height:100%;overflow:hidden;background:var(--edge)}
-body{height:var(--app-height,100dvh);min-height:0;display:grid;grid-template-rows:var(--app-top,0px) minmax(0,1fr) auto;overflow:hidden;position:relative;background:var(--edge)}
-#workspace{position:relative;grid-row:2;min-height:0;width:100%;height:100%;overflow:hidden;background:var(--surface)}
-#hostMobileNav,#hostAppPicker{display:none}
+/* ---- App switcher: compact dark round pill (reference: Instagram account switcher) ---------------------- */
 @media(max-width:720px){
- #hostMobileNav{grid-row:3;position:relative;inset:auto;z-index:11;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:54px;gap:0;height:auto;min-height:0;padding:8px 6px max(8px,var(--host-safe-bottom,0px));border-top:1px solid #8993a833;background:var(--edge);color:#626974;box-sizing:border-box}
- #hostAppPicker{display:flex;position:absolute;z-index:13;bottom:calc(74px + max(8px,var(--host-safe-bottom,0px)));right:12px;left:12px;padding:18px 8px 12px;border-radius:24px;background:var(--edge);border:1px solid #8993a844;box-shadow:0 10px 32px #0003;pointer-events:none}
- :root[data-module-overlay=open] #hostMobileNav,:root[data-keyboard=open] #hostMobileNav{display:none}
- :root[data-theme=dark] #hostMobileNav{color:#F3F0EA}
+ #hostAppPicker{display:flex;position:absolute;z-index:13;right:10px;bottom:calc(78px + max(8px,var(--host-safe-bottom,0px)));width:max-content;max-width:calc(100% - 20px);gap:14px;padding:10px 12px;border-radius:999px;
+  background:rgba(23,25,30,.94);border:1px solid rgba(255,255,255,.08);box-shadow:0 14px 40px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  transform-origin:calc(100% - 34px) 100%;animation:picker-in .24s cubic-bezier(.2,.9,.3,1.2) both;pointer-events:none}
+ #hostAppPicker>div{position:relative;flex:0 0 48px;width:48px;height:48px;min-width:0;display:grid;place-items:center;font-size:11px;color:#626974;animation:picker-item .28s cubic-bezier(.2,.9,.3,1.35) both}
+ #hostAppPicker>div:nth-child(2){animation-delay:.03s}#hostAppPicker>div:nth-child(3){animation-delay:.06s}#hostAppPicker>div:nth-child(4){animation-delay:.09s}#hostAppPicker>div:nth-child(5){animation-delay:.12s}
+ #hostAppPicker>div img{display:grid;width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1.5px rgba(255,255,255,.14);transition:transform .16s cubic-bezier(.2,.9,.3,1.4)}
+ #hostAppPicker>div.selected img{transform:translateY(-6px) scale(1.3);box-shadow:0 0 0 2px rgba(255,255,255,.9),0 8px 20px rgba(0,0,0,.4)}
+ /* The name of the app under the finger floats above the pill. */
+ #hostAppPicker>div span{position:absolute;bottom:calc(100% + 22px);left:50%;transform:translate(-50%,6px);opacity:0;white-space:nowrap;pointer-events:none;font-size:13px;font-weight:650;letter-spacing:-.01em;color:#303845;text-shadow:0 0 8px #fff,0 0 2px #fff;transition:opacity .12s,transform .16s}
+ #hostAppPicker>div.selected span{opacity:1;transform:translate(-50%,0)}
+ #hostAppPicker>div.current::after{content:"";position:absolute;bottom:-7px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:rgba(255,255,255,.75)}
+ :root[data-theme=dark] #hostAppPicker>div{color:#F3F0EA}
+ :root[data-theme=dark] #hostAppPicker>div span{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.7)}
 }
+@keyframes picker-in{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes picker-item{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){#hostAppPicker,#hostAppPicker>div{animation:none}}
+
+/* ---- Activity island (src/island.js) --------------------------------------------------------------------
+   Sizes: compact (running timer, icon + time) · expanded (card) · mini (minimized circle).
+   Kinds: timer (dark) · notice (frosted, follows the theme). The bubble beside it holds what waits behind. */
+#islandDock{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:0;right:0;z-index:12;display:flex;justify-content:center;align-items:flex-start;gap:8px;padding:0 14px;pointer-events:none}
+#islandDock>*{pointer-events:auto}
+#activityIsland{--island-accent:#a9e6d3;position:relative;z-index:12;display:flex;align-items:center;gap:4px;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
+ background:#101217;color:#f8faff;border:1px solid #ffffff1f;box-shadow:0 10px 30px #0005}
+#activityIsland[data-kind=timer]{--island-accent:#c3b7ff}
+#activityIsland button{background:transparent;border:0;color:inherit;min-height:44px;padding:0}
+#activityIsland button:focus-visible{outline:2px solid #b7a8ff;outline-offset:1px}
+#activityIsland .island-content{display:flex;align-items:center;justify-content:flex-start;gap:12px;flex:1;min-width:0;text-align:left;cursor:pointer}
+#activityIsland .island-content:disabled{opacity:1;cursor:default}
+#activityIsland .island-mark{flex-shrink:0;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;line-height:0;padding:0;
+ background:color-mix(in srgb,var(--island-accent) 16%,transparent);color:var(--island-accent)}
+#activityIsland[data-kind=timer] .island-mark{background:#b7a8ff22;color:#c3b7ff}
+:is(#activityIsland,.island-bubble) .island-mark svg{display:block;width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round} /* drawn icons stay centred */
+#activityIsland .island-copy{display:grid;gap:3px;min-width:0;padding-block:4px}
+#activityIsland strong{font-size:13px}
+#activityIsland .island-message{font-size:12px;line-height:1.35;color:#d0d7e4;overflow-wrap:anywhere}
+#activityIsland .island-close{order:2;width:36px;min-width:36px;font-size:25px;border-radius:50%}
+#activityIsland .island-action{order:1;flex-shrink:0;padding:7px 9px;border:1px solid #ffffff40;border-radius:16px;font-size:12px}
+
+/* Compact: only the icon and the time, so it never covers the header title. */
+#activityIsland[data-size=compact]{width:auto;max-width:160px;height:40px;padding:0 14px 0 6px;gap:0;border-radius:999px}
+#activityIsland[data-size=compact] .island-content{gap:8px;height:40px;min-height:40px}
+#activityIsland[data-size=compact] .island-mark{width:28px;height:28px}
+#activityIsland[data-size=compact] .island-copy{display:flex;align-items:baseline;gap:6px;padding:0;white-space:nowrap}
+#activityIsland[data-size=compact] .island-copy strong,#activityIsland[data-size=compact] :is(.island-close,.island-action){display:none}
+#activityIsland[data-size=compact] .island-message{overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;font-size:14px;font-weight:650;color:#f8faff}
+
+/* Expanded card (an activity opened, with its actions). */
+#activityIsland[data-size=expanded]{width:min(380px,calc(100vw - 28px));height:auto;min-height:74px;padding:10px;gap:6px;flex-wrap:wrap;border-radius:28px}
+#activityIsland[data-size=expanded] .island-content{flex:1 1 0}
+#activityIsland[data-size=expanded] .island-mark{width:48px;height:48px}
+#activityIsland[data-size=expanded] .island-copy{gap:4px}
+#activityIsland[data-size=expanded] .island-copy strong{font-size:15px}
+#activityIsland[data-size=expanded] .island-message{font-size:13px}
+#activityIsland[data-size=expanded] .island-action{order:3;flex:1 0 100%;min-height:40px;border-radius:14px;background:#ffffff14;border:0;font-size:13px;font-weight:600}
+#islandDock[data-bubble=true] #activityIsland[data-size=expanded]{width:min(380px,calc(100vw - 76px))} /* room for the bubble */
+
+/* Notice card: small and solid (no blur, so the app name and icon behind it never smudge). */
+#activityIsland[data-size=expanded][data-kind=notice]{width:min(340px,calc(100vw - 28px));min-height:0;padding:7px 8px 7px 7px;gap:4px;border-radius:24px;
+ background:#fffdfa;color:#303845;border-color:rgba(48,56,69,.08);box-shadow:0 10px 28px rgba(16,18,23,.16)}
+#activityIsland[data-size=expanded][data-kind=notice] .island-content{gap:10px;min-height:0}
+#activityIsland[data-size=expanded][data-kind=notice] .island-mark{width:34px;height:34px}
+#activityIsland[data-size=expanded][data-kind=notice] .island-copy{gap:1px;padding-block:2px}
+#activityIsland[data-size=expanded][data-kind=notice] .island-copy strong{font-size:13.5px;line-height:1.25}
+#activityIsland[data-size=expanded][data-kind=notice] .island-message{font-size:12.5px;line-height:1.3;color:#626974;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#activityIsland[data-size=expanded][data-kind=notice] .island-close{width:30px;min-width:30px;height:30px;min-height:30px;font-size:20px;color:#8a909a}
+#islandDock[data-bubble=true] #activityIsland[data-size=expanded][data-kind=notice]{width:min(340px,calc(100vw - 76px))}
+:root[data-theme=dark] #activityIsland[data-size=expanded][data-kind=notice]{background:#2b313b;color:#F3F0EA;border-color:rgba(255,255,255,.08);box-shadow:0 10px 28px rgba(0,0,0,.4)}
+:root[data-theme=dark] #activityIsland[data-size=expanded][data-kind=notice] :is(.island-message,.island-close){color:#c5c8cd}
+
+/* Mini: a running activity that was swiped away; a tap brings it back. */
+#activityIsland[data-size=mini]{width:40px;max-width:40px;height:40px;padding:0;display:grid;place-items:center;border-radius:999px}
+#activityIsland[data-size=mini] .island-content{display:grid;place-items:center;justify-content:center;align-content:center;width:100%;height:100%;min-height:40px;padding:0}
+#activityIsland[data-size=mini] .island-mark{width:28px;height:28px}
+#activityIsland[data-size=mini] :is(.island-copy,.island-close,.island-action){display:none}
+
+/* Bubble beside the island: waiting notices, or the activity behind a notice. */
+.island-bubble{position:relative;width:40px;height:40px;min-height:40px;padding:0;display:grid;place-items:center;border-radius:50%;background:#101217;color:#c3b7ff;border:1px solid #ffffff1f;box-shadow:0 10px 30px #0005}
+.island-bubble[data-kind=notice]{color:#a9e6d3}
+.island-bubble:focus-visible{outline:2px solid #b7a8ff;outline-offset:2px}
+.island-bubble .island-mark{display:grid;place-items:center;width:26px;height:26px;padding:0;line-height:0}
+.island-bubble .island-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#f8faff;color:#101217;font-size:11px;font-weight:700;line-height:18px}
+.island-bubble .island-badge:empty{display:none}
+
+/* ---- Liquid drop (src/goo.js) ------------ */
+#islandGoo{position:fixed;left:0;top:0;width:100vw;height:220px;z-index:13;pointer-events:none;overflow:visible}
+/* No blur over the app while a notice shows: it read as a smudge under the header. The card has its own shadow. */
+#islandVeil{display:none!important}
+@media(prefers-reduced-transparency:reduce){
+ #islandVeil{display:none}
+ #activityIsland[data-size=expanded][data-kind=notice]{background:#fffdfa}
+ :root[data-theme=dark] #activityIsland[data-size=expanded][data-kind=notice]{background:#2b313b}
+}
+
+/* ---- App switcher morph (src/mobile-nav.js reveal): Web Animations with a spring, like the island ---- */
+@media(max-width:720px){
+ #hostAppPicker.morphing,#hostAppPicker.morphing>div{animation:none}
+ #hostMobileNav .host-app-switch{transition:transform .32s cubic-bezier(.2,.9,.3,1.4)}
+ #hostMobileNav .host-app-switch.pressing{transform:scale(.9);transition-duration:.18s}
+}
+
+/* ---- Digitize (src/scan.js), inside the shell window -------------------------------------------------- */
+.scan-types{display:grid;gap:10px}
+.scan-type{display:flex;align-items:center;gap:14px;text-align:left;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid #8993a833;color:inherit}
+.scan-type strong{display:block;font-size:15px}.scan-type small{display:block;font-size:12px;line-height:1.4;opacity:.75;margin-top:2px}
+.scan-mark{flex:0 0 42px;width:42px;height:42px;border-radius:12px}
+.scan-pick{display:grid;gap:10px}
+.scan-file{position:relative;display:grid;place-items:center;min-height:52px;border-radius:14px;border:1px solid #dfe4ed;background:#f6f7fb;font-weight:600;font-size:15px;cursor:pointer}
+.scan-file.primary-like{background:#303845;border-color:#303845;color:#fff}
+.scan-file input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+:root[data-theme=dark] .scan-file{background:#101722;border-color:#344153;color:#eef2fa}
+:root[data-theme=dark] .scan-file.primary-like{background:#F3F0EA;color:#303845;border-color:#F3F0EA}
+.scan-progress{display:grid;gap:12px;padding:18px 0}
+.scan-bar{height:8px;border-radius:999px;background:#8993a833;overflow:hidden}.scan-bar i{display:block;height:100%;width:0;border-radius:inherit;background:#90A9C0;transition:width .3s}
+.scan-form{display:grid;gap:12px}.scan-form textarea{width:100%;min-height:120px;padding:10px 12px;border:1px solid #dfe4ed;border-radius:10px;font:inherit;font-size:16px;background:inherit;color:inherit;resize:vertical}
+.scan-form select{width:100%;min-height:44px;padding:9px 12px;border:1px solid #dfe4ed;border-radius:10px;background:inherit;color:inherit}
+.scan-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}.scan-pair>label{min-width:0}
+.scan-check{display:flex!important;align-items:center;gap:10px}.scan-check input{width:auto;min-height:0}
+.scan-preview{border-radius:14px;overflow:hidden;border:1px solid #8993a833;background:#fff}.scan-preview canvas{display:block;width:100%;height:auto}
+.scan-read summary{cursor:pointer;font-weight:600;padding:6px 0}.scan-read textarea{min-height:100px;font-size:13px!important;opacity:.85}
+.scan-back{width:100%}
+
+/* ---- App switcher follows the theme: paper pill in light, graphite in dark ------------------------------ */
+@media(max-width:720px){
+ :root:not([data-theme=dark]) #hostAppPicker{background:rgba(255,253,250,.97);border-color:rgba(48,56,69,.1);box-shadow:0 14px 36px rgba(48,56,69,.2),0 2px 6px rgba(48,56,69,.08)}
+ :root:not([data-theme=dark]) #hostAppPicker>div img{box-shadow:0 0 0 1px rgba(48,56,69,.1)}
+ :root:not([data-theme=dark]) #hostAppPicker>div.selected img{box-shadow:0 0 0 2px #303845,0 8px 20px rgba(48,56,69,.28)}
+ :root:not([data-theme=dark]) #hostAppPicker>div.current::after{background:#303845}
+ :root[data-theme=dark] #hostAppPicker{background:rgba(43,49,59,.97);border-color:rgba(255,255,255,.1);box-shadow:0 14px 40px rgba(0,0,0,.45)}
+ :root[data-theme=dark] #hostAppPicker>div span{color:#F3F0EA;text-shadow:0 0 8px #000,0 0 2px #000}
+ #hostAppPicker{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+ #hostAppPicker>div img{transition:transform .34s cubic-bezier(.2,1.5,.4,1),box-shadow .2s}
+ #hostAppPicker>div span{transition:opacity .14s,transform .3s cubic-bezier(.2,1.5,.4,1)}
+}
+
+/* ---- Digitize: crop and look ------------------------------------------------------------------------------- */
+.scan-crop{display:grid;place-items:center;margin:4px 0 12px}
+.scan-crop canvas{display:block;max-width:100%;border-radius:12px;touch-action:none;background:#111}
+.scan-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.scan-row button{min-height:38px;padding:6px 12px;border-radius:999px;font-size:13px}
+.scan-modes button.selected{background:var(--text,#303845);color:var(--surface,#fffdfa);border-color:transparent}
+
+/* ---- Installed app: iOS softens the strip right under the status bar; the apps start a little lower so
+   their name, logo and buttons stay clear of it (the gap has the header colour, so it reads as header). -- */
+:root[data-standalone=yes]{--top-gap:14px}
+
+/* Digitize · live camera like Notes on the iPhone */
+#account[data-view=scan-live][open]{inset:0!important;width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;margin:0!important;border:0!important;border-radius:0!important;padding:0!important;background:#000!important;color:#fff}
+#account[data-view=scan-live]>header{display:none!important}
+#account[data-view=scan-live] #accountBody{flex:1;min-height:0;padding:0!important;overflow:hidden!important;display:flex}
+.live{flex:1;display:flex;flex-direction:column;min-height:0;background:#000;color:#fff;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.live-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px}
+.live-top-r{display:flex;gap:8px}
+.live-btn{min-height:34px;padding:6px 13px;border-radius:17px;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:14px;font-weight:600}
+.live-btn.on{background:#ffd60a;color:#1c1c1e}
+.live-view{position:relative;flex:1;min-height:0;overflow:hidden}
+.live-view video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.live-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.live-hint{position:absolute;left:50%;top:14px;transform:translateX(-50%);margin:0;padding:7px 14px;border-radius:999px;background:rgba(0,0,0,.55);font-size:13.5px;font-weight:600;white-space:nowrap;pointer-events:none}
+.live-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.live-flash.go{animation:liveFlash .35s ease-out}
+@keyframes liveFlash{0%{opacity:.85}100%{opacity:0}}
+.live-bottom{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 18px 18px}
+.live-left{display:flex;justify-content:flex-start}.live-right{display:flex;justify-content:flex-end}
+.live-shutter{width:74px;height:74px;border-radius:50%;border:4px solid #fff;background:none;padding:4px;display:grid;place-items:center}
+.live-shutter i{display:block;width:100%;height:100%;border-radius:50%;background:#fff;transition:transform .12s}
+.live-shutter:active i{transform:scale(.88)}
+.live-thumb{position:relative;width:54px;height:54px;border-radius:10px;border:2px solid #fff;padding:0;overflow:visible;background:#222}
+.live-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block}
+.live-thumb span{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#0a84ff;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.live-gallery{position:relative;display:grid;place-items:center;min-height:38px;padding:0 14px;border-radius:19px;background:rgba(255,255,255,.14);font-size:14px;font-weight:600}
+.live-gallery[hidden]{display:none}.live-gallery input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.live-save{min-height:40px;padding:0 16px;border-radius:20px;border:0;background:#fff;color:#000;font-size:15px;font-weight:700}
+.scan-pages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:6px 0 16px}
+.scan-page{position:relative;display:grid;gap:4px;justify-items:center;font-size:12px;opacity:.85}
+.scan-page>button:first-child{padding:0;border:1px solid #8993a833;border-radius:10px;overflow:hidden;background:#fff;width:100%;aspect-ratio:3/4;display:grid;place-items:center}
+.scan-page canvas{max-width:100%;max-height:100%;display:block}
+.scan-page-del{position:absolute;top:-6px;right:-6px;width:24px;height:24px;min-height:0;padding:0;border-radius:50%;border:0;background:#303845;color:#fff;font-size:15px;line-height:1}
+.scan-page-img{border:1px solid #8993a833;border-radius:10px;overflow:hidden;background:#fff;width:100%;aspect-ratio:3/4;display:grid;place-items:center}.scan-page-img canvas{max-width:100%;max-height:100%;display:block}
+
+/* Contraseñas */
+#account[data-view=vault][open]{height:calc(var(--app-height,100dvh) - var(--app-top,0px) - 24px)}
+#account[data-view=vault] #accountBody{position:relative;display:block}
+.vault-form,.vault-list,.vault-detail{display:grid;gap:14px}
+.vault-form label{display:grid;gap:6px;font-size:13px;font-weight:600}
+.vault-form input:not([type=checkbox]):not([type=range]):not([type=file]),.vault-form select,.vault-form textarea,.vault-search input{width:100%;min-height:46px;padding:10px 12px;border-radius:12px;border:1px solid #8993a855;background:var(--surface);color:inherit;font:inherit;font-size:16px;box-sizing:border-box}
+.vault-hero{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:var(--surface);margin:4px auto 0}
+.vault-hero svg,.vault-round svg,.vault-back svg,.vault-new svg,.vault-bio svg,.vault-actions svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.vault-hero svg{width:28px;height:28px}
+.vault-warn{font-size:12.5px;opacity:.75;margin:0}.vault-error{color:#c2413a;font-size:13px;margin:0}
+.vault-meter{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.85;margin-top:-6px}.vault-meter i{flex:1;height:5px;border-radius:3px;background:#8993a833;position:relative;overflow:hidden}
+.vault-meter i::after{content:'';position:absolute;inset:0;width:0;border-radius:inherit;transition:width .2s,background .2s}
+.vault-meter[data-score="1"] i::after{width:25%;background:#d9534f}.vault-meter[data-score="2"] i::after{width:50%;background:#e0a32e}.vault-meter[data-score="3"] i::after{width:75%;background:#5aa469}.vault-meter[data-score="4"] i::after{width:100%;background:#2f8f5b}
+.vault-bio{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.vault-top{display:flex;gap:8px;align-items:center}.vault-search{flex:1;min-width:0}
+.vault-round{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:0 0 40px}
+.vault-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.vault-chips::-webkit-scrollbar{display:none}
+.vault-chips button{flex:0 0 auto;min-height:34px;padding:0 13px;border-radius:17px;font-size:13px}
+.vault-chips button[aria-pressed=true]{background:#303845;color:#fff;border-color:transparent}:root[data-theme=dark] .vault-chips button[aria-pressed=true]{background:#F3F0EA;color:#303845}
+.vault-rows{display:grid;gap:2px;margin-bottom:64px}
+.vault-row{display:flex;align-items:center;gap:12px;padding:10px 8px;border:0;border-radius:14px;background:none;text-align:left;color:inherit;min-height:58px}
+.vault-row:active{background:var(--surface)}
+.vault-tile{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:17px;color:#fff;background:#6a7a8c}
+.vault-tile[data-c=app]{background:#7a68a8}.vault-tile[data-c=email]{background:#3d7bbf}.vault-tile[data-c=wifi]{background:#3a8f7a}.vault-tile[data-c=card]{background:#b07a3c}.vault-tile[data-c=other]{background:#8b8f98}
+.vault-copy{display:grid;gap:2px;min-width:0}.vault-copy strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vault-copy em{font-style:normal;color:#e0a32e}.vault-copy small{font-size:12.5px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vault-empty{text-align:center;padding:30px 10px}
+.vault-new{position:sticky;bottom:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:48px;border-radius:24px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.vault-back{display:inline-flex;align-items:center;gap:4px;justify-self:start;border:0;background:none;padding:0;min-height:32px;color:inherit;opacity:.8;font-weight:600}
+.vault-head{display:flex;align-items:center;gap:12px}.vault-head strong{display:block;font-size:20px}.vault-head small{opacity:.7}.vault-head .vault-tile{flex-basis:52px;width:52px;height:52px;font-size:22px;border-radius:15px}
+.vault-fields{display:grid;border-radius:16px;background:var(--surface);overflow:hidden}
+.vault-field{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid #8993a826;flex-wrap:wrap}.vault-field:first-child{border-top:0}
+.vault-field small{flex:0 0 100%;font-size:11.5px;opacity:.65;text-transform:uppercase;letter-spacing:.04em}
+.vault-field>span,.vault-field>a{flex:1;min-width:0;font-size:15.5px;overflow-wrap:anywhere}.vault-secret{font-family:ui-monospace,Menlo,monospace}
+.vault-notes span{white-space:pre-wrap;font-size:14px}
+.vault-when{font-size:12.5px;margin:0}
+.vault-actions{display:flex;flex-wrap:wrap;gap:8px}.vault-actions button{flex:1;min-height:44px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.vault-pass{display:flex;gap:6px;align-items:center}.vault-pass input{flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace}
+.vault-gen{display:grid;gap:8px;padding:10px 12px;border-radius:14px;background:var(--surface)}.vault-gen input[type=range]{width:100%}
+.vault-check{display:flex!important;align-items:center;gap:8px;grid-template-columns:none}.vault-check input{width:20px;height:20px}
+.vault-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:16px;background:var(--surface)}.vault-setting small{display:block;font-size:12.5px;opacity:.7;margin-top:2px}
+.vault-two{display:flex;gap:6px}.vault-file{position:relative;display:inline-grid;place-items:center;min-height:40px;padding:0 12px;border-radius:12px;border:1px solid #8993a855;font-size:14px;font-weight:600}.vault-file input{position:absolute;inset:0;opacity:0}
+.vault-sheet{position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;padding:12px}
+.vault-sheet-card{width:100%;display:grid;gap:12px;padding:18px;border-radius:20px;background:var(--edge);box-shadow:0 -10px 40px rgba(0,0,0,.25)}.vault-sheet-card label{display:grid;gap:6px;font-size:13px;font-weight:600}
+.vault-sheet-card input{min-height:46px;padding:10px 12px;border-radius:12px;border:1px solid #8993a855;background:var(--surface);color:inherit;font-size:16px}
+.vault-round.done{background:#2f8f5b;color:#fff;border-color:transparent}
+.scan-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.scan-facts span{display:grid;gap:2px;padding:10px 12px;border-radius:12px;background:var(--surface);font-size:12px;opacity:.9}.scan-facts b{font-size:15px}
+.scan-items{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;font-size:13px}.scan-items li{display:flex;justify-content:space-between;gap:8px}.scan-items b{white-space:nowrap}
+.mobile-state{font-size:13px;opacity:.85}.mobile-state[data-on=true]{color:#2f8f5b;opacity:1}
+
+/* ---- Contraseñas: hoja de iOS, controles tranquilos, lista de ajustes agrupada ---------------------------------------- */
+#account[data-view=vault][open]{height:auto;min-height:min(560px,calc(var(--app-height,100dvh) - var(--app-top,0px) - 24px))}
+#account[data-view=vault]{--v-fill:#8993a81f;--v-fill-strong:#8993a833;--v-line:#8993a833;--v-ink:#303845;--v-on-ink:#fffdfa}
+:root[data-theme=dark] #account[data-view=vault]{--v-fill:#ffffff12;--v-fill-strong:#ffffff1f;--v-line:#ffffff17;--v-ink:#F3F0EA;--v-on-ink:#303845}
+#account[data-view=vault] header button{width:32px;height:32px;border-radius:50%;background:var(--v-fill)!important;border:0!important;font-size:20px;color:inherit;display:grid;place-items:center}
+#account[data-view=vault] #accountBody button,#account[data-view=vault] .vault-file{background:var(--v-fill);border:0;color:inherit;border-radius:12px;min-height:44px;font-weight:600;transition:transform 120ms ease-out,background-color 120ms ease-out}
+#account[data-view=vault] #accountBody button:active,#account[data-view=vault] .vault-file:active{transform:scale(.97)}
+#account[data-view=vault] #accountBody button.primary{background:var(--v-ink);color:var(--v-on-ink)}
+#account[data-view=vault] #accountBody button.danger{background:#d9534f1f;color:#d9534f}
+#account[data-view=vault] #accountBody button.danger.primary{background:#d9534f;color:#fff}
+#account[data-view=vault] #accountBody button:focus-visible,#account[data-view=vault] .vault-file:focus-within{outline:2px solid var(--v-ink);outline-offset:2px}
+#account[data-view=vault] .vault-form input:not([type=checkbox]):not([type=range]):not([type=file]),#account[data-view=vault] .vault-form select,#account[data-view=vault] .vault-form textarea,#account[data-view=vault] .vault-search input{background:var(--v-fill);border:1px solid transparent;border-radius:12px;color:inherit}
+#account[data-view=vault] :is(input,select,textarea):focus-visible{outline:none;border-color:var(--v-ink)!important}
+#account[data-view=vault] ::placeholder{color:currentColor;opacity:.45}
+.vault-search{position:relative;display:block}
+.vault-search svg{position:absolute;left:12px;top:50%;width:18px;height:18px;margin-top:-9px;opacity:.55;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;pointer-events:none}
+#account[data-view=vault] .vault-search input{padding-left:38px;min-height:42px}
+#account[data-view=vault] #accountBody .vault-round{background:var(--v-fill);width:42px;height:42px;flex-basis:42px;min-height:42px}
+.vault-chips{gap:6px}
+#account[data-view=vault] #accountBody .vault-chips button{min-height:32px;border-radius:16px;font-size:13.5px;font-weight:600;background:transparent;box-shadow:inset 0 0 0 1px var(--v-line)}
+#account[data-view=vault] #accountBody .vault-chips button[aria-pressed=true]{background:var(--v-ink);color:var(--v-on-ink);box-shadow:none}
+.vault-empty{display:grid;justify-items:center;gap:8px;text-align:center;padding:36px 16px 12px}
+.vault-empty strong{font-size:17px}
+.vault-empty p{margin:0;max-width:30ch;font-size:14px;line-height:1.45}
+.vault-hero{background:var(--v-fill)}
+.vault-rows{margin-bottom:12px}
+#account[data-view=vault] #accountBody .vault-new{min-height:50px;border-radius:25px;box-shadow:0 8px 24px rgba(0,0,0,.2);bottom:4px}
+#account[data-view=vault] .vault-back{background:none!important;min-height:32px!important;padding:0!important;font-weight:600;opacity:1;gap:2px}
+#account[data-view=vault] .vault-back svg{width:18px;height:18px}
+.vault-settings{gap:8px}
+.vault-caption{margin:12px 4px 0;font-size:12px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;opacity:.6}
+.vault-group{display:grid;gap:12px;padding:14px;border-radius:16px;background:var(--surface)}
+:root[data-theme=dark] .vault-group{background:#262e3a}
+.vault-group label{font-size:13px}
+.vault-note{margin:0;font-size:14px;line-height:1.45;opacity:.8}
+.vault-toggle{display:flex!important;align-items:center;justify-content:space-between;gap:12px;padding:0;background:none;cursor:pointer}
+.vault-toggle strong{display:block;font-size:15.5px}
+.vault-toggle small{display:block;font-size:13px;opacity:.7;margin-top:2px;font-weight:400}
+.vault-toggle input{appearance:none;-webkit-appearance:none;flex:0 0 51px;width:51px;height:31px;border-radius:16px;background:var(--v-fill-strong);position:relative;transition:background-color 200ms ease-out;margin:0;cursor:pointer}
+.vault-toggle input::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform 220ms cubic-bezier(.32,.72,0,1)}
+.vault-toggle input:checked{background:#34a26b}
+.vault-toggle input:checked::after{transform:translateX(20px)}
+.vault-toggle input:focus-visible{outline:2px solid var(--v-ink);outline-offset:2px}
+.vault-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#account[data-view=vault] .vault-two>*{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:15px}
+.vault-two svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#account[data-view=vault] .vault-fields{background:var(--v-fill)}
+#account[data-view=vault] .vault-sheet-card{border-radius:22px}
+@media (prefers-reduced-motion:reduce){.vault-toggle input,.vault-toggle input::after{transition:none}}
+#account[data-view=vault] .vault-gen{background:var(--v-fill);gap:4px}
+#account[data-view=vault] .vault-gen .vault-check{min-height:40px}
